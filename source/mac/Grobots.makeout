@@ -1,0 +1,10 @@
+Set Echo 1
+PPCLink ¶
+	-o Grobots ¶
+	":ObjectFiles:GBErrors.cpp.x" ":ObjectFiles:GBRandomState.cpp.x" ":ObjectFiles:GBColor.cpp.x" ":ObjectFiles:GBNumber.cpp.x" ":ObjectFiles:GBLongNumber.cpp.x" ":ObjectFiles:GBFinePoint.cpp.x" ":ObjectFiles:GBSound.cpp.x" ":ObjectFiles:GBModel.cpp.x" ":ObjectFiles:GBStringUtilities.cpp.x" ":ObjectFiles:GBDeletionReporter.cpp.x" ":ObjectFiles:GBGraphics.cpp.x" ":ObjectFiles:GBMilliseconds.cpp.x" ":ObjectFiles:GBScores.cpp.x" ":ObjectFiles:GBSide.cpp.x" ":ObjectFiles:GBRobotType.cpp.x" ":ObjectFiles:GBHardwareSpec.cpp.x" ":ObjectFiles:GBSideReader.cpp.x" ":ObjectFiles:GBObject.cpp.x" ":ObjectFiles:GBObjectWorld.cpp.x" ":ObjectFiles:GBFood.cpp.x" ":ObjectFiles:GBDecorations.cpp.x" ":ObjectFiles:GBShot.cpp.x" ":ObjectFiles:GBRobot.cpp.x" ":ObjectFiles:GBHardwareState.cpp.x" ":ObjectFiles:GBSensorShot.cpp.x" ":ObjectFiles:GBMessages.cpp.x" ":ObjectFiles:GBWorld.cpp.x" ":ObjectFiles:GBBrain.cpp.x" ":ObjectFiles:GBBrainSpec.cpp.x" ":ObjectFiles:GBStackBrainPrimitives.cpp.x" ":ObjectFiles:GBStackBrain.cpp.x" ":ObjectFiles:GBStackBrainSpec.cpp.x" ":ObjectFiles:GBStackBrainOpcodes.cpp.x" ":ObjectFiles:GBView.cpp.x" ":ObjectFiles:GBListView.cpp.x" ":ObjectFiles:GBRosterView.cpp.x" ":ObjectFiles:GBTournamentView.cpp.x" ":ObjectFiles:GBScoresView.cpp.x" ":ObjectFiles:GBAboutBox.cpp.x" ":ObjectFiles:GBMiniMap.cpp.x" ":ObjectFiles:GBRobotTypeView.cpp.x" ":ObjectFiles:GBInspectorView.cpp.x" ":ObjectFiles:GBDebugger.cpp.x" ":ObjectFiles:GBSideDebugger.cpp.x" ":ObjectFiles:GBPortal.cpp.x" ":ObjectFiles:GBStatusView.cpp.x" ":ObjectFiles:GBMacWindow.cpp.x" ":ObjectFiles:GBViewsApplication.cpp.x" ":ObjectFiles:GBApplication.cpp.x" ":ObjectFiles:GBMain.cpp.x"  ¶
+	"{SharedLibraries}InterfaceLib" "{SharedLibraries}StdCLib" "{SharedLibraries}MathLib" "{PPCLibraries}StdCRuntime.o"  "{PPCLibraries}PPCCRuntime.o"  "{PPCLibraries}MrCPlusLib.o"  "{SharedLibraries}MrCExceptionsLib" "{STL}:lib:STLportLib.PPC.o" ¶
+	-sym off ¶
+	-linkfaster off ¶
+	-mf -d ¶
+	-t 'APPL' ¶
+	-c 'GBot'
