@@ -8,9 +8,13 @@
 
 #include "GBPlatform.h"
 
-#if MAC
+#if MAC && ! HEADLESS
 #include <Quickdraw.h>
 #include <QDOffscreen.h>
+#elif WINDOWS
+#include <Windows.h>
+#undef SendMessage
+	//this macro was clobbering GBSide::SendMessage
 #endif
 
 #include "GBColor.h"
@@ -27,21 +31,37 @@ public:
 	short CenterX() const;
 	short CenterY() const;
 	void Shrink(short step);
-#if MAC
+#if MAC && ! HEADLESS
 	void ToRect(Rect & r) const;
 	GBRect(Rect & r);
+#elif WINDOWS
+	void ToRect(RECT & r) const;
 #endif
 };
 
 class GBBitmap;
 
 class GBGraphics {
-#if MAC
-	// no data members
-	void UseColor(const GBColor & c);
-#endif
+#if HEADLESS
 public:
 	GBGraphics();
+#elif MAC
+	// no data members
+	void UseColor(const GBColor & c);
+public:
+	GBGraphics();
+#elif WINDOWS
+	HDC hdc;
+	static COLORREF ColorRef(const GBColor & c);
+	void DrawString(const string & str, short x, short y,
+		short size, const GBColor & color, bool bold);
+public:
+	GBGraphics(HDC dc);
+	friend class GBBitmap;
+#else
+	#warning "Need GBGraphics."
+#endif
+public:
 	~GBGraphics();
 // lines
 	void DrawLine(short x1, short y1, short x2, short y2,
@@ -71,22 +91,26 @@ public:
 class GBBitmap {
 private:
 	GBRect bounds;
-#if MAC
+	GBGraphics graphics;
+#if HEADLESS
+#elif MAC
 	GWorldPtr world;
 	CGrafPtr savePort;
 	GDHandle saveDevice;
+public:
+	BitMapPtr Bits() const;
+#elif WINDOWS
+	HBITMAP bits;
+	HDC hdc;
 #else
 	#warning "Need GBBitmap."
 #endif
-	GBGraphics graphics;
 public:
-	GBBitmap(short width, short height);
+	GBBitmap(short width, short height, GBGraphics & parent);
 	~GBBitmap();
 	const GBRect & Bounds() const;
 	GBGraphics & Graphics();
-#if MAC
-	BitMapPtr Bits() const;
-#endif
+	const GBGraphics & Graphics() const;
 // must call StartDrawing and StopDrawing around any drawing to the bitmap,
 //  to allow saving and restoring state :(
 	void StartDrawing();

@@ -15,9 +15,11 @@
 const short kScale = 16; // number of pixels per unit. Make variable someday?
 const GBSpeed kAutoScrollSpeed = 0.4;
 const GBSpeed kFollowSpeed = 0.5;
-const GBSpeed kFastFollowSpeed = 3;
-const GBDistance kFastFollowDistance = 15;
+const GBSpeed kFastFollowSpeed = 1.5;
+const GBDistance kFastFollowDistance = 10;
+const GBDistance kFollowJumpDistance = 30;
 const GBDistance kAutofollowNearRange = 20;
+const GBMilliseconds kAutofollowPeriod = 3000;
 
 const GBForceScalar kMoveForce = 1;
 const GBDamage kSmiteDamage = 200;
@@ -35,6 +37,7 @@ const GBFrames kToolIntervals[kNumPortalTools] = {
 
 
 void GBPortal::DrawBackground() {
+	if (!background) InitBackground();
 	long minTileX = (ViewLeft() / kBackgroundTileSize).Floor();
 	long minTileY = (ViewBottom() / kBackgroundTileSize).Floor();
 	long maxTileX = (ViewRight() / kBackgroundTileSize).Ceiling();
@@ -53,29 +56,31 @@ void GBPortal::DrawBackgroundTile(long xi, long yi) {
 	if ( xi >= 0 && yi >= 0 
 			&& xi < world.BackgroundTilesX() && yi < world.BackgroundTilesY() ) {
 	// draw tile
-		Blit(background, background.Bounds(), tile);
+		Blit(*background, background->Bounds(), tile);
 	} else // it's a wall
 		DrawSolidRect(tile, GBColor::lightGray);
 }
 
-void GBPortal::InitBackground() {
-	background.StartDrawing();
-	GBGraphics & g = background.Graphics();
-	const GBRect & b = background.Bounds();
+void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 // black background
 	g.DrawSolidRect(b, GBColor::black);
 // fine grid
 	for ( int i = 1; i < kBackgroundTileSize.Floor(); i ++ ) {
 		short x = b.left + i * kScale;
 		short y = b.top + i * kScale;
-		g.DrawLine(x, b.top, x, b.bottom - 1, GBColor(0.4));
-		g.DrawLine(b.left, y, b.right - 1, y, GBColor(0.4));
+		g.DrawLine(x, b.top, x, b.bottom, GBColor(0.4f));
+		g.DrawLine(b.left, y, b.right, y, GBColor(0.4f));
 	}
 // coarse grid
-	g.DrawLine(b.left, b.top, b.left, b.bottom - 1, GBColor::lightGray);
-	g.DrawLine(b.left, b.top, b.right - 1, b.top, GBColor::lightGray);
-// done
-	background.StopDrawing();
+	g.DrawLine(b.left, b.top, b.left, b.bottom, GBColor::lightGray);
+	g.DrawLine(b.left, b.top, b.right, b.top, GBColor::lightGray);
+}
+
+void GBPortal::InitBackground() {
+	background = new GBBitmap(kScale * kBackgroundTileSize.Floor(), kScale * kBackgroundTileSize.Floor(), Graphics());
+	background->StartDrawing();
+	DrawOneTile(background->Bounds(), background->Graphics());
+	background->StopDrawing();
 }
 
 void GBPortal::DrawObjects() {
@@ -83,31 +88,32 @@ void GBPortal::DrawObjects() {
 	long minTileY = (ViewBottom() / kForegroundTileSize - 0.5).Max(0).Floor();
 	long maxTileX = (ViewRight() / kForegroundTileSize + 0.5).Min(world.ForegroundTilesX() - 1).Ceiling();
 	long maxTileY = (ViewTop() / kForegroundTileSize + 0.5).Min(world.ForegroundTilesY() - 1).Ceiling();
-	for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-		for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+	long yi, xi;
+	for ( yi = minTileY; yi <= maxTileY; yi ++ )
+		for ( xi = minTileX; xi <= maxTileX; xi ++ )
 			DrawObjectList(world.GetObjects(xi, yi, ocFood));
 	DrawObjectList(world.GetLargeObjects(ocFood));
-	for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-		for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+	for ( yi = minTileY; yi <= maxTileY; yi ++ )
+		for ( xi = minTileX; xi <= maxTileX; xi ++ )
 			DrawObjectList(world.GetObjects(xi, yi, ocRobot));
 	DrawObjectList(world.GetLargeObjects(ocRobot));
-	for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-		for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+	for ( yi = minTileY; yi <= maxTileY; yi ++ )
+		for ( xi = minTileX; xi <= maxTileX; xi ++ )
 			DrawObjectList(world.GetObjects(xi, yi, ocArea));
 	DrawObjectList(world.GetLargeObjects(ocArea));
-	for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-		for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+	for ( yi = minTileY; yi <= maxTileY; yi ++ )
+		for ( xi = minTileX; xi <= maxTileX; xi ++ )
 			DrawObjectList(world.GetObjects(xi, yi, ocShot));
 	DrawObjectList(world.GetLargeObjects(ocShot));
 	if ( showDecorations ) {
-		for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-			for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+		for ( yi = minTileY; yi <= maxTileY; yi ++ )
+			for ( xi = minTileX; xi <= maxTileX; xi ++ )
 				DrawObjectList(world.GetObjects(xi, yi, ocDecoration));
 		DrawObjectList(world.GetLargeObjects(ocDecoration));
 	}
 	if ( showSensors ) {
-		for ( long yi = minTileY; yi <= maxTileY; yi ++ )
-			for ( long xi = minTileX; xi <= maxTileX; xi ++ )
+		for ( yi = minTileY; yi <= maxTileY; yi ++ )
+			for ( xi = minTileX; xi <= maxTileX; xi ++ )
 				DrawObjectList(world.GetObjects(xi, yi, ocSensorShot));
 		DrawObjectList(world.GetLargeObjects(ocSensorShot));
 	}
@@ -159,23 +165,24 @@ GBPortal::GBPortal(GBWorld & newWorld)
 	: world(newWorld),
 	viewpoint(newWorld.Size() / 2),
 	following(false), followPosition(newWorld.Size() / 2), moving(nil),
-	autofollow(false),
+	autofollow(false), lastFollow(0),
 	tool(ptScroll),
 	showSensors(false), showDecorations(true), showDetails(true),
 	worldChanges(-1), selfChanges(-1),
 	lastx(0), lasty(0), lastClick(), lastFrame(newWorld.CurrentFrame()),
-	background(kScale * kBackgroundTileSize.Floor(), kScale * kBackgroundTileSize.Floor())
-{
-	InitBackground();
-}
+	background(nil)
+{}
 
 GBPortal::~GBPortal() {
 	if ( moving ) moving->RemoveDeletionListener(this);
+	delete background;
 }
 
 void GBPortal::Draw() {
 	if ( ViewRight() < 0 || ViewLeft() > world.Right() || ViewTop() < 0 || ViewBottom() > world.Top() )
 		viewpoint = world.Size() / 2;
+	if ( autofollow && Milliseconds() > lastFollow + kAutofollowPeriod )
+		FollowRandom();
 	if ( following && ! moving ) {
 		if ( world.Followed() ) {
 			followPosition = world.Followed()->Position();
@@ -183,11 +190,17 @@ void GBPortal::Draw() {
 		}
 		if ( followPosition.InRange(viewpoint, kFastFollowDistance) )
 			ScrollToward(followPosition, kFollowSpeed);
+		else if ( followPosition.InRange(viewpoint, kFollowJumpDistance) )
+			ScrollToward(followPosition, kFastFollowSpeed);
 		else
 			viewpoint = followPosition;
 	}
 	DrawBackground();
 	DrawObjects();
+	if ( following && world.Followed() )
+		DrawStringCentered(world.Followed()->Description(), ToScreenX(followPosition.x),
+			ToScreenY(followPosition.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13,
+			10, GBColor::white);
 // record drawn
 	worldChanges = world.ChangeCount();
 	selfChanges = ChangeCount();
@@ -238,7 +251,10 @@ void GBPortal::AcceptDrag(short x, short y) {
 
 void GBPortal::AcceptUnclick(short x, short y, int clicks) {
 	AcceptDrag(x, y);
-	if ( moving ) moving = nil;
+	if ( moving ) {
+		moving->RemoveDeletionListener(this);
+		moving = nil;
+	}
 	if ( clicks && tool == ptScroll )
 		Follow(world.ObjectNear(FromScreen(x, y), showSensors));
 }
@@ -333,6 +349,7 @@ void GBPortal::Follow(GBObject * ob) {
 		world.Follow(ob);
 		followPosition = ob->Position();
 		following = true;
+		lastFollow = Milliseconds();
 	}
 }
 
@@ -418,7 +435,7 @@ void GBPortal::DoMove(const GBFinePoint where) {
 
 void GBPortal::DoPull(const GBFinePoint where) {
 	if ( where == lastClick ) return;
-	GBForceField * ff = new GBForceField(where, nil, kMoveForce, (where - lastClick).Angle());
+	GBForceField * ff = new GBForceField(where, where - lastClick, nil, kMoveForce, (where - lastClick).Angle());
 	world.AddObjectNew(ff);
 	world.Changed();
 }

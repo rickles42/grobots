@@ -18,8 +18,9 @@ typedef enum {
 	cuWait
 } GBCursor;
 
-// A View is a visible interface component.
+const short kEdgeSpace = 2;
 
+// A View is a visible interface component.
 class GBView {
 	GBRect bounds;
 	GBMilliseconds lastDrawn;
@@ -79,7 +80,6 @@ public:
 	GBGraphics & Graphics() const;
 	void SetGraphics(GBGraphics * g);
 	virtual void Draw();
-	virtual void DrawOverlay();
 	bool NeedsRedraw(bool running) const;
 	bool NeedsResize() const;
 	virtual GBMilliseconds RedrawInterval() const;
@@ -121,7 +121,6 @@ public:
 	void SetBounds(const GBRect & newbounds);
 // drawing
 	void Draw();
-	void DrawOverlay();
 	GBMilliseconds RedrawInterval() const;
 	bool InstantChanges() const;
 	bool DelayedChanges() const;

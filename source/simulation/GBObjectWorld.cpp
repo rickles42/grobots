@@ -246,13 +246,18 @@ void GBObjectWorld::CollideSensors(long sensorTile, long otherTile) {
 	try {
 		FOR_EACH_OBJECT_IN_LIST(objects[sensorTile][ocSensorShot], sensor, {
 			GBObjectClass seen = ((GBSensorShot *)sensor)->Seen();
-			CheckObjectClass(seen);
-			if ( sensor->CollidesWith(seen) ) {
+			if ( seen != ocDead ) {
+				CheckObjectClass(seen);
 				FOR_EACH_OBJECT_IN_LIST(objects[otherTile][seen], ob, {
 					if ( sensor->Intersects(ob) )
 						sensor->CollideWith(ob);
 						// note one-directional collision, since ob mustn't care it's been sensed
 				})
+				if ( seen == ocShot ) // shot sensors see area shots too
+					FOR_EACH_OBJECT_IN_LIST(objects[otherTile][ocArea], ob, {
+						if ( sensor->Intersects(ob) )
+							sensor->CollideWith(ob);
+					})
 			}
 		})
 	} catch ( GBError & err ) {
@@ -266,8 +271,12 @@ void GBObjectWorld::CheckObjectClass(const GBObjectClass cl) const {
 }
 
 long GBObjectWorld::FindTile(const GBPosition where) const {
-	long tx = (where.x / kForegroundTileSize).Max(0).Min(tilesX - 1).Floor();
-	long ty = (where.y / kForegroundTileSize).Max(0).Min(tilesY - 1).Floor();
+	long tx = (where.x / kForegroundTileSize).Floor();
+	if ( tx < 0 ) tx = 0;
+	if ( tx >= tilesX ) tx = tilesX - 1;
+	long ty = (where.y / kForegroundTileSize).Floor();
+	if ( ty < 0 ) ty = 0;
+	if ( ty >= tilesY ) ty = tilesY - 1;
 	return ty * tilesX + tx;
 }
 
@@ -434,7 +443,7 @@ GBObject * GBObjectWorld::RandomInterestingObject() const {
 			totalInterest += ob->Interest();
 		})
 		if ( totalInterest.Zero() ) return nil;
-		FOR_EACH_OBJECT_IN_WORLD(i, cl, ob, {
+		FOR_EACH_OBJECT_IN_WORLD(ii, cl, ob, {
 			GBNumber interest = ob->Interest();
 			if ( gRandoms.Boolean(interest / totalInterest) )
 				return ob;
@@ -454,7 +463,7 @@ GBObject * GBObjectWorld::RandomInterestingObjectNear(const GBPosition where, GB
 				totalInterest += ob->Interest();
 		})
 		if ( totalInterest.Zero() ) return nil;
-		FOR_EACH_OBJECT_IN_WORLD(i, cl, ob, {
+		FOR_EACH_OBJECT_IN_WORLD(ii, cl, ob, {
 			if ( ob->Position().InRange(where, radius) ) {
 				GBNumber interest = ob->Interest();
 				if ( gRandoms.Boolean(interest / totalInterest) )

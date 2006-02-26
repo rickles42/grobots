@@ -21,10 +21,10 @@ public:
 		GBSide * const who, const GBDamage howMuch);
 	void Act(GBWorld * world);
 	GBObjectClass Class() const;
-	bool CollidesWith(GBObjectClass what) const;
 	GBSide * Owner() const;
 	virtual long Type() const;
 	GBEnergy Power() const;
+	string Description() const;
 };
 
 class GBTimedShot : public GBShot {
@@ -62,7 +62,6 @@ public:
 	void CollideWith(GBObject * other);
 	void Act(GBWorld * world);
 // query
-	bool CollidesWith(GBObjectClass what) const;
 	long Type() const;
 // drawing code
 	const GBColor Color() const;
@@ -86,9 +85,10 @@ class GBForceField : public GBShot {
 	bool dead;
 	GBAngle direction;
 public:
-	GBForceField(const GBPosition & where, GBSide * const who,
-		const GBPower pwr, const GBAngle dir);
+	GBForceField(const GBPosition & where, const GBVelocity & vel,
+		GBSide * const who, const GBPower pwr, const GBAngle dir);
 	GBObjectClass Class() const;
+	void Move();
 	void CollideWith(GBObject * other);
 	void Act(GBWorld * world);
 	long Type() const;

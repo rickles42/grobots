@@ -18,13 +18,12 @@ class GBObject;
 class GBSensorResult;
 
 class GBRadioState {
-	GBRadioSpec * spec;
 // state
 	long writes;
 	long sent;
 	GBMessageNumber nextMessage[kNumMessageChannels];
 public:
-	GBRadioState(GBRadioSpec * spc);
+	GBRadioState();
 	~GBRadioState();
 // actions
 	void Write(GBNumber value, long address, GBSide * side);
@@ -62,7 +61,6 @@ public:
 	long ChildID() const;
 // actions
 	void Start(GBRobotType * ntype, const GBEnergy free = 0);
-	void Stop();
 	void SetRate(const GBEnergy nrate);
 // automation
 	void Act(GBRobot * robot, GBWorld * world);
@@ -78,6 +76,8 @@ public:
 	GBMass mass;
 	GBEnergy energy;
 	GBNumber shieldFraction;
+	GBNumber bomb;
+	bool reloading;
 	long type;
 	long ID;
 	
@@ -128,6 +128,8 @@ public:
 	long Type() const;
 	long ID() const;
 	GBNumber ShieldFraction() const;
+	GBNumber Bomb() const;
+	bool Reloading() const;
 	GBVector WhereOverall() const;
 // actions
 	void SetDistance(const GBDistance dist);
@@ -237,13 +239,13 @@ public:
 	GBDistance MaxRange() const;
 	GBAngle Direction() const;
 	GBDistance Distance() const;
-	GBPower Rate() const;
+	GBPower Rate() const; //setting
+	const GBPower Syphoned() const; //actual
 // actions
 	void SetDistance(const GBDistance dist);
 	void SetDirection(const GBAngle dir);
 	void SetRate(const GBPower pwr);
 	void ReportUse(const GBPower used);
-	const GBPower Syphoned();
 // automation
 	void Act(GBRobot * robot, GBWorld * world);
 };
@@ -294,6 +296,7 @@ public:
 	GBPower Shield() const;
 	GBEnergy ActualShield() const;
 	GBPower MaxShield() const;
+	GBNumber Bomb() const;
 // actions
 	void SetEnginePower(const GBPower power);
 	void SetEngineVelocity(const GBVelocity & vel);

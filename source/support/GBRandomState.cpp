@@ -6,7 +6,7 @@
 #include "GBErrors.h"
 #include "GBStringUtilities.h"
 #include "GBColor.h"
-#include "GBMilliseconds.h"
+#include <time.h>
 
 
 // convenient global generator
@@ -14,7 +14,7 @@ GBRandomState gRandoms;
 
 
 GBRandomState::GBRandomState()
-	: seed((long)(Milliseconds() / 1000))
+	: seed((long)time(0))
 {}
 
 GBRandomState::GBRandomState(const long newseed)
@@ -36,7 +36,7 @@ long GBRandomState::LongInRange(const long min, const long max) {
 	else if ( min > max )
 		return LongInRange(max, min);
 	unsigned long range = max - min + 1;
-	long result = min + (((long long)(unsigned long)GenerateLong() * range) >> 32);
+	long result = min + (((GBLongLong)(unsigned long)GenerateLong() * range) >> 32);
 	if ( result < min || result > max ) {
 		NonfatalError(string("GBRandomState::LongInRange(") + ToString(min) + ", "
 			+ ToString(max) + ") failed with result " + ToString(result));
@@ -45,8 +45,7 @@ long GBRandomState::LongInRange(const long min, const long max) {
 }
 
 GBNumber GBRandomState::InRange(const GBNumber min, const GBNumber max) {
-	GBNumber result = GBNumber::MakeRaw(LongInRange(min.GetRaw(), max.GetRaw()));
-	return result;
+	return GBNumber::MakeRaw(LongInRange(min.GetRaw(), max.GetRaw()));
 }
 
 float GBRandomState::FloatInRange(const float min, const float max) {

@@ -7,13 +7,17 @@
 
 #include "GBListView.h"
 #include "GBModel.h"
+#include "GBTypes.h"
 
 class GBWorld;
 
 class GBRosterView : public GBListView {
 	GBWorld & world;
 	GBChangeCount worldChanges;
-	long sideID;
+	long sideID, numSides;
+// framecounter
+	GBFrames lastFrame;
+	GBMilliseconds lastTime;
 public:
 	explicit GBRosterView(GBWorld & wrld);
 
@@ -27,7 +31,9 @@ public:
 	const string Name() const;
 
 	long Items() const;
+	short HeaderHeight() const;
 	short ItemHeight() const;
+	void DrawHeader(const GBRect & box);
 	void DrawItem(long index, const GBRect & box);
 	void ItemClicked(long index);
 };

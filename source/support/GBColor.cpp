@@ -1,5 +1,5 @@
 // GBColor.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBColor.h"
@@ -7,16 +7,12 @@
 #include "GBPlatform.h"
 #include <math.h>
 
-#if MAC
-#include <Quickdraw.h>
-#endif
-
 // some things are inline, and can be found in GBColor.h
-const float kContrastRedWeight = 0.35;
-const float kContrastGreenWeight = 0.5;
-const float kContrastBlueWeight = 0.15;
+const float kRedWeight = 0.35f;
+const float kGreenWeight = 0.45f;
+const float kBlueWeight = 0.2f;
 
-const float kMinTextContrast = 0.4;
+const float kMaxTextLightness = 0.7f;
 
 
 GBColor::GBColor(const float grey)
@@ -34,38 +30,38 @@ void GBColor::Set(const float red, const float green, const float blue) {
 }
 
 float GBColor::Lightness() const {
-	return r * 0.35 + g * 0.4 + b * 0.25;
+	return r * kRedWeight + g * kGreenWeight + b * kBlueWeight;
 }
 
 const GBColor GBColor::Mix(const float fraction, const GBColor & other) const {
-	return *this * fraction + other * (1.0 - fraction);
+	return *this * fraction + other * (1.0f - fraction);
 }
 
 const float GBColor::Contrast(const GBColor & other) const {
-	return sqrt((r - other.r) * (r - other.r) * kContrastRedWeight +
-			(g - other.g) * (g - other.g) * kContrastGreenWeight +
-			(b - other.b) * (b - other.b) * kContrastBlueWeight);
+	return sqrt((r - other.r) * (r - other.r) * kRedWeight +
+			(g - other.g) * (g - other.g) * kGreenWeight +
+			(b - other.b) * (b - other.b) * kBlueWeight);
+	//alternate, maybe better
+	return fabs(r - other.r) * kRedWeight +
+			fabs(g - other.g) * kGreenWeight +
+			fabs(b - other.b) * kBlueWeight;
 }
 
 
 float GBColor::Limit(float val) {
-	if ( val > 1.0 ) return 1.0;
-	if ( val < 0.0 ) return 0.0;
+	if ( val > 1.0f ) return 1.0f;
+	if ( val < 0.0f ) return 0.0f;
 	return val;
 }
 
 // this function may not return a color with Lightness>minimum if minimum is > 1/3!
 const GBColor GBColor::EnsureContrastWithBlack(const float minimum) const {
-	GBColor result;
-	float contrast = Contrast(GBColor(0));
+	float contrast = Contrast(GBColor::black);
 	if ( contrast >= minimum )
 		return *this;
-	if ( contrast == 0.0 )
+	if ( contrast == 0.0f )
 		return GBColor(minimum);
-	result.r = Limit(r * minimum / contrast);
-	result.g = Limit(g * minimum / contrast);
-	result.b = Limit(b * minimum / contrast);
-	return result;
+	return *this * minimum / contrast;
 }
 
 // Returns one of two colors which best contrasts with *this. If the primary color
@@ -82,7 +78,10 @@ const GBColor GBColor::ChooseContrasting(const GBColor & primary, const GBColor 
 }
 
 const GBColor GBColor::ContrastingTextColor() const {
-	return GBColor::white.ChooseContrasting(*this, GBColor::black, kMinTextContrast);
+	if ( Lightness() < kMaxTextLightness )
+		return *this;
+	else
+		return *this * kMaxTextLightness;
 }
 
 const GBColor GBColor::operator *(float multiplier) const {
@@ -106,10 +105,10 @@ const GBColor GBColor::magenta(1, 0, 1);
 const GBColor GBColor::yellow(1, 1, 0);
 const GBColor GBColor::black(0);
 const GBColor GBColor::white(1);
-const GBColor GBColor::gray(0.5);
-const GBColor GBColor::lightGray(0.8);
-const GBColor GBColor::darkGray(0.2);
-const GBColor GBColor::purple(0.6, 0, 0.8);
-const GBColor GBColor::darkGreen(0, 0.5, 0);
-const GBColor GBColor::darkRed(0.7, 0, 0);
+const GBColor GBColor::gray(0.5f);
+const GBColor GBColor::lightGray(0.8f);
+const GBColor GBColor::darkGray(0.2f);
+const GBColor GBColor::purple(0.6f, 0, 0.8f);
+const GBColor GBColor::darkGreen(0, 0.5f, 0);
+const GBColor GBColor::darkRed(0.7f, 0, 0);
 

@@ -9,23 +9,6 @@
 #include "GBTypes.h"
 
 
-class GBRadioSpec {
-	bool write, read, send, receive;
-public:
-	GBRadioSpec();
-	~GBRadioSpec();
-	GBRadioSpec & operator=(const GBRadioSpec & arg);
-// accessors
-	bool Write() const;
-	bool Read() const;
-	bool Send() const;
-	bool Receive() const;
-	void Set(bool wrt, bool rd, bool snd, bool rcv);
-// costs
-	GBEnergy Cost() const;
-	GBMass Mass() const;
-};
-
 class GBConstructorSpec {
 	GBPower rate;
 public:
@@ -155,7 +138,6 @@ private: // simple hardware
 	GBPower shield;
 	GBDamage bomb;
 public: // complex hardware
-	GBRadioSpec radio;
 	GBConstructorSpec constructor;
 	GBSensorSpec sensor1;
 	GBSensorSpec sensor2;

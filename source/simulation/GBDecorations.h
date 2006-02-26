@@ -17,6 +17,7 @@ public:
 		const GBFrames howLong);
 	GBObjectClass Class() const;
 	void Act(GBWorld * world);
+	string Description() const;
 };
 
 // convenience constants
@@ -27,6 +28,7 @@ const GBFrames kSmokeMaxLifetime = 120;
 class GBSmoke : public GBTimedDecoration {
 public:
 	GBSmoke(const GBPosition where, const GBVelocity vel, const GBFrames life);
+	string Description() const;
 // drawing code
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
@@ -49,6 +51,7 @@ public:
 	GBTransmission(const GBPosition where, int cnt, bool msg);
 	GBObjectClass Class() const;
 	void Act(GBWorld * world);
+	string Description() const;
 // drawing code
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;

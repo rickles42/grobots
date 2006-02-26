@@ -1,5 +1,5 @@
 // GBSide.h
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #ifndef GBSide_h
@@ -12,8 +12,13 @@
 #include "GBScores.h"
 #include <vector>
 
-#if MAC
-#include <Files.h>
+//identify files according to platform
+#define USE_MAC_IO (MAC)
+#if USE_MAC_IO
+	#include <Files.h>
+	typedef FSSpec GBFilename;
+#else
+	typedef std::string GBFilename;
 #endif
 
 class GBRobotType;
@@ -30,6 +35,8 @@ class GBSide : public GBModel {
 // scores
 	GBSideScores scores;
 	GBScores cScores;
+	//std::vector<GBSideScores *> scores;
+	//std::vector<GBScores *> tscores;
 // communications
 	GBNumber sharedMemory[kSharedMemorySize];
 	GBMessageQueue * msgQueues[kNumMessageChannels];
@@ -37,11 +44,7 @@ class GBSide : public GBModel {
 	std::vector<long> seedIDs;
 public:
 	GBSide * next;
-#if MAC
-	FSSpec file;
-#else
-	string filename;
-#endif
+	GBFilename filename;
 public:
 	GBSide();
 	~GBSide();

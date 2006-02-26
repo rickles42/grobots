@@ -27,8 +27,8 @@ const GBRatio kQuadraticDragFactor = 0.15;
 
 const GBNumber kShieldEffectiveness = 1;
 const GBPower kStandardShieldPerMass = 1.0; //shield per mass for blue-white shield graphic
-const float kMinMinimapBotContrast = 0.3;
-const float kMinMeterContrast = 0.25;
+const float kMinMinimapBotContrast = 0.3f;
+const float kMinMeterContrast = 0.25f;
 
 
 void GBRobot::Recalculate() {
@@ -80,9 +80,9 @@ long GBRobot::ID() const {
 long GBRobot::ParentID() const {
 	return parent;}
 
-string GBRobot::Name() const {
+string GBRobot::Description() const {
 	const string & sidename = type->Side()->Name();
-	return sidename + (sidename[sidename.size() - 2] == 's' ? "' " : "'s ") + type->Name() + " #" + ToString(id);
+	return sidename + (sidename[sidename.size() - 1] == 's' ? "' " : "'s ") + type->Name() + " #" + ToString(id);
 }
 
 int GBRobot::Collisions() const {
@@ -180,10 +180,8 @@ void GBRobot::CollideWith(GBObject * other) {
 }
 
 void GBRobot::Think(GBWorld * world) {
-	if ( brain ) {
-		brain->NextFrame(this, world);
+	if ( brain )
 		brain->Think(this, world);
-	}
 }
 
 void GBRobot::Act(GBWorld * world) {
@@ -212,15 +210,6 @@ GBObjectClass GBRobot::Class() const {
 		return ocDead;
 	else
 		return ocRobot;
-}
-
-bool GBRobot::CollidesWith(GBObjectClass what) const {
-	switch ( what ) {
-		case ocRobot: case ocFood: case ocShot: case ocSensorShot:
-			return true;
-		default:
-			return false;
-	}
 }
 
 GBSide * GBRobot::Owner() const {
@@ -252,17 +241,16 @@ GBNumber GBRobot::Interest() const {
 }
 
 const GBColor GBRobot::Color() const {
-	return Owner()->Color().Mix(0.9, type->Color());
+	return Owner()->Color().Mix(0.9f, type->Color());
 }
 
 void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 // shield
 	if ( hardware.ActualShield() > 0 )
-		g.DrawOpenRect(where, GBColor(0.3, 0.5, 1)
+		g.DrawOpenRect(where, GBColor(0.3f, 0.5f, 1)
 			* (hardware.ActualShield() / (mass * kStandardShieldPerMass)).ToDouble());
 // body
 	g.DrawSolidOval(where, Owner()->Color());
-	g.DrawOpenOval(where, type->Color());
 // meters
 	if ( detailed ) {
 		short arcsize;
@@ -272,7 +260,7 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 		if ( hardware.MaxEnergy().Nonzero() ) {
 			arcsize = (hardware.Energy() / hardware.MaxEnergy() * 180).Round();
 			g.DrawArc(meterRect, 180 - arcsize, arcsize,
-				Owner()->Color().ChooseContrasting(GBColor::green, GBColor(0, 0.5, 1), kMinMeterContrast), 2);
+				Owner()->Color().ChooseContrasting(GBColor::green, GBColor(0, 0.5f, 1), kMinMeterContrast), 2);
 		}
 	// armor meter
 		arcsize = (hardware.Armor().Max(0) / hardware.MaxArmor() * 180).Round();
@@ -282,7 +270,7 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 		meterRect.Shrink(2);
 		arcsize = (hardware.constructor.Fraction() * 360).Round();
 		g.DrawArc(meterRect, 360 - arcsize, arcsize,
-			Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5, 0), kMinMeterContrast), 1);
+			Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), 1);
 	}
 // decoration
 	short thickness = (where.right - where.left) > 15 ? 2 : 1;
@@ -298,43 +286,45 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 		case rdCircle: g.DrawOpenOval(dec, type->DecorationColor(), thickness); break;
 		case rdSquare: g.DrawOpenRect(dec, type->DecorationColor(), thickness); break;
 		case rdTriangle:
-			g.DrawLine(dec.left, dec.bottom - thickness, dec.CenterX() - 1, dec.top,
+			g.DrawLine(dec.left, dec.bottom, dec.CenterX(), dec.top,
 				type->DecorationColor(), thickness);
-			g.DrawLine(dec.CenterX() - 1, dec.top, dec.right - thickness, dec.bottom - thickness,
+			g.DrawLine(dec.CenterX(), dec.top, dec.right, dec.bottom,
 				type->DecorationColor(), thickness);
-			g.DrawLine(dec.left, dec.bottom - thickness, dec.right - thickness, dec.bottom - thickness,
+			g.DrawLine(dec.left, dec.bottom, dec.right, dec.bottom,
 				type->DecorationColor(), thickness);
 			break;
 		case rdCross:
-			g.DrawLine(where.CenterX() - 1, where.top + 4, where.CenterX() - 1, where.bottom - 4 - thickness,
+			g.DrawLine(where.CenterX(), where.top + 4, where.CenterX(), where.bottom - 4,
 				type->DecorationColor(), thickness);
-			g.DrawLine(where.left + 4, where.CenterY() - 1, where.right - 4 - thickness, where.CenterY() - 1,
+			g.DrawLine(where.left + 4, where.CenterY(), where.right - 4, where.CenterY(),
 				type->DecorationColor(), thickness);
 			break;
 		case rdX:
-			g.DrawLine(dec.left, dec.top, dec.right - thickness, dec.bottom - thickness,
+			g.DrawLine(dec.left, dec.top, dec.right, dec.bottom,
 				type->DecorationColor(), thickness);
-			g.DrawLine(dec.left, dec.bottom - thickness, dec.right - thickness, dec.top,
+			g.DrawLine(dec.left, dec.bottom, dec.right, dec.top,
 				type->DecorationColor(), thickness);
 			break;
 		case rdHLine:
-			g.DrawLine(where.left + 4, where.CenterY() - 1, where.right - 4 - thickness, where.CenterY() - 1,
+			g.DrawLine(where.left + 4, where.CenterY(), where.right - 4, where.CenterY(),
 				type->DecorationColor(), thickness);
 			break;
 		case rdVLine:
-			g.DrawLine(where.CenterX() - 1, where.top + 4, where.CenterX() - 1, where.bottom - 4 - thickness,
+			g.DrawLine(where.CenterX(), where.top + 4, where.CenterX(), where.bottom - 4,
 				type->DecorationColor(), thickness);
 			break;
 		case rdSlash:
-			g.DrawLine(dec.left, dec.bottom - thickness, dec.right - thickness, dec.top,
+			g.DrawLine(dec.left, dec.bottom, dec.right, dec.top,
 				type->DecorationColor(), thickness);
 			break;
 		case rdBackslash:
-			g.DrawLine(dec.left, dec.top, dec.right - thickness, dec.bottom - 1,
+			g.DrawLine(dec.left, dec.top, dec.right, dec.bottom,
 				type->DecorationColor(), thickness);
 			break;
 		case rdNone: default: break;
 	}
+//rim (last in case something is slightly in the wrong place)
+	g.DrawOpenOval(where, type->Color());
 }
 
 void GBRobot::DrawMini(GBGraphics & g, const GBRect & where) const {
@@ -342,7 +332,7 @@ void GBRobot::DrawMini(GBGraphics & g, const GBRect & where) const {
 		g.DrawSolidRect(where, Color().EnsureContrastWithBlack(kMinMinimapBotContrast));
 	else {
 		g.DrawSolidOval(where, Owner()->Color());
-		g.DrawOpenOval(where, Owner()->Color().Mix(0.5, type->Color()));
+		g.DrawOpenOval(where, Owner()->Color().Mix(0.5f, type->Color()));
 	}
 }
 

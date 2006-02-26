@@ -81,14 +81,6 @@ GBSpeed GBObject::Speed() const {
 	return velocity.Norm();
 }
 
-GBMomentum GBObject::Momentum() const {
-	return velocity * Mass();
-}
-
-void GBObject::SetVelocity(const GBVelocity & newvelocity) {
-	velocity = newvelocity;
-}
-
 void GBObject::SetVelocity(const GBSpeed sx, const GBSpeed sy) {
 	velocity.Set(sx, sy);
 }
@@ -120,14 +112,10 @@ GBMass GBObject::Mass() const {
 }
 
 bool GBObject::Intersects(const GBObject * other) const {
-	try {
-		return Right() > other->Left() && other->Right() > Left()
-			&& Top() > other->Bottom() && other->Top() > Bottom()
-			&& position.InRange(other->position, radius + other->radius);
-	} catch ( GBArithmeticError & err ) {
-		NonfatalError("Arithmetic error in GBObject::Intersects(GBObject *): " + err.ToString());
-		return false;
-	}
+	GBDistance r = radius + other->radius;
+	return other->position.x - position.x < r && position.x - other->position.x < r
+		&& other->position.y - position.y < r && position.y - other->position.y < r
+		&& position.InRange(other->position, r);
 }
 
 GBNumber GBObject::OverlapFraction(const GBObject * other) const {
@@ -202,8 +190,8 @@ void GBObject::ElasticBounce(GBObject * other, GBRatio coefficient) {
 	if ( velocity.DotProduct(cc) - other->velocity.DotProduct(cc) > 0 ) {
 		// if still moving closer...
 		GBVelocity center = (rv1 * m1 + rv2 * m2) / (m1 + m2); // velocity of center-of-mass
-		Accelerate((rv2 - center) * coefficient * m2 / m1 - (rv1 - center));
-		other->Accelerate((rv1 - center) * coefficient * m1 / m2 - (rv2 - center));
+		Accelerate((rv2 - center) * (m2 * coefficient) / m1 - (rv1 - center));
+		other->Accelerate((rv1 - center) * (m1 * coefficient) / m2 - (rv2 - center));
 	}
 	GBDistance totalr = radius + other->radius;
 	GBDistance overlap = totalr - dist;
@@ -217,14 +205,10 @@ void GBObject::ElasticBounce(GBObject * other, GBRatio coefficient) {
 	}
 }
 
-void GBObject::MoveByVelocity() {
-	position += velocity;
-}
-
 void GBObject::Think(GBWorld *) {}
 
 void GBObject::Move() {
-	MoveByVelocity();
+	position += velocity;
 }
 
 void GBObject::Act(GBWorld *) {}
@@ -239,10 +223,6 @@ GBObjectClass GBObject::Class() const {
 	return ocDecoration;
 }
 
-bool GBObject::CollidesWith(GBObjectClass) const {
-	return false;
-}
-
 GBSide * GBObject::Owner() const {
 	return nil;
 }
@@ -253,6 +233,10 @@ GBEnergy GBObject::Energy() const {
 
 GBNumber GBObject::Interest() const {
 	return 0;
+}
+
+std::string GBObject::Description() const {
+	return "Generic object";
 }
 
 const GBColor GBObject::Color() const {

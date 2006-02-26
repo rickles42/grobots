@@ -10,9 +10,9 @@
 #include "GBWorld.h"
 
 
-const short kBoxEdgeSpace = 2;
 const short kTypeStatsWidth = 80;
-
+const short kTypePopulationLeft = 5;
+const short kTypeBiomassLeft = 80;
 const short kHardwareNameLeft = 5;
 const short kHardwareArgumentsLeft = 85;
 const short kHardwareCostRight = 50;
@@ -78,7 +78,7 @@ void GBRobotTypeView::DrawHardwareSummaryLine(const GBRect & box, short base,
 GBRobotTypeView::GBRobotTypeView(const GBWorld & targ)
 	: GBListView(),
 	world(targ),
-	sideID(-1), typeID(-1)
+	sideID(-1), typeID(-1), lastDrawn(-1)
 {}
 
 GBRobotTypeView::~GBRobotTypeView() {}
@@ -89,6 +89,7 @@ void GBRobotTypeView::Draw() {
 	const GBSide * side = world.SelectedSide();
 	sideID = world.SelectedSideID();
 	typeID = world.SelectedSide() ? world.SelectedSide()->SelectedTypeID() : -1;
+	lastDrawn = world.ChangeCount();
 }
 
 short GBRobotTypeView::HeaderHeight() const { return 17; }
@@ -128,15 +129,14 @@ void GBRobotTypeView::DrawItem(long index, const GBRect & box) {
 	DrawStringPair("Mass:", ToString(type->Mass(), 1),
 		box.right - kTypeStatsWidth + 5, box.right - 2, box.bottom - 3,
 		9, selected ? GBColor::white : GBColor::black);
-//	DrawStringPair("Growth:", ToString(type->Hardware().GrowthCost(), 1),
-//		box.right - kTypeStatsWidth * 2, box.right - kStatsWidth, box.top + 10,
-//		9, selected ? GBColor::green : GBColor::darkGreen);
-//	DrawStringPair("Weapons:", ToString(type->Hardware().WeaponsCost(), 1),
-//		box.right - kTypeStatsWidth * 2, box.right - kStatsWidth, (box.top + box.bottom) / 2 + 4,
-//		9, GBColor::purple);
-//	DrawStringPair("Defense:", ToString(type->Hardware().DefenseCost(), 1),
-//		box.right - kTypeStatsWidth * 2, box.right - kStatsWidth, box.bottom - 3,
-//		9, selected ? GBColor::white : GBColor::black);
+	if ( side->Scores().Seeded() ) {
+		DrawStringLongPair("Population:", type->Population(),
+			box.left + kTypePopulationLeft, box.left + kTypeBiomassLeft - 4, box.bottom - 3,
+			9, selected ? GBColor::white : GBColor::blue);
+		DrawStringLongPair("Biomass:", type->Biomass(),
+			box.left + kTypeBiomassLeft, box.right - kTypeStatsWidth - 4, box.bottom - 3,
+			9, selected ? GBColor::green : GBColor::darkGreen);
+	}
 }
 
 void GBRobotTypeView::DrawFooter(const GBRect & box) {
@@ -148,16 +148,12 @@ void GBRobotTypeView::DrawFooter(const GBRect & box) {
 	DrawStringLeft("Hardware:", box.left + kHardwareNameLeft, box.top + 12, 10, GBColor::black, true);
 	DrawStringRight("Cost", box.right - kHardwareCostRight, box.top + 12, 10, GBColor::black, true);
 	DrawStringRight("Mass", box.right - kHardwareMassRight, box.top + 12, 10, GBColor::black, true);
-	DrawLine(box.left, box.top + 15, box.right - 1, box.top + 15, GBColor::black);
+	DrawLine(box.left, box.top + 15, box.right, box.top + 15, GBColor::black);
 // basic
 	DrawHardwareLine(box, 25, "chassis", GBColor::black,
 		"", "", "", "", hw.ChassisCost(), hw.ChassisMass());
-	DrawNumericHardwareLine(box, 35, "processor", GBColor::blue,
+	DrawNumericHardwareLine(box, 40, "processor", GBColor::blue,
 		hw.Processor(), hw.Memory(), hw.ProcessorCost(), hw.ProcessorMass());
-	DrawHardwareLine(box, 45, "radio", GBColor::black,
-		hw.radio.Write() ? "write" : "", hw.radio.Read() ? "read" : "",
-		hw.radio.Send() ? "send" : "", hw.radio.Receive() ? "receive" : "",
-		hw.radio.Cost(), hw.radio.Mass());
 	DrawNumericHardwareLine(box, 55, "engine", GBColor::black,
 		hw.Engine(), hw.EngineCost(), hw.EngineMass());
 	DrawNumericHardwareLine(box, 65, "constructor", GBColor::darkGreen,
@@ -200,21 +196,28 @@ void GBRobotTypeView::DrawFooter(const GBRect & box) {
 	DrawHardwareSummaryLine(box, -40, "Ordinary hardware:", GBColor::black,
 		hw.HardwareCost() - hw.CoolingCost(), hw.Mass() - hw.CoolingMass());
 	DrawHardwareLine(box, -30, "cooling charge", GBColor::red,
-		nil, nil, nil, nil, hw.CoolingCost(), hw.CoolingMass());
+		"", "", "", "", hw.CoolingCost(), hw.CoolingMass());
 	const GBBrainSpec * brain = type->Brain();
 	if ( brain )
-	DrawHardwareSummaryLine(box, -20, "Code", GBColor::black,
-		brain->Cost(), brain->Mass());
+		DrawHardwareSummaryLine(box, -18, "Code", GBColor::black, brain->Cost(), brain->Mass());
 	else
 		DrawStringLeft("No brain", box.left + kHardwareNameLeft, box.bottom - 20, 10, GBColor::lightGray);
-	DrawLine(box.left, box.bottom - 15, box.right - 1, box.bottom - 15, GBColor::black);
-	DrawHardwareSummaryLine(box, -5, "Total:", GBColor::black, type->Cost(), type->Mass());
+	DrawLine(box.left, box.bottom - 15, box.right, box.bottom - 15, GBColor::black);
+	DrawHardwareSummaryLine(box, -4, "Total:", GBColor::black, type->Cost(), type->Mass());
+}
+
+GBMilliseconds GBRobotTypeView::RedrawInterval() const {
+	return 2000;
 }
 
 bool GBRobotTypeView::InstantChanges() const {
 	if ( sideID != world.SelectedSideID() ) return true;
 	const GBSide * side = world.SelectedSide();
-	return typeID != side->SelectedTypeID();
+	return side && typeID != side->SelectedTypeID();
+}
+
+bool GBRobotTypeView::DelayedChanges() const {
+	return lastDrawn != world.ChangeCount();
 }
 
 long GBRobotTypeView::Items() const {

@@ -1,6 +1,6 @@
 // GBStringUtilities.cpp
 // general-purpose parsing and string-formatting code
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBStringUtilities.h"
@@ -189,7 +189,7 @@ bool ExtractToken(string & token, const string & line, int & cur) {
 		} else { // a real character
 			if ( ! intoken ) {
 				intoken = true;
-				token.clear();
+				token = "";
 			}
 			token += line[cur];
 		}
@@ -203,11 +203,11 @@ bool ExtractToken(string & token, const string & line, int & cur) {
 // Minor bug: currently leaves trailing whitespace in.
 bool ExtractRest(string & rest, const string & line, int & cur) {
 	bool intoken = false;
-	while ( cur <= line.length() && line[cur] != ';' ) {
+	while ( cur < line.length() && line[cur] != ';' && line[cur] != '\r' && line[cur] != '\n' ) {
 		if ( intoken || ! isspace(line[cur]) ) {
 			if ( ! intoken ) {
 				intoken = true;
-				rest.clear();
+				rest = "";
 			}
 			rest += line[cur];
 		}

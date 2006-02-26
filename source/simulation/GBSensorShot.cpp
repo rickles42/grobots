@@ -15,7 +15,7 @@ GBFrames GBSensorShot::Lifetime() const {
 
 GBSensorShot::GBSensorShot(const GBPosition & fcs, GBRobot * who, GBSensorState * st)
 	: GBObject(who->Position(), st->MaxRange()),
-	owner(who),
+	owner(who), side(who->Owner()),
 	state(st),
 	seen(st->Seen()),
 	age(0),
@@ -39,16 +39,23 @@ GBObjectClass GBSensorShot::Class() const {
 		return ocSensorShot;
 }
 
-bool GBSensorShot::CollidesWith(GBObjectClass what) const {
-	return age == 0 && what == seen;
+string GBSensorShot::Description() const {
+	string classname;
+	switch ( seen ) {
+		case ocRobot: classname = "Robot"; break;
+		case ocFood: classname = "Food"; break;
+		case ocShot: classname = "Shot"; break;
+		default: classname = "Mystery"; break;
+	}
+	return classname + " sensor for " + owner->Description();
 }
 
 const GBColor GBSensorShot::Color() const {
 	float fraction = 1.0 - (float)age / Lifetime();
 	switch ( seen ) {
-		case ocRobot: return GBColor(0.4, 0.8, 1) * fraction;
-		case ocFood: return GBColor(0.5, 1, 0.5) * fraction;
-		case ocShot: return GBColor(1, 1, 0.5) * fraction;
+		case ocRobot: return GBColor(0.4f, 0.8f, 1) * fraction;
+		case ocFood: return GBColor(0.5f, 1, 0.5f) * fraction;
+		case ocShot: return GBColor(1, 1, 0.5f) * fraction;
 	}
 	return GBColor(fraction);
 }
@@ -58,10 +65,10 @@ const GBRobot * GBSensorShot::Firer() const {
 }
 
 const GBObjectClass GBSensorShot::Seen() const {
-	return seen;
+	return age == 0 ? seen : ocDead;
 }
 
-GBSide * GBSensorShot::Owner() const { return owner->Owner(); }
+GBSide * GBSensorShot::Owner() const { return side; }
 
 void GBSensorShot::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
 	// show focus, owner, and side?

@@ -45,8 +45,6 @@ public:
 // motion:
 	GBVelocity Velocity() const;
 	GBSpeed Speed() const;
-	GBMomentum Momentum() const;
-	void SetVelocity(const GBVelocity & newvelocity);
 	void SetVelocity(const GBSpeed sx, const GBSpeed sy);
 	void SetSpeed(const GBSpeed speed);
 	void Accelerate(const GBVelocity & deltav);
@@ -72,7 +70,6 @@ public:
 	virtual GBEnergy MaxGiveEnergy();
 	
 	void ElasticBounce(GBObject * other, GBRatio coefficient = 1);
-	void MoveByVelocity();
 // high-level actions
 	virtual void Think(GBWorld * world);
 	virtual void Move();
@@ -82,11 +79,10 @@ public:
 	virtual void CollectStatistics(GBWorld * world) const;
 // high-level queries
 	virtual GBObjectClass Class() const;
-	virtual bool CollidesWith(GBObjectClass what) const;
-		// used only for GBSensorShot, I think.
 	virtual GBSide * Owner() const;
 	virtual GBEnergy Energy() const;
 	virtual GBNumber Interest() const; // how attractive to autocamera
+	virtual string Description() const;
 // evil antimodular drawing code
 	virtual const GBColor Color() const;
 	virtual void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;

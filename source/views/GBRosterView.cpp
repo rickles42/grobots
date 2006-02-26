@@ -7,6 +7,7 @@
 #include "GBWorld.h"
 #include "GBStringUtilities.h"
 
+const short kFramecounterHeight = 15;
 const short kSideBoxHeight = 17;
 const short kPopulationWidth = 30;
 
@@ -14,7 +15,8 @@ const short kPopulationWidth = 30;
 GBRosterView::GBRosterView(GBWorld & wrld)
 	: GBListView(),
 	world(wrld),
-	worldChanges(-1), sideID(-1)
+	worldChanges(-1), sideID(-1), numSides(0),
+	lastFrame(0), lastTime(-1)
 {}
 
 void GBRosterView::Draw() {
@@ -22,6 +24,7 @@ void GBRosterView::Draw() {
 // record
 	worldChanges = world.ChangeCount();
 	sideID = world.SelectedSideID();
+	numSides = world.CountSides();
 }
 
 GBMilliseconds GBRosterView::RedrawInterval() const {
@@ -29,7 +32,8 @@ GBMilliseconds GBRosterView::RedrawInterval() const {
 }
 
 bool GBRosterView::InstantChanges() const {
-	return sideID != world.SelectedSideID(); // FIXME: when sides added or deleted or reloaded
+	return sideID != world.SelectedSideID() || numSides != world.CountSides() || world.CurrentFrame() < lastFrame;
+	// FIXME: when sides reloaded
 }
 
 bool GBRosterView::DelayedChanges() const {
@@ -48,8 +52,28 @@ long GBRosterView::Items() const {
 	return world.CountSides();
 }
 
+short GBRosterView::HeaderHeight() const {
+	return kFramecounterHeight;
+}
+
 short GBRosterView::ItemHeight() const {
 	return kSideBoxHeight;
+}
+
+void GBRosterView::DrawHeader(const GBRect & box) {
+	DrawBox(box);
+	DrawStringLeft(string("Frame ") + ToString(world.CurrentFrame()),
+		box.left + 5, box.top + 12, 10);
+	string status = string(world.tournament ? "tournament " : "") + (world.running ? "running" : "paused");
+	if ( world.running && lastTime >= 0 && world.CurrentFrame() > lastFrame ) {
+		long frames = world.CurrentFrame() - lastFrame;
+		long ms = Milliseconds() - lastTime; //TODO use GBView::lastDrawn instead
+		if (ms)
+			status += string(" at ") + ToString((frames * 1000 + 500) / ms) + " fps";
+	}
+	DrawStringRight(status, box.right - 5, box.top + 12, 10);
+	lastFrame = world.CurrentFrame();
+	lastTime = Milliseconds();
 }
 
 void GBRosterView::DrawItem(long index, const GBRect & box) {

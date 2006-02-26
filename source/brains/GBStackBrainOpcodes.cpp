@@ -56,22 +56,21 @@ const string primitiveNames[kNumPrimitives] = {
 	"print", "vprint", "beep", "pause", "stop",
 	"sync",
 // basic hardware
-	"seek-location", "seek-moving-location",
+	"seek-location", "seek-moving-location", "restrict-position",
 	"die",
 	"store", "load", "vstore", "vload",
 	"write", "read", "vwrite", "vread",
 	"messages", "send", "receive", "clear-messages", "skip-messages",
 	"type-population",
+	"autoconstruct", "balance-type",
 // sensors
-	"fire-robot-sensor",
-	"fire-food-sensor",
-	"fire-shot-sensor",
-	"next-robot",
-	"next-food",
-	"next-shot",
+	"fire-robot-sensor", "fire-food-sensor", "fire-shot-sensor",
+	"next-robot", "next-food", "next-shot",
+	"periodic-robot-sensor", "periodic-food-sensor", "periodic-shot-sensor",
 // weapons
-	"fire-blaster",
-	"fire-grenade"
+	"fire-blaster", "fire-grenade",
+	"lead-blaster", "lead-grenade",
+	"set-force-field",
 };
 
 const string hardwareVariableNames[kNumHardwareVariables] = {
@@ -99,7 +98,9 @@ const string hardwareVariableNames[kNumHardwareVariables] = {
 	"robot-sensor-focus-distance", "robot-sensor-focus-direction",
 	"robot-sensor-sees-friends", "robot-sensor-sees-enemies",
 	"robot-sensor-time", "robot-found", "robot-distance", "robot-direction",
-	"robot-side", "robot-radius", "robot-mass", "robot-energy", "robot-type", "robot-ID", "robot-shield-fraction",
+	"robot-side", "robot-radius", "robot-mass", "robot-energy",
+	"robot-type", "robot-ID", "robot-shield-fraction",
+	"robot-bomb", "robot-reloading",
 	"robot-distance-overall", "robot-direction-overall",
 	"current-robot-result", "num-robot-results", "max-robot-results",
 // food sensor

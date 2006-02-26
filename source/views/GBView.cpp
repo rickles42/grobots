@@ -175,7 +175,6 @@ void GBView::SetGraphics(GBGraphics * g) {
 }
 
 void GBView::Draw() {}
-void GBView::DrawOverlay() {}
 
 bool GBView::NeedsRedraw(bool running) const {
 	GBMilliseconds interval = RedrawInterval();
@@ -207,7 +206,6 @@ void GBView::DoDraw() {
 	if ( ! graphics ) throw GBNilPointerError();
 	try {
 		Draw();
-		DrawOverlay();
 	} catch ( GBError & err ) {
 		NonfatalError("Error drawing: " + err.ToString());
 	} catch ( GBAbort & ) {}
@@ -301,10 +299,6 @@ void GBWrapperView::Draw() {
 	content->Draw();
 }
 
-void GBWrapperView::DrawOverlay() {
-	content->DrawOverlay();
-}
-
 GBMilliseconds GBWrapperView::RedrawInterval() const {
 	return content->RedrawInterval();
 }
@@ -382,7 +376,7 @@ void GBDoubleBufferedView::AcceptKeystroke(const char what) {
 void GBDoubleBufferedView::Draw() {
 	bool newWorld = false;
 	if ( ! offscreen ) {
-		offscreen = new GBBitmap(Width(), Height());
+		offscreen = new GBBitmap(Width(), Height(), Graphics());
 		content->SetGraphics(&(offscreen->Graphics()));
 		newWorld = true;
 	}

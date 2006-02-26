@@ -9,51 +9,50 @@
 
 #include "GBViewsApplication.h"
 #include "GBTypes.h"
-#include "GBMilliseconds.h"
 #include "GBWorld.h"
+#include "GBSide.h"
 
 
-class GBObject;
 class GBRobot;
 class GBPortal;
 class GBMiniMapView;
-class GBMacWindow;
 class GBDebuggerView;
 
 class GBApplication : public GBViewsApplication {
 	GBWorld world;
-	GBMilliseconds speedLimit;
-	GBMilliseconds lastFrame;
-	GBMilliseconds lastAutofollow;
 // the views and windows
 	GBPortal * portal;
 	GBMiniMapView * minimap;
 	GBDebuggerView * debugger;
-	GBMacWindow * mainWindow;
-	GBMacWindow * minimapWindow;
-	GBMacWindow * statusWindow;
-	GBMacWindow * rosterWindow;
-	GBMacWindow * scoresWindow;
-	GBMacWindow * typeWindow;
-	GBMacWindow * aboutWindow;
-	GBMacWindow * inspectorWindow;	
-	GBMacWindow * tournamentWindow;	
-	GBMacWindow * debuggerWindow;	
-	GBMacWindow * sideDebuggerWindow;
+	GBWindow * minimapWindow;
+	GBWindow * rosterWindow;
+	GBWindow * scoresWindow;
+	GBWindow * typeWindow;
+	GBWindow * aboutWindow;
+	GBWindow * tournamentWindow;	
+	GBWindow * debuggerWindow;	
+	GBWindow * sideDebuggerWindow;
 	void SetupMenus();
 	void DoLoadSide();
 	void DoReloadSide();
 	void DoRulesDialog();
 public:
+#if WINDOWS
+	GBApplication(HINSTANCE hInstance, int showCmd);
+#else
 	GBApplication();
+#endif
 	~GBApplication();
 	
 	long SleepTime();
 	void AdjustMenus();
-	void HandleMenuSelection(short menu, short item);
+	void HandleMenuSelection(int item);
 	void Process();
 	void Redraw();
+#if MAC
 	void OpenFile(FSSpec & file);
+#endif
+	void Quit();
 };
 
 #endif

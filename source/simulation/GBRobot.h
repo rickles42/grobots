@@ -35,7 +35,6 @@ public:
 	GBRobotType * Type() const;
 	long ID() const;
 	long ParentID() const;
-	string Name() const;
 	int Collisions() const; // robots and walls
 	int FriendlyCollisions() const;
 	int EnemyCollisions() const;
@@ -62,11 +61,11 @@ public:
 	void CollectStatistics(GBWorld * world) const;
 // queries
 	GBObjectClass Class() const;
-	bool CollidesWith(GBObjectClass what) const;
 	GBSide * Owner() const;
 	GBEnergy Energy() const;
 	GBEnergy Biomass() const;
 	GBNumber Interest() const;
+	string Description() const;
 // evil antimodular drawing code
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;

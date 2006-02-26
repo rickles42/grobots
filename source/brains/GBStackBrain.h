@@ -29,7 +29,6 @@ class GBStackBrain : public GBBrain {
 	GBStackAddress * returnStack;
 	long returnStackHeight;
 	GBStackDatum * memory;
-	long memSize;
 // status
 	GBInstructionCount remaining;
 	GBInstructionCount used;
@@ -67,6 +66,8 @@ private:
 	void PushBoolean(const bool value);
 	GBStackAddress PopReturn();
 	void PushReturn(GBStackAddress value);
+	GBStackDatum ReadLocalMemory(GBStackAddress addr, GBRobot * robot);
+	void WriteLocalMemory(GBStackAddress addr, GBStackDatum val, GBRobot * robot);
 // conversions
 	GBStackAddress ToAddress(const GBStackDatum value); // not static because it needs to rangecheck
 	static long ToInteger(const GBStackDatum value);
@@ -81,8 +82,8 @@ public:
 	void ThinkOne(GBRobot * robot, GBWorld * world); // think one instruction
 	void Step(GBRobot * robot, GBWorld * world); // think one, with error handler
 	bool Ready() const;
-	void NextFrame(GBRobot * robot, GBWorld * world);
 // accessors for debugger
+	GBInstructionCount Remaining() const;
 	GBStackAddress PC() const;
 	GBLineNumber PCLine() const;
 	long StackHeight() const;

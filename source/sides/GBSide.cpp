@@ -1,5 +1,5 @@
 // GBSide.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBSide.h"
@@ -8,7 +8,7 @@
 #include "GBRandomState.h"
 
 
-const float kSideCopyColorDistance = 0.3;
+const float kSideCopyColorDistance = 0.3f;
 
 
 GBSide::GBSide()
@@ -19,9 +19,10 @@ GBSide::GBSide()
 	scores(), cScores(),
 	next(nil)
 {
-	for ( int i = 0; i < kSharedMemorySize; i ++ )
+	int i;
+	for ( i = 0; i < kSharedMemorySize; i ++ )
 		sharedMemory[i] = 0;
-	for ( int i = 0; i < kNumMessageChannels; i ++ )
+	for ( i = 0; i < kNumMessageChannels; i ++ )
 		msgQueues[i] = nil;
 }
 
@@ -84,8 +85,8 @@ GBRobotType * GBSide::GetFirstType() const {
 }
 
 GBRobotType * GBSide::GetType(long index) const {
-	GBRobotType * type = types;
 	if ( index <= 0 ) throw GBIndexOutOfRangeError();
+	GBRobotType * type = types;
 	for ( long i = 1; i < index; i ++ )
 		if ( type->next )
 			type = type->next;
@@ -183,11 +184,9 @@ void GBSide::AddSeedID(long id) {
 }
 
 GBRobotType * GBSide::GetSeedType(int index) const {
-	if ( index < 0 )
-		throw GBBadArgumentError();
-	if ( ! seedIDs.empty() )
-		return GetType(seedIDs[index % seedIDs.size()]);
-	return nil;
+	if ( index < 0 ) throw GBBadArgumentError();
+	if ( seedIDs.empty() ) return nil;
+	return GetType(seedIDs[index % seedIDs.size()]);
 }
 
 int GBSide::NumSeedTypes() const {
@@ -196,9 +195,10 @@ int GBSide::NumSeedTypes() const {
 
 void GBSide::Reset() {
 	scores.Reset();
-	for ( int i = 0; i < kSharedMemorySize; i ++ )
+	int i;
+	for ( i = 0; i < kSharedMemorySize; i ++ )
 		sharedMemory[i] = 0;
-	for ( int i = 0; i < kNumMessageChannels; i++ ) {
+	for ( i = 0; i < kNumMessageChannels; i++ ) {
 		delete msgQueues[i];
 		msgQueues[i] = nil;
 	}

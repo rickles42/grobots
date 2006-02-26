@@ -15,7 +15,7 @@ class GBWorld;
 
 class GBRobotTypeView : public GBListView {
 	const GBWorld & world;
-	GBChangeCount lastDrawnSide;
+	GBChangeCount lastDrawn;
 	long sideID, typeID;
 // drawing
 	const GBRobotType * SelectedType() const;
@@ -47,7 +47,9 @@ public:
 	short PreferredWidth() const;
 
 	void Draw();
+	GBMilliseconds RedrawInterval() const;
 	bool InstantChanges() const;
+	bool DelayedChanges() const;
 
 	long Items() const;
 	short HeaderHeight() const;

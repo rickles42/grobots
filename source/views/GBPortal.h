@@ -26,6 +26,7 @@ class GBPortal : public GBView, public GBModel, public GBDeletionListener {
 	GBPosition viewpoint;
 	bool following;
 	GBPosition followPosition;
+	GBMilliseconds lastFollow;
 	GBObject * moving;
 	GBChangeCount worldChanges;
 	GBChangeCount selfChanges;
@@ -33,7 +34,7 @@ class GBPortal : public GBView, public GBModel, public GBDeletionListener {
 	short lastx, lasty; // where mouse was last if we're dragging
 	GBPosition lastClick;
 	GBFrames lastFrame; // when last tool effect was
-	GBBitmap background;
+	GBBitmap * background;
 public:
 	bool autofollow;
 	int tool;
@@ -44,6 +45,7 @@ private:
 // drawing internals
 	void DrawBackground();
 	void DrawBackgroundTile(long ix, long iy);
+	static void DrawOneTile(const GBRect & b, GBGraphics & g);
 	void InitBackground();
 	void DrawObjects();
 	void DrawObjectList(const GBObject * list);

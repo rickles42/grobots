@@ -4,6 +4,9 @@
 
 #include "GBDeletionReporter.h"
 #include "GBErrors.h"
+#include "GBPlatform.h"
+#include <algorithm>
+using std::find;
 
 
 GBDeletionReporter::GBDeletionReporter()

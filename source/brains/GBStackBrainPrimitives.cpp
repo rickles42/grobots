@@ -12,6 +12,7 @@
 #include "GBSound.h"
 #include "GBWorld.h"
 
+GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed);
 
 GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * robot, GBWorld * world) const {
 	switch ( index ) {
@@ -83,6 +84,8 @@ GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * rob
 		case hvRobotSensorTypeFound: return robot->hardware.sensor1.Type();
 		case hvRobotSensorIDFound: return robot->hardware.sensor1.ID();
 		case hvRobotSensorShieldFractionFound: return robot->hardware.sensor1.ShieldFraction();
+		case hvRobotSensorBombFound: return robot->hardware.sensor1.Bomb();
+		case hvRobotSensorReloadingFound: return robot->hardware.sensor1.Reloading();
 		case hvRobotSensorRangeOverall: return (robot->hardware.sensor1.WhereOverall() - robot->Position()).Norm();
 		case hvRobotSensorAngleOverall: return (robot->hardware.sensor1.WhereOverall() - robot->Position()).Angle();
 		case hvRobotSensorCurrentResult: return robot->hardware.sensor1.CurrentResult();
@@ -196,7 +199,10 @@ void GBStackBrain::WriteHardware(const GBSymbolIndex index, const GBStackDatum v
 		case hvEnemySyphonDirection: robot->hardware.enemySyphon.SetDirection(value); break;
 		case hvEnemySyphonRate: robot->hardware.enemySyphon.SetRate(value); break;
 	// constructor
-		case hvConstructorType: robot->hardware.constructor.Start(robot->Owner()->GetType(ToInteger(value))); break;
+		case hvConstructorType: {
+			int index = ToInteger(value);
+			robot->hardware.constructor.Start(index ? robot->Owner()->GetType(index) : nil);
+		} break;
 		case hvConstructorRate: robot->hardware.constructor.SetRate(value); break;
 		case hvConstructorMaxRate: case hvConstructorProgress: case hvConstructorRemaining:
 		case hvChildID:
@@ -210,6 +216,7 @@ void GBStackBrain::WriteHardware(const GBSymbolIndex index, const GBStackDatum v
 		case hvRobotSensorTime: case hvRobotSensorFound: case hvRobotSensorRangeFound: case hvRobotSensorAngleFound:
 		case hvRobotSensorSideFound: case hvRobotSensorRadiusFound: case hvRobotSensorMassFound: case hvRobotSensorEnergyFound:
 		case hvRobotSensorTypeFound: case hvRobotSensorIDFound: case hvRobotSensorShieldFractionFound:
+		case hvRobotSensorBombFound: case hvRobotSensorReloadingFound:
 		case hvRobotSensorRangeOverall: case hvRobotSensorAngleOverall:
 			throw GBReadOnlyError();
 		case hvRobotSensorCurrentResult: robot->hardware.sensor1.SetCurrentResult(ToInteger(value)); break;
@@ -397,6 +404,12 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opUnitize: VectorToVectorOp(&GBFinePoint::Unit); break;
 		case opDistance: Push((PopVector() - PopVector()).Norm()); break;
 		case opInRange: temp = Pop(); PushBoolean(PopVector().InRange(PopVector(), temp)); break;
+		case opRestrictPosition: {
+			temp = Pop(); //wall distance
+			GBVector pos = PopVector();
+			Push(pos.x.Max(temp).Min(world->Size().x - temp));
+			Push(pos.y.Max(temp).Min(world->Size().y - temp));
+			} break;
 	// comparisons
 		case opEqual: PushBoolean(Pop() == Pop()); break;
 		case opNotEqual: PushBoolean(Pop() != Pop()); break;
@@ -419,12 +432,12 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opPrint:
 			DoPrint(ToString(Pop()));
 			if ( world->reportPrints )
-				NonfatalError(robot->Name() + " prints: " + *lastPrint);
+				NonfatalError(robot->Description() + " prints: " + *lastPrint);
 			break;
 		case opPrintVector:
 			DoPrint(ToString(PopVector()));
 			if ( world->reportPrints )
-				NonfatalError(robot->Name() + " prints: " + *lastPrint);
+				NonfatalError(robot->Description() + " prints: " + *lastPrint);
 			break;
 		case opBeep: StartSound(siBeep); break;
 		case opStop: SetStatus(bsStopped); break;
@@ -439,25 +452,21 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opDie: robot->Die(robot->Owner()); SetStatus(bsStopped); break;
 		case opWriteLocalMemory:
 			tempInt = PopInteger();
-			if ( tempInt < 1 || tempInt > memSize ) throw GBIndexOutOfRangeError();
-			memory[tempInt - 1] = Pop();
+			WriteLocalMemory(tempInt, Pop(), robot);
 			break;
 		case opReadLocalMemory:
 			tempInt = PopInteger();
-			if ( tempInt < 1 || tempInt > memSize ) throw GBIndexOutOfRangeError();
-			Push(memory[tempInt - 1]);
+			Push(ReadLocalMemory(tempInt, robot));
 			break;
 		case opWriteLocalVector:
 			tempInt = PopInteger();
-			if ( tempInt < 1 || tempInt >= memSize ) throw GBIndexOutOfRangeError();
-			memory[tempInt] = Pop();
-			memory[tempInt - 1] = Pop();
+			WriteLocalMemory(tempInt + 1, Pop(), robot);
+			WriteLocalMemory(tempInt, Pop(), robot);
 			break;
 		case opReadLocalVector:
 			tempInt = PopInteger();
-			if ( tempInt < 1 || tempInt >= memSize ) throw GBIndexOutOfRangeError();
-			Push(memory[tempInt - 1]);
-			Push(memory[tempInt]);
+			Push(ReadLocalMemory(tempInt, robot));
+			Push(ReadLocalMemory(tempInt + 1, robot));
 			break;
 		case opWriteSharedMemory:
 			tempInt = PopInteger();
@@ -518,6 +527,20 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 				else
 					Push(-1);
 			} break;
+		case opAutoConstruct: {
+			GBConstructorState & ctor = robot->hardware.constructor;
+			if ( robot->Energy() > robot->hardware.MaxEnergy() * .9 ) {
+				if ( ! ctor.Type() ) ctor.Start(robot->Type());
+				ctor.SetRate(ctor.MaxRate());
+			} else
+				ctor.SetRate(ctor.Type() && robot->Energy() > ctor.Remaining() + 10 ? ctor.MaxRate() : GBNumber(0));
+			} break;
+		case opBalanceTypes: { // frac type --
+				GBRobotType * theType = robot->Owner()->GetType(PopInteger());
+				GBNumber fraction = Pop();
+				if (theType && GBNumber(theType->Population()) < fraction * robot->Owner()->Scores().Population())
+					robot->hardware.constructor.Start(theType); //FIXME don't abort?
+			} break;
 	// sensors
 		case opFireRobotSensor: robot->hardware.sensor1.Fire(); break;
 		case opFireFoodSensor: robot->hardware.sensor2.Fire(); break;
@@ -525,13 +548,61 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opRobotSensorNext: Push(robot->hardware.sensor1.NextResult() ? 1 : 0); break;
 		case opFoodSensorNext: Push(robot->hardware.sensor2.NextResult() ? 1 : 0); break;
 		case opShotSensorNext: Push(robot->hardware.sensor3.NextResult() ? 1 : 0); break;
+		case opPeriodicRobotSensor:
+			if ( world->CurrentFrame() >= robot->hardware.sensor1.Time() + PopInteger() ) {
+				robot->hardware.sensor1.Fire();
+				remaining = 0;
+				PushBoolean(true);
+			} else PushBoolean(false);
+			break;
+		case opPeriodicFoodSensor:
+			if ( world->CurrentFrame() >= robot->hardware.sensor2.Time() + PopInteger() ) {
+				robot->hardware.sensor2.Fire();
+				remaining = 0;
+				PushBoolean(true);
+			} else PushBoolean(false);
+			break;
+		case opPeriodicShotSensor:
+			if ( world->CurrentFrame() >= robot->hardware.sensor3.Time() + PopInteger() ) {
+				robot->hardware.sensor3.Fire();
+				remaining = 0;
+				PushBoolean(true);
+			} else PushBoolean(false);
+			break;
 	// weapons
 		case opFireBlaster: robot->hardware.blaster.Fire(Pop()); break;
 		case opFireGrenade: temp = Pop(); robot->hardware.grenades.Fire(Pop(), temp); break;
+		case opLeadBlaster: { //pos vel --
+			GBVelocity vel = PopVector() - robot->Velocity();
+			GBPosition pos = PopVector() - robot->Position();
+			GBPosition target = LeadShot(pos, vel, robot->hardware.blaster.Speed());
+			if ( target.Norm() <= robot->hardware.blaster.MaxRange() + robot->Radius() )
+				robot->hardware.blaster.Fire(target.Angle());
+			} break;
+		case opLeadGrenade: { //pos vel --
+			GBVelocity vel = PopVector() - robot->Velocity();
+			GBPosition pos = PopVector() - robot->Position();
+			GBPosition target = LeadShot(pos, vel, robot->hardware.grenades.Speed());
+			if ( target.Norm() <= robot->hardware.grenades.MaxRange() + robot->Radius() )
+				robot->hardware.grenades.Fire(target.Norm(), target.Angle()); //worry about short range?
+			} break;
+		case opSetForceField: { //pos angle --
+			temp = Pop();
+			GBPosition pos = PopVector() - robot->Position();
+			robot->hardware.forceField.SetDistance(pos.Norm());
+			robot->hardware.forceField.SetDirection(pos.Angle());
+			robot->hardware.forceField.SetAngle(temp);
+			robot->hardware.forceField.SetPower(robot->hardware.forceField.MaxPower());
+			} break;
 	// otherwise...
 		default:	
 			throw GBUnknownInstructionError();
 			break;
 	}
+}
+
+static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed) {
+	GBNumber dt = (pos + vel * (pos.Norm() / shotSpeed)).Norm() / shotSpeed; //two plies for accuracy with radially moving targets
+	return pos + vel * dt;
 }
 

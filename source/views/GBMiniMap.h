@@ -20,9 +20,11 @@ class GBMiniMapView : public GBView {
 	GBBitmap * trails;
 public:
 	bool showRobots, showFood, showSensors, showDecorations;
-	bool showTrails;
+	bool showTrails, whiteBackground;
 private:
 // drawing internals
+	void DrawLayer(const GBObjectClass layer, const short minSize) const;
+	void DrawLayerFixed(const GBObjectClass layer, const short size) const;
 	void DrawObjectList(const GBObject * list, const short minSize) const;
 	void DrawObjectListFixed(const GBObject * list, const short size) const;
 	void DrawObjectListTrails(const GBObject * list, const short minSize) const;
@@ -37,7 +39,6 @@ public:
 	GBMiniMapView(const GBWorld & targ, GBPortal & port);
 	~GBMiniMapView();
 	void Draw();
-	void DrawOverlay();
 	bool InstantChanges() const;
 	bool DelayedChanges() const;
 	bool GetFrontClicks() const;

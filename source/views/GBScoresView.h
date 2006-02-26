@@ -10,7 +10,7 @@
 #include "GBWorld.h"
 
 
-class GBScoresView : public GBListView {
+class GBScoresView : public GBView {
 	GBWorld & world;
 	GBChangeCount lastDrawnWorld;
 	long sideID;
@@ -18,24 +18,22 @@ class GBScoresView : public GBListView {
 	void DrawIncome(const GBIncomeStatistics & income, short left, short right, short top);
 	void DrawExpenditures(const GBExpenditureStatistics & spent, short left, short right, short top);
 	void DrawDeaths(const GBScores & scores, short left, short right, short top);
+	void DrawGraph(const GBRect & box, long scale,
+		const std::vector<long> & hist, const GBColor & color);
+	void DrawGraphs(const GBRect & box);
 public:
 	explicit GBScoresView(GBWorld & rost);
 
 	void Draw();
+	
 	GBMilliseconds RedrawInterval() const;
 	bool InstantChanges() const;
 	bool DelayedChanges() const;
 	
 	short PreferredWidth() const;
+	short PreferredHeight() const;
 	
 	const string Name() const;
-
-	long Items() const;
-	short HeaderHeight() const;
-	short ItemHeight() const;
-	void DrawHeader(const GBRect & box);
-	void DrawItem(long index, const GBRect & box);
-	void ItemSelected(long index);
 };
 
 #endif

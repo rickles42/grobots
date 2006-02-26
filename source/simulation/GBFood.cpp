@@ -6,6 +6,7 @@
 #include "GBErrors.h"
 #include "GBWorld.h"
 #include "GBSide.h"
+#include "GBStringUtilities.h"
 
 const GBDistance kFoodMinRadius = 0.1;
 const GBRatio kFoodRadiusFactor = 0.01;
@@ -69,15 +70,6 @@ GBObjectClass GBFood::Class() const {
 		return ocDead;
 }
 
-bool GBFood::CollidesWith(GBObjectClass what) const {
-	switch ( what ) {
-		case ocRobot: case ocSensorShot:
-			return true;
-		default:
-			return false;
-	}
-}
-
 GBSide * GBFood::Owner() const {
 	return nil;
 }
@@ -112,6 +104,10 @@ void GBManna::CollectStatistics(GBWorld * world) const {
 	world->ReportManna(value);
 }
 
+string GBManna::Description() const {
+	return string("Manna (") + ToString(value, 0) + ')';
+}
+
 const GBColor GBManna::Color() const {
 	return GBColor::green;
 }
@@ -130,16 +126,17 @@ GBSide * GBCorpse::Owner() const {
 	return owner;
 }
 
-GBSide * GBCorpse::Killer() const {
-	return killer;
-}
-
 void GBCorpse::CollectStatistics(GBWorld * world) const {
 	world->ReportCorpse(value);
 }
 
 GBNumber GBCorpse::Interest() const {
 	return value / 500;
+}
+
+string GBCorpse::Description() const {
+	return Owner()->Name() + " killed by " + (killer ? killer->Name() : string("accident"))
+		+ " (" + ToString(value, 0) + ')';
 }
 
 const GBColor GBCorpse::Color() const {

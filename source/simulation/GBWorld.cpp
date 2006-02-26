@@ -1,5 +1,5 @@
 // GBWorld.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBWorld.h"
@@ -159,19 +159,32 @@ void GBWorld::SimulateOneFrame() {
 	Microseconds(&start);
 #endif
 	previousSidesAlive = SidesAlive();
-	currentFrame ++; // FIXME: currently stepping gives wrong frame
 	if ( autoReseed )
 		ReseedDeadSides();
 	AddManna();
 	PROFILE_PHASE(thinkTime, ThinkAllObjects();)
 	PROFILE_PHASE(moveTime, MoveAllObjects();)
 	PROFILE_PHASE(actTime, ActAllObjects();)
-	ResortObjects();
+	PROFILE_PHASE(resortTime, ResortObjects();)
 	PROFILE_PHASE(collideTime, CollideAllObjects();)
-	CollectStatistics();
+	currentFrame ++;
+	PROFILE_PHASE(statisticsTime, CollectStatistics();)
 	if ( previousSidesAlive > SidesAlive() )
 		StartSound(siExtinction);
-	if ( stopOnElimination && Elimination() || timeLimit > 0 && CurrentFrame() % timeLimit == 0 ) {
+#if GBWORLD_PROFILING && MAC
+	Microseconds(&end);
+	simulationTime = U64Add(U64Subtract(UnsignedWideToUInt64(end), UnsignedWideToUInt64(start)), simulationTime);
+#endif
+	Changed();
+}
+
+void GBWorld::AdvanceFrame() {
+	SimulateOneFrame();
+	if (RoundOver())
+		EndRound();
+}
+
+void GBWorld::EndRound() {
 		StartSound(siEndRound);
 		ReportRound();
 		if ( tournament ) {
@@ -184,15 +197,8 @@ void GBWorld::SimulateOneFrame() {
 				tournament = false;
 				running = false;
 			}
-		} else {
+	} else
 			running = false;
-		}
-	}
-#if GBWORLD_PROFILING && MAC
-	Microseconds(&end);
-	simulationTime = U64Add(U64Subtract(UnsignedWideToUInt64(end), UnsignedWideToUInt64(start)), simulationTime);
-#endif
-	Changed();
 }
 
 void GBWorld::CollectStatistics() {
@@ -225,12 +231,13 @@ void GBWorld::CollectStatistics() {
 	}
 // report
 	roundScores.Reset();
-	for ( GBSide * side = sides; side != nil; side = side->next ) {
+	GBSide * side;
+	for ( side = sides; side != nil; side = side->next ) {
 		side->Scores().ReportFrame(currentFrame);
 		roundScores += side->Scores();
 	}
 	roundScores.OneRound();
-	for ( GBSide * side = sides; side != nil; side = side->next )
+	for ( side = sides; side != nil; side = side->next )
 		side->Scores().ReportTotals(roundScores);
 }
 
@@ -261,7 +268,8 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 			i++;
 		}
 		// give excess energy as construction
-		for (int placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
+		int placedIndex;
+		for (placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
 			GBRobot * placee = placed[placedIndex];
 			if (cost == 0) break;
 			if ( placee->hardware.constructor.MaxRate().Nonzero() ) {
@@ -274,7 +282,7 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 			}
 		}
 		//energy still left (implies constructor-less side!); try giving as energy
-		for (int placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
+		for (placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
 			if (cost == 0) break;
 			GBEnergy amt = placed[placedIndex]->hardware.GiveEnergy(cost);
 			side->Scores().ReportSeeded(amt);
@@ -342,8 +350,9 @@ GBFrames GBWorld::CurrentFrame() const {
 	return currentFrame;
 }
 
-bool GBWorld::Elimination() const {
-	return previousSidesAlive > SidesAlive() && SidesAlive() <= 1;
+bool GBWorld::RoundOver() const {
+	return stopOnElimination && previousSidesAlive > SidesAlive() && SidesAlive() <= 1
+		|| timeLimit > 0 && CurrentFrame() % timeLimit == 0;
 }
 
 GBRandomState & GBWorld::Randoms() {
@@ -528,13 +537,18 @@ const GBScores & GBWorld::TournamentScores() const {
 	return tournamentScores;
 }
 
-void GBWorld::Follow(const GBObject * ob) {
+void GBWorld::Follow(GBObject * ob) {
 	if ( followed ) followed->RemoveDeletionListener(this);
 	followed = ob;
 	if ( followed ) followed->AddDeletionListener(this);
+	GBRobot * bot = dynamic_cast<GBRobot *>(ob);
+	if ( bot ) {
+		bot->Owner()->SelectType(bot->Type());
+		SelectSide(bot->Owner());
+	}
 }
 
-const GBObject * GBWorld::Followed() const { return followed; }
+GBObject * GBWorld::Followed() const { return followed; }
 
 void GBWorld::ReportDeletion(const GBDeletionReporter * deletee) {
 	if ( deletee == (const GBDeletionReporter *)followed )
@@ -568,12 +582,22 @@ long GBWorld::CollideTime() const {
 	return U64SetU(U64Div(U64Add(collideTime, 500), 1000));
 }
 
+long GBWorld::ResortTime() const {
+	return U64SetU(U64Div(U64Add(resortTime, 500), 1000));
+}
+
+long GBWorld::StatisticsTime() const {
+	return U64SetU(U64Div(U64Add(statisticsTime, 500), 1000));
+}
+
 void GBWorld::ResetTimes() {
 	simulationTime = U64Set(0);
 	thinkTime = U64Set(0);
 	actTime = U64Set(0);
 	moveTime = U64Set(0);
 	collideTime = U64Set(0);
+	resortTime = U64Set(0);
+	statisticsTime = U64Set(0);
 	Microseconds(&beginTime);
 }
 #endif

@@ -137,8 +137,8 @@ void GBSoundChannel::StopSound() {
 //sound stubs for platforms without sound yet.
 void SetupSound() {}
 void CleanupSound() {}
-void SetSoundActive(bool flag) {}
+void SetSoundActive(bool) {}
 bool SoundActive() { return false; }
-void StartSound(GBSoundID which) {}
+void StartSound(GBSoundID) {}
 
 #endif

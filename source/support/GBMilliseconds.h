@@ -6,7 +6,12 @@
 #ifndef GBMilliseconds_h
 #define GBMilliseconds_h
 
-typedef long long GBMilliseconds;
+#if WINDOWS
+	#include <time.h>
+	typedef clock_t GBMilliseconds;
+#else
+	typedef long long GBMilliseconds;
+#endif
 
 GBMilliseconds Milliseconds();
 

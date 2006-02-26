@@ -1,15 +1,19 @@
 // GBErrors.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBErrors.h"
 #include "GBStringUtilities.h"
 
-#if MAC
+#if HEADLESS
+	#include <iostream>
+	using std::cerr;
+	using std::endl;
+#elif MAC
 	#include <Dialogs.h>
-#elif MFCWIN
-	#include "stdafx.h"
+#elif WINDOWS
 	#include <stdlib.h>
+	#include <windows.h>
 #endif
 
 
@@ -81,7 +85,16 @@ string GBAbort::ToString() const {
 	return "abort";
 }
 
-#if MAC
+#if HEADLESS
+void FatalError(const string & message) {
+	cerr << "Fatal error: " << message << endl;
+	exit(EXIT_FAILURE);
+}
+
+void NonfatalError(const string & message) {
+	cerr << message << endl;
+}
+#elif MAC
 const short kFatalErrorAlertID = 600;
 const short kNonfatalErrorAlertID = 601;
 const short kAbortableErrorAlertID = 602;
@@ -118,15 +131,15 @@ bool Confirm(const string & message, const string & operation) {
 	return Alert(kConfirmationAlertID, nil) == 1;
 }
 
-#elif MFCWIN
+#elif WINDOWS
 
 void FatalError(const string & message) {
-	MessageBox(NULL, string.c_str(), "Fatal Error: 600", MB_OK | MB_ICONWARNING);
+	MessageBox(NULL, message.c_str(), "Fatal Error", MB_OK | MB_ICONWARNING);
 	exit(1);
 }
 
 void NonfatalError(const string & message) {
-	switch ( MessageBox(NULL, string.c_str(), "Nonfatal Error: 602", MB_ICONWARNING|MB_ABORTRETRYIGNORE) ) {
+	switch ( MessageBox(NULL, message.c_str(), "Nonfatal Error", MB_ICONWARNING | MB_ABORTRETRYIGNORE) ) {
 		case IDIGNORE: // continue, clicked ignore
 		default:
 			return;
@@ -135,6 +148,11 @@ void NonfatalError(const string & message) {
 		case IDABORT: // quit, clicked abort
 			exit(1);
 	}
+}
+
+bool Confirm(const string & message, const string & operation) {
+	//TODO this should actually ask
+	return true;
 }
 
 #else

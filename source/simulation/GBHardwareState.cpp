@@ -45,9 +45,8 @@ const GBRatio kForceFieldRecoilPerPower = 0.25;
 
 // GBRadioState //
 
-GBRadioState::GBRadioState(GBRadioSpec * spc)
-	: spec(spc),
-	writes(0), sent(0)
+GBRadioState::GBRadioState()
+	: writes(0), sent(0)
 {
 	for ( long i = 0; i < kNumMessageChannels; i ++ )
 		nextMessage[i] = 0;
@@ -56,30 +55,25 @@ GBRadioState::GBRadioState(GBRadioSpec * spc)
 GBRadioState::~GBRadioState() {}
 
 void GBRadioState::Write(GBNumber value, long address, GBSide * side) {
-	if ( ! spec->Write() ) return;   // FIXME: silent error
 	side->WriteSharedMemory(value, address);
 	writes += 1;
 }
 
 GBNumber GBRadioState::Read(long address, GBSide * side) {
-	if ( ! spec->Read() ) return 0;   // silent error
 	return side->ReadSharedMemory(address);
 }
 
 void GBRadioState::Send(const GBMessage & mess, long channel, GBSide * side) {
-	if ( ! spec->Send() ) return;   // silent error
 	side->SendMessage(mess, channel);
 	sent += mess.Length() + 1;  // note overhead
 }
 
 long GBRadioState::MessagesWaiting(long channel, GBSide * side) const {
-	if ( ! spec->Receive() ) return 0;
 	if ( channel < 1 || channel > kNumMessageChannels ) throw GBIndexOutOfRangeError();
 	return side->MessagesWaiting(channel, nextMessage[channel - 1]);
 }
 
 const GBMessage * GBRadioState::Receive(long channel, GBSide * side) {
-	if ( ! spec->Receive() ) return nil;   // silent error
 	if ( channel < 1 || channel > kNumMessageChannels ) throw GBIndexOutOfRangeError();
 	const GBMessage * msg = side->ReceiveMessage(channel, nextMessage[channel - 1]);
 	if ( msg != 0 )
@@ -106,11 +100,11 @@ void GBRadioState::SkipMessages(long channel, long skip, GBSide * side) {
 }
 
 void GBRadioState::Act(GBRobot * robot, GBWorld * world) {
-	GBEnergy en = kRadioWriteCost * writes + kRadioSendCost * sent;
-	robot->Owner()->Scores().Expenditure().ReportRadio(en);
-	robot->hardware.UseEnergy(en);
-		// FIXME: for now, radio is free if out of energy
-	world->AddObjectNew(new GBTransmission(robot->Position(), writes + sent, sent));
+	if ( ! writes && ! sent ) return;
+	//GBEnergy en = kRadioWriteCost * writes + kRadioSendCost * sent;
+	//robot->Owner()->Scores().Expenditure().ReportRadio(en);
+	//robot->hardware.UseEnergy(en);
+	world->AddObjectNew(new GBTransmission(robot->Position(), writes + sent, sent > 0));
 	writes = 0; sent = 0;
 }
 
@@ -127,16 +121,15 @@ GBConstructorState::GBConstructorState(GBConstructorSpec * spc)
 
 GBConstructorState::~GBConstructorState() {}
 
-GBEnergy GBConstructorState::Rate() const {
-	return rate;}
+GBEnergy GBConstructorState::Rate() const {return rate;}
 
-GBEnergy GBConstructorState::Progress() const {
-	return progress;}
+GBEnergy GBConstructorState::Progress() const {return progress;}
 
 GBEnergy GBConstructorState::Remaining() const {
 	if ( ! type )
 		return 0;
-	return type->Cost() - progress;}
+	return type->Cost() - progress;
+}
 
 GBMass GBConstructorState::FetusMass() const {
 	return type ? Fraction() * type->Mass() : GBMass(0);}
@@ -147,27 +140,19 @@ GBNumber GBConstructorState::Fraction() const {
 	return progress / type->Cost();
 }
 
-GBEnergy GBConstructorState::MaxRate() const {
-	return spec->Rate();}
+GBEnergy GBConstructorState::MaxRate() const {return spec->Rate();}
 
-GBRobotType * GBConstructorState::Type() const {
-	return type;}
+GBRobotType * GBConstructorState::Type() const {return type;}
 
-long GBConstructorState::ChildID() const {
-	return lastChild;}
+long GBConstructorState::ChildID() const {return lastChild;}
 
 void GBConstructorState::Start(GBRobotType * ntype, const GBEnergy free) {
-//	if ( ! ntype )
-//		throw GBNilPointerError();
 	if ( type == ntype )
 		return;
 	abortion += progress;
 	type = ntype; 
-	progress = free;
+	progress = free; //could have progress but no type - harmless, but it doesn't happen
 }
-
-void GBConstructorState::Stop() {
-	rate = 0;}
 
 void GBConstructorState::SetRate(const GBEnergy nrate) {
 	rate = nrate.Max(0).Min(MaxRate());}
@@ -197,7 +182,7 @@ void GBConstructorState::Act(GBRobot * robot, GBWorld * world) {
 }
 
 
-// GBSensorState //
+// GBSensorResult and GBSensorState //
 
 GBSensorResult & GBSensorResult::operator=(const GBSensorResult & other) {
 	where = other.where;
@@ -210,25 +195,29 @@ GBSensorResult & GBSensorResult::operator=(const GBSensorResult & other) {
 	type = other.type;
 	ID = other.ID;
 	shieldFraction = other.shieldFraction;
+	bomb = other.bomb;
+	reloading = other.reloading;
 	return *this;
 }
 
 GBSensorResult::GBSensorResult() : where(), vel(), radius(0), mass(0), energy(0),
-	dist(), side(nil), type(0), ID(0), shieldFraction(1) {}
+	dist(), side(nil), type(0), ID(0), shieldFraction(1), bomb(0), reloading(false) {}
 
 GBSensorResult::GBSensorResult(const GBObject * obj, const GBDistance dis)
 	: where(obj->Position()), vel(obj->Velocity()), dist(dis),
 	side(obj->Owner()), radius(obj->Radius()),
-	mass(obj->Mass()), energy(obj->Energy()), type(nil), ID(0), shieldFraction(1)
+	mass(obj->Mass()), energy(obj->Energy()), type(nil), ID(0), shieldFraction(1), bomb(0), reloading(false)
 {
-	const GBRobot * rob = dynamic_cast<GBRobot *>(obj);
+	const GBRobot * rob = dynamic_cast<const GBRobot *>(obj);
 	if ( rob ) {
 		type = rob->Type()->ID();
-		ID = ((GBRobot *)obj)->ID();
+		ID = rob->ID();
 		shieldFraction = rob->ShieldFraction();
+		bomb = rob->hardware.Bomb();
+		reloading = rob->hardware.blaster.Cooldown() || rob->hardware.grenades.Cooldown();
 		return;
 	}
-	const GBShot * shot = dynamic_cast<GBShot *>(obj);
+	const GBShot * shot = dynamic_cast<const GBShot *>(obj);
 	if ( shot ) {
 		type = shot->Type();
 		energy = shot->Power();
@@ -251,8 +240,8 @@ GBSensorState::~GBSensorState() { delete[] results; }
 GBDistance GBSensorState::MaxRange() const {
 	return spec->Range();}
 
-// FIXME: calling SensorSpec->Set() on a spec that has a state will cause pointer problems, since maxResults
-//  is not cached locally.
+// FIXME: calling SensorSpec->Set() on a spec that has a state will cause pointer
+//  problems, since maxResults is not cached locally.
 const int GBSensorState::MaxResults() const {
 	return spec->NumResults();}
 
@@ -363,10 +352,21 @@ long GBSensorState::ID() const {
 }
 
 GBNumber GBSensorState::ShieldFraction() const {
-	if (currentResult < NumResults() )
+	if ( currentResult < NumResults() )
 		return results[currentResult].shieldFraction;
 	else
 		return GBNumber(1);
+}
+
+GBNumber GBSensorState::Bomb() const {
+	if ( currentResult < NumResults() )
+		return results[currentResult].bomb;
+	else
+		return 0;
+}
+
+bool GBSensorState::Reloading() const {
+	return currentResult < NumResults() && results[currentResult].reloading;
 }
 
 GBVector GBSensorState::WhereOverall() const {
@@ -617,10 +617,12 @@ void GBForceFieldState::SetAngle(const GBAngle ang) {
 	angle = ang;}
 
 void GBForceFieldState::Act(GBRobot * robot, GBWorld * world) {
+	if ( ! power ) return;
 	GBNumber effective = power * robot->hardware.EffectivenessFraction() * robot->ShieldFraction();
 	if ( power.Nonzero() && robot->hardware.UseEnergy(effective) ) {
 		robot->Owner()->Scores().Expenditure().ReportForceField(effective);
-		GBObject * shot = new GBForceField(robot->Position().AddPolar(distance, direction),
+		GBPosition vel = GBFinePoint::MakePolar(distance, direction);
+		GBObject * shot = new GBForceField(robot->Position() + vel, vel,
 			robot->Owner(), effective / (distance * kForceFieldRangeAttenuation + 1), angle);
 		world->AddObjectNew(shot);
 		//robot->PushBy(- effective * kForceFieldRecoilPerPower, angle);  // recoil
@@ -642,20 +644,17 @@ GBSyphonState::GBSyphonState(GBSyphonSpec * spc)
 
 GBSyphonState::~GBSyphonState() {}
 
-GBPower GBSyphonState::MaxRate() const {
-	return spec->Power();}
+GBPower GBSyphonState::MaxRate() const {return spec->Power();}
 
-GBDistance GBSyphonState::MaxRange() const {
-	return spec->Range();}
+GBDistance GBSyphonState::MaxRange() const {return spec->Range();}
 
-GBAngle GBSyphonState::Direction() const {
-	return direction;}
+GBAngle GBSyphonState::Direction() const {return direction;}
 
-GBDistance GBSyphonState::Distance() const {
-	return distance;}
+GBDistance GBSyphonState::Distance() const {return distance;}
 
-GBPower GBSyphonState::Rate() const {
-	return rate;}
+GBPower GBSyphonState::Rate() const {return rate;}
+
+const GBPower GBSyphonState::Syphoned() const {return syphoned;}
 
 void GBSyphonState::SetDistance(const GBDistance dist) {
 	distance = dist.Max(0);}
@@ -669,10 +668,6 @@ void GBSyphonState::SetRate(const GBPower pwr) {
 
 void GBSyphonState::ReportUse(const GBPower pwr) {
 	syphoned += pwr;
-}
-
-const GBPower GBSyphonState::Syphoned() {
-	return syphoned;
 }
 
 void GBSyphonState::Act(GBRobot * robot, GBWorld * world) {
@@ -704,7 +699,7 @@ GBHardwareState::GBHardwareState(GBHardwareSpec * spc)
 	armor(spc->Armor()),
 	repairRate(0),
 	shield(0), actualShield(0),
-	radio(&spc->radio),
+	radio(),
 	constructor(&spc->constructor),
 	sensor1(&spc->sensor1),
 	sensor2(&spc->sensor2),
@@ -718,32 +713,23 @@ GBHardwareState::GBHardwareState(GBHardwareSpec * spc)
 
 GBHardwareState::~GBHardwareState() {}
 
-GBInstructionCount GBHardwareState::Processor() const {
-	return spec->Processor();}
+GBInstructionCount GBHardwareState::Processor() const { return spec->Processor();}
 
-long GBHardwareState::Memory() const {
-	return spec->Memory();}
+long GBHardwareState::Memory() const { return spec->Memory();}
 
-GBForceScalar GBHardwareState::EnginePower() const {
-	return enginePower;}
+GBForceScalar GBHardwareState::EnginePower() const { return enginePower;}
 
-GBVector GBHardwareState::EngineVelocity() const {
-	return engineVelocity;}
+GBVector GBHardwareState::EngineVelocity() const { return engineVelocity;}
 
-GBForceScalar GBHardwareState::EngineMaxPower() const {
-	return spec->Engine();}
+GBForceScalar GBHardwareState::EngineMaxPower() const { return spec->Engine();}
 
-GBEnergy GBHardwareState::Energy() const {
-	return energy;}
+GBEnergy GBHardwareState::Energy() const { return energy;}
 
-GBEnergy GBHardwareState::MaxEnergy() const {
-	return spec->MaxEnergy();}
+GBEnergy GBHardwareState::MaxEnergy() const { return spec->MaxEnergy();}
 
-GBPower GBHardwareState::SolarCells() const {
-	return spec->SolarCells();}
+GBPower GBHardwareState::SolarCells() const { return spec->SolarCells();}
 
-GBEnergy GBHardwareState::Eater() const {
-	return spec->Eater();}
+GBEnergy GBHardwareState::Eater() const { return spec->Eater();}
 
 GBEnergy GBHardwareState::EaterLimit() const {
 	return eater.Min(MaxEnergy() - energy).Max(0);}
@@ -751,35 +737,30 @@ GBEnergy GBHardwareState::EaterLimit() const {
 GBEnergy GBHardwareState::Eaten() const {
 	return spec->Eater() - eater;}
 
-GBDamage GBHardwareState::Armor() const {
-	return armor;}
+GBDamage GBHardwareState::Armor() const { return armor;}
 
-GBDamage GBHardwareState::MaxArmor() const {
-	return spec->Armor();}
+GBDamage GBHardwareState::MaxArmor() const { return spec->Armor();}
 
 GBNumber GBHardwareState::ArmorFraction() const {
 	GBDamage max = spec->Armor();
-	return max ? armor / max : GBNumber(0);
+	return max.Nonzero() ? armor / max : GBNumber(0);
 }
 
 GBNumber GBHardwareState::EffectivenessFraction() const {
 	return (ArmorFraction() - 1) * kEffectivenessReduction + 1;
 }
 
-GBPower GBHardwareState::RepairRate() const {
-	return repairRate;}
+GBPower GBHardwareState::RepairRate() const { return repairRate;}
 
-GBPower GBHardwareState::MaxRepairRate() const {
-	return spec->RepairRate();}
+GBPower GBHardwareState::MaxRepairRate() const { return spec->RepairRate();}
 
-GBPower GBHardwareState::Shield() const {
-	return shield;}
+GBPower GBHardwareState::Shield() const { return shield;}
 
-GBEnergy GBHardwareState::ActualShield() const {
-	return actualShield;}
+GBEnergy GBHardwareState::ActualShield() const { return actualShield;}
 
-GBPower GBHardwareState::MaxShield() const {
-	return spec->Shield();}
+GBPower GBHardwareState::MaxShield() const { return spec->Shield();}
+
+GBNumber GBHardwareState::Bomb() const { return spec->Bomb(); }
 
 void GBHardwareState::SetEnginePower(const GBPower power) {
 	enginePower = power.Max(0).Min(EngineMaxPower());}
@@ -860,15 +841,19 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 	syphon.Act(robot, world);
 	enemySyphon.Act(robot, world);
 // do repairs
-	GBEnergy repairCost = UseEnergyUpTo(repairRate.Min((MaxArmor() - armor) * kRunningCostPerRepair));
-	robot->Owner()->Scores().Expenditure().ReportRepairs(repairCost);
-	armor += repairCost / kRunningCostPerRepair;
-	if ( gRandoms.Boolean(repairCost * 0.5) )
-		world->AddObjectNew(new GBBlasterSpark(robot->Position() + gRandoms.Vector(robot->Radius())));
+	if ( repairRate.Nonzero() ) {
+		GBEnergy repairCost = UseEnergyUpTo(repairRate.Min((MaxArmor() - armor) * kRunningCostPerRepair));
+		robot->Owner()->Scores().Expenditure().ReportRepairs(repairCost);
+		armor += repairCost / kRunningCostPerRepair;
+		if ( gRandoms.Boolean(repairCost * 0.5) )
+			world->AddObjectNew(new GBBlasterSpark(robot->Position() + gRandoms.Vector(robot->Radius())));
+	}
 // do shield
-	GBEnergy shieldUsed = UseEnergyUpTo(shield);
-	robot->Owner()->Scores().Expenditure().ReportShield(shieldUsed);
-	actualShield += shieldUsed;
+	if ( shield.Nonzero() ) {
+		GBEnergy shieldUsed = UseEnergyUpTo(shield);
+		robot->Owner()->Scores().Expenditure().ReportShield(shieldUsed);
+		actualShield += shieldUsed;
+	}
 	actualShield = (actualShield - kShieldDecayPerMass * robot->Mass() - kShieldDecayPerShield * actualShield).Max(0);
 // lose excess energy
 	if ( energy > MaxEnergy() ) {

@@ -1,6 +1,6 @@
 // GBScores.h
 // various scoring classes
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #ifndef GBScores_h
@@ -8,6 +8,7 @@
 
 #include "GBTypes.h"
 #include "GBLongNumber.h"
+#include <vector>
 
 class GBIncomeStatistics {
 	GBLongNumber autotrophy;
@@ -81,6 +82,7 @@ public:
 
 class GBScores {
 protected:
+//rounds
 	long sides; // = number of seeds
 	long rounds;
 	long survived;
@@ -90,6 +92,7 @@ protected:
 // sampled
 	long population, populationEver;
 	GBLongNumber biomass, earlyBiomass;
+	std::vector<long> biomassHistory; //may eventually be a vector of GBScores
 	GBLongNumber constructor;
 	long territory;
 // accumulated
@@ -100,6 +103,7 @@ protected:
 // fractions
 	float biomassFraction, earlyBiomassFraction;
 	float killedFraction;
+	float biomassFractionSquared; //for standard deviations
 public:
 	GBScores();
 	~GBScores();
@@ -129,6 +133,7 @@ public:
 	float BiomassFraction() const;
 	float EarlyBiomassFraction() const;
 	float SurvivalBiomassFraction() const;
+	const std::vector<long> & BiomassHistory() const;
 	long Constructor() const;
 	long Territory() const;
 // cumulative
@@ -145,6 +150,8 @@ public:
 // oddballs
 	float Efficiency() const; // remove?
 	GBFrames Doubletime(GBFrames currentTime) const;
+	float BiomassFractionSD() const;
+	float BiomassFractionError() const;
 };
 
 class GBSideScores : public GBScores {

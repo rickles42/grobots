@@ -33,7 +33,6 @@ public:
 	virtual void Think(GBRobot * robot, GBWorld * world) = 0; // think one frame
 	virtual void Step(GBRobot * robot, GBWorld * world); // think one step
 	virtual bool Ready() const = 0; // can we think now?
-	virtual void NextFrame(GBRobot * robot, GBWorld * world);
 	
 };
 

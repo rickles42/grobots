@@ -7,10 +7,9 @@
 
 #include "GBPlatform.h"
 #include "GBNumber.h"
+#include "GBSide.h"
 
-#if MAC
-	#include <Files.h>
-#else
+#if ! USE_MAC_IO
 	#include <fstream>
 #endif
 
@@ -37,15 +36,13 @@ typedef enum {
 // Note that #author, #date, #description, and #color can appear in multiple places.
 // These are conveniently distinguished by whether type is non-nil.
 
-class GBSide;
-class GBRobotType;
 class GBStackBrainSpec;
 
 class GBSideReader {
-#if MAC
+#if USE_MAC_IO
 	short refNum; // file reference number
 #else
-	ifstream fin;
+	std::ifstream fin;
 #endif
 	GBSide * side; // the side being read
 	GBRobotType * type; // current type
@@ -68,21 +65,13 @@ class GBSideReader {
 	GBNumber GetHardwareNumber(const GBNumber & defaultNum);
 	bool SkipWhitespace();
 // constructors
-#if MAC
-	GBSideReader(FSSpec & spec);
-#else
-	GBSideReader(const string & filename);
-#endif
+	GBSideReader(const GBFilename & filename);
 	~GBSideReader();
 // loading
 	void LoadIt();
 	GBSide * Side();
 public:
-#if MAC
-	static GBSide * Load(FSSpec & spec);
-#else
-	static GBSide * Load(const string & filename);
-#endif
+	static GBSide * Load(const GBFilename & filename);
 };
 
 #endif

@@ -190,6 +190,22 @@ GBStackAddress GBStackBrain::PopReturn() {
 	return returnStack[--returnStackHeight];
 }
 
+GBStackDatum GBStackBrain::ReadLocalMemory(GBStackAddress addr, GBRobot * robot) {
+	if ( addr < 1 || addr > robot->hardware.Memory() ) throw GBIndexOutOfRangeError();
+	if ( ! memory ) return 0;
+	return memory[addr - 1];
+}
+
+void GBStackBrain::WriteLocalMemory(GBStackAddress addr, GBStackDatum val, GBRobot * robot) {
+	if ( addr < 1 || addr > robot->hardware.Memory() ) throw GBIndexOutOfRangeError();
+	if ( ! memory ) {
+		if ( ! robot->hardware.Memory() ) return; // fail silently
+		memory = new GBStackDatum[robot->hardware.Memory()];
+		if ( ! memory ) throw GBOutOfMemoryError();
+	}
+	memory[addr - 1] = val;
+}
+
 GBStackAddress GBStackBrain::ToAddress(const GBStackDatum value) {
 	if ( value.IsInteger() ) {
 		GBStackAddress addr = value.Floor();
@@ -214,7 +230,7 @@ GBStackDatum GBStackBrain::FromBoolean(const bool value) {
 
 void GBStackBrain::BrainError(GBError & err, GBRobot * robot, GBWorld * world) {
 	if ( world->reportErrors )
-		NonfatalError(robot->Name() + " had error in brain, probably at line "
+		NonfatalError(robot->Description() + " had error in brain, probably at line "
 			+ ToString(spec->LineNumber(pc - 1)) + ": " + err.ToString());
 	SetStatus(bsError);
 }
@@ -226,15 +242,16 @@ GBStackBrain::GBStackBrain(const GBStackBrainSpec * spc)
 	vectorVariables(new GBVector[spc->NumVectorVariables()]),
 	stack(new GBStackDatum[kStackLimit]), stackHeight(0),
 	returnStack(new GBStackAddress[kReturnStackLimit]), returnStackHeight(0),
-	memory(nil), memSize(0),
+	memory(nil),
 	used(0), remaining(0),
 	lastPrint(nil)
 {
 	if ( ! variables || ! vectorVariables || ! stack || ! returnStack )
 		throw GBOutOfMemoryError();
-	for ( GBSymbolIndex i = 0; i < spc->NumVariables(); i ++ )
+	GBSymbolIndex i;
+	for ( i = 0; i < spc->NumVariables(); i ++ )
 		variables[i] = spc->ReadVariable(i);
-	for ( GBSymbolIndex i = 0; i < spc->NumVectorVariables(); i ++ )
+	for ( i = 0; i < spc->NumVectorVariables(); i ++ )
 		vectorVariables[i] = spc->ReadVectorVariable(i);
 }
 
@@ -256,6 +273,11 @@ void GBStackBrain::Think(GBRobot * robot, GBWorld * world) {
 	} catch ( GBAbort & ) {
 		SetStatus(bsStopped);
 	}
+	GBEnergy en = kProcessorUseCost * used;
+	robot->hardware.UseEnergy(en);
+	robot->Owner()->Scores().Expenditure().ReportBrain(en);
+	used = 0;
+	remaining = (remaining > 0 ? 0 : remaining) + robot->hardware.Processor();
 }
 
 void GBStackBrain::ThinkOne(GBRobot * robot, GBWorld * world) {
@@ -281,30 +303,16 @@ bool GBStackBrain::Ready() const {
 	return remaining > 0;
 }
 
-void GBStackBrain::NextFrame(GBRobot * robot, GBWorld *) {
-	GBEnergy en = kProcessorUseCost * used;
-	robot->hardware.UseEnergy(en);
-	robot->Owner()->Scores().Expenditure().ReportBrain(en);
-	used = 0;
-	remaining = (remaining > 0 ? 0 : remaining) + robot->hardware.Processor();
-	if ( ! memory && robot->hardware.Memory() ) {
-		memSize = robot->hardware.Memory();
-		memory = new GBStackDatum[memSize];
-		if ( ! memory ) throw GBOutOfMemoryError();
-	}
-}
+GBInstructionCount GBStackBrain::Remaining() const {return remaining;}
 
-GBStackAddress GBStackBrain::PC() const {
-	return pc;}
+GBStackAddress GBStackBrain::PC() const {return pc;}
 
 GBLineNumber GBStackBrain::PCLine() const {
 	return spec->LineNumber(pc);}
 
-long GBStackBrain::StackHeight() const {
-	return stackHeight;}
+long GBStackBrain::StackHeight() const {return stackHeight;}
 
-long GBStackBrain::ReturnStackHeight() const {
-	return returnStackHeight;}
+long GBStackBrain::ReturnStackHeight() const {return returnStackHeight;}
 
 GBStackDatum GBStackBrain::StackAt(long index) const {
 	if ( index < 0 || index >= stackHeight ) throw GBIndexOutOfRangeError();

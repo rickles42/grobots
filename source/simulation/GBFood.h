@@ -23,7 +23,6 @@ public:
 	GBEnergy MaxTakeEnergy();
 // queries
 	GBObjectClass Class() const;
-	bool CollidesWith(GBObjectClass what) const;
 	GBSide * Owner() const;
 	void Move();
 	void Act(GBWorld * world);
@@ -37,6 +36,7 @@ public:
 	GBManna(const GBPosition & where, const GBEnergy val);
 	~GBManna();
 	void CollectStatistics(GBWorld * world) const;
+	string Description() const;
 	const GBColor Color() const;
 };
 
@@ -48,9 +48,9 @@ public:
 		const GBEnergy val, GBSide * const who, GBSide * const cause);
 	~GBCorpse();
 	GBSide * Owner() const;
-	GBSide * Killer() const;
 	void CollectStatistics(GBWorld * world) const;
 	GBNumber Interest() const;
+	string Description() const;
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
 };

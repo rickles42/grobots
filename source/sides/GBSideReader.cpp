@@ -10,9 +10,11 @@
 #include "GBStackBrainSpec.h"
 #include <ctype.h>
 
-#if MAC
-#include <Devices.h>
-#include <Errors.h>
+#if USE_MAC_IO
+	#include <Devices.h>
+	#include <Errors.h>
+#else
+	using std::ifstream;
 #endif
 
 const size_t kBufferSize = 512;
@@ -412,10 +414,10 @@ void GBSideReader::ProcessTag(GBElementType element) {
 	}
 }
 
-#if MAC
 bool GBSideReader::GetNextLine() {
-	IOParam params;
 	char buffer[kBufferSize];
+#if USE_MAC_IO
+	IOParam params;
 // set up params
 	params.ioCompletion = nil;
 	params.ioRefNum = refNum;
@@ -435,32 +437,22 @@ bool GBSideReader::GetNextLine() {
 	if ( params.ioActCount >= kBufferSize - 1 )
 		throw GBLineTooLongError();
 	line.assign(buffer, buffer[params.ioActCount - 1] == '\n' ? params.ioActCount - 1 : params.ioActCount);
-	pos = 0;
-	lineno ++;
-	return true;
-}
 #else
-bool GBSideReader::GetNextLine() {
-	char buffer[kBufferSize], endline;
-	
 	if ( fin.eof() )
 		return false;
-
-	fin.get(buffer, kBufferSize - 1, '\n');
+	fin.getline(buffer, kBufferSize);
 	line = buffer;
-
+	if ( line.size() >= kBufferSize - 1 )
+		throw GBLineTooLongError();
+	if ( fin.eof() && line.empty() )
+		return false;
 	if ( fin.fail() )
 		throw GBFileError();
-	if ( fin.eof() && line.empty() );
-		return false;
-	fin.get(endline);
-	if ( endline != '\n' )
-		throw GBLineTooLongError();
+#endif
 	pos = 0;
 	lineno++;
 	return true;
 }
-#endif
 
 void GBSideReader::ProcessCodeLine() {
 	if ( ! brain )
@@ -480,22 +472,8 @@ void GBSideReader::ProcessHardwareLine() {
 					long mem = GetHardwareInteger(0);
 					type->Hardware().SetProcessor(speed, mem);
 					} return;
-				case hcRadio: {
-						bool write = false, read = false, send = false, receive = false;
-						string feature;
-						while ( ExtractToken(feature, line, pos) ) {
-							if ( NamesEquivalent(feature, "write") )
-								write = true;
-							else if ( NamesEquivalent(feature, "read") )
-								read = true;
-							else if ( NamesEquivalent(feature, "send") )
-								send = true;
-							else if ( NamesEquivalent(feature, "receive") )
-								receive = true;
-							else throw GBHardwareArgumentError();
-						}
-						type->Hardware().radio.Set(write, read, send, receive);
-					} return;
+				case hcRadio:
+					return; //obsolete but remains for compatibility
 				case hcEngine:
 					type->Hardware().SetEngine(GetHardwareNumber());
 					return;
@@ -621,23 +599,22 @@ bool GBSideReader::SkipWhitespace() {
 	return true;
 }
 
-#if MAC
-GBSideReader::GBSideReader(FSSpec & spec)
+GBSideReader::GBSideReader(const GBFilename & filename)
+#if USE_MAC_IO
 	: refNum(0),
 #else
-GBSideReader::GBSideReader(const string & filename)
-	: fin(),
+	: fin(filename.c_str()),
 #endif
 	side(nil), type(nil), brain(nil),
 	state(etNone),
 	lineno(0), pos(0)
 {
-#if MAC
-	if ( HOpen(spec.vRefNum, spec.parID, spec.name, fsRdPerm, &refNum) )
+#if USE_MAC_IO
+	if ( HOpen(filename.vRefNum, filename.parID, filename.name, fsRdPerm, &refNum) )
 		throw GBFileError();
 #else
-	fin.open(filename, ios::in|ios::nocreate);
-	if ( fin.fail() ) throw GBFileError();
+	//fin.open(filename.c_str(), ifstream::in);
+	if ( fin.fail() || ! fin.is_open() || fin.eof() ) throw GBFileError();
 #endif
 }
 
@@ -646,7 +623,7 @@ GBSideReader::~GBSideReader() {
 		delete side;
 	delete type;
 	delete brain;
-#if MAC
+#if USE_MAC_IO
 	if ( refNum && FSClose(refNum) )
 		throw GBFileError();
 #else
@@ -676,23 +653,12 @@ GBSide * GBSideReader::Side() {
 	return nil; // not reached
 }
 
-#if MAC
-GBSide * GBSideReader::Load(FSSpec & spec) {
-#else
-GBSide * GBSideReader::Load(const string & filename){
-#endif
+GBSide * GBSideReader::Load(const GBFilename & filename){
 	try {
-#if MAC
-		GBSideReader reader(spec);
-		reader.LoadIt();
-		GBSide * side = reader.Side();
-		side->file = spec;
-#else
 		GBSideReader reader(filename);
 		reader.LoadIt();
 		GBSide * side = reader.Side();
 		side->filename = filename;
-#endif
 		return side;
 	} catch ( GBError & err ) {
 		NonfatalError("Error loading side: " + err.ToString());

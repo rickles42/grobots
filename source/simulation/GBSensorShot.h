@@ -14,6 +14,7 @@ class GBSensorState;
 
 class GBSensorShot : public GBObject {
 	GBRobot * owner;
+	GBSide * side;
 	GBSensorState * state;
 	GBObjectClass seen;
 	GBFrames age;
@@ -27,11 +28,11 @@ public:
 	void Act(GBWorld * world);
 
 	GBObjectClass Class() const;
-	bool CollidesWith(GBObjectClass what) const;
 // accessors for views
 	const GBRobot * Firer() const;
 	const GBObjectClass Seen() const;
 	GBSide * Owner() const;
+	string Description() const;
 // drawing
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;

@@ -72,17 +72,21 @@ enum { // primitives
 	opPrint, opPrintVector, opBeep, opPause, opStop,
 	opSync,
 // basic hardware
-	opSeekLocation, opSeekMovingLocation,
+	opSeekLocation, opSeekMovingLocation, opRestrictPosition,
 	opDie,
 	opWriteLocalMemory, opReadLocalMemory, opWriteLocalVector, opReadLocalVector,
 	opWriteSharedMemory, opReadSharedMemory, opWriteSharedVector, opReadSharedVector,
 	opMessagesWaiting, opSendMessage, opReceiveMessage, opClearMessages, opSkipMessages,
 	opTypePopulation,
+	opAutoConstruct, opBalanceTypes,
 // sensors
 	opFireRobotSensor, opFireFoodSensor, opFireShotSensor,
 	opRobotSensorNext, opFoodSensorNext, opShotSensorNext,
+	opPeriodicRobotSensor, opPeriodicFoodSensor, opPeriodicShotSensor,
 // weapons
 	opFireBlaster, opFireGrenade,
+	opLeadBlaster, opLeadGrenade,
+	opSetForceField,
 // limit
 	kNumPrimitives
 };
@@ -116,6 +120,7 @@ enum { // hardware (or other magic) variables
 	hvRobotSensorTime, hvRobotSensorFound, hvRobotSensorRangeFound, hvRobotSensorAngleFound,
 	hvRobotSensorSideFound, hvRobotSensorRadiusFound, hvRobotSensorMassFound, hvRobotSensorEnergyFound,
 	hvRobotSensorTypeFound, hvRobotSensorIDFound, hvRobotSensorShieldFractionFound,
+	hvRobotSensorBombFound, hvRobotSensorReloadingFound,
 	hvRobotSensorRangeOverall, hvRobotSensorAngleOverall,
 	hvRobotSensorCurrentResult, hvRobotSensorNumResults, hvRobotSensorMaxResults,
 // food sensor

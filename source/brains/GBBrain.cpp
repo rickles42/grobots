@@ -33,4 +33,3 @@ void GBBrain::Step(GBRobot * robot, GBWorld * world) {
 	Think(robot, world);
 }
 
-void GBBrain::NextFrame(GBRobot *, GBWorld *) {}

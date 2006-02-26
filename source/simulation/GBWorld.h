@@ -1,6 +1,6 @@
 // GBWorld.h
 // the slightly overstuffed main simulation class.
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #ifndef GBWorld_h
@@ -11,7 +11,11 @@
 #include "GBObjectWorld.h"
 #include "GBScores.h"
 
-#define GBWORLD_PROFILING (MAC)
+#if MAC && ! HEADLESS
+#define GBWORLD_PROFILING 1
+#else
+#define GBWORLD_PROFILING 0
+#endif
 
 const GBDistance kRandomMinWallDistance = 2;
 
@@ -21,7 +25,7 @@ class GBWorld : public GBObjectWorld, public GBModel, public GBDeletionListener 
 	GBFrames currentFrame;
 	int previousSidesAlive; //num of non-extinct sides last frame
 	GBRandomState random;
-	const GBObject * followed;
+	GBObject * followed;
 	GBEnergy mannaLeft;
 // stats
 	int mannas, corpses;
@@ -30,7 +34,7 @@ class GBWorld : public GBObjectWorld, public GBModel, public GBDeletionListener 
 	GBScores tournamentScores;
 // timing
 #if GBWORLD_PROFILING && MAC
-	UInt64 simulationTime, moveTime, collideTime, thinkTime, actTime;
+	UInt64 simulationTime, moveTime, collideTime, thinkTime, actTime, resortTime, statisticsTime;
 	UnsignedWide beginTime;
 #endif
 public:
@@ -61,6 +65,8 @@ public:
 	~GBWorld();
 // operation
 	void SimulateOneFrame();
+	void AdvanceFrame();
+	void EndRound();
 	void CollectStatistics();
 	void AddSeed(GBSide * side, const GBPosition & where);
 	void AddSeeds();
@@ -70,7 +76,7 @@ public:
 	void Resize(const GBFinePoint & newsize);
 // accessors
 	GBFrames CurrentFrame() const;
-	bool Elimination() const; //returns whether sidesAlive just dropped below 2
+	bool RoundOver() const;
 // randoms
 	GBRandomState & Randoms();
 	GBFinePoint RandomLocation(GBDistance walldist = kRandomMinWallDistance);
@@ -102,8 +108,8 @@ public:
 	const GBScores & RoundScores() const;
 	const GBScores & TournamentScores() const;
 // selected object
-	void Follow(const GBObject * ob);
-	const GBObject * Followed() const;
+	void Follow(GBObject * ob);
+	GBObject * Followed() const;
 	void ReportDeletion(const GBDeletionReporter * rep);
 // timing
 #if GBWORLD_PROFILING
@@ -113,6 +119,8 @@ public:
 	long MoveTime() const;
 	long ActTime() const;
 	long CollideTime() const;
+	long ResortTime() const;
+	long StatisticsTime() const;
 	void ResetTimes();
 #endif
 };

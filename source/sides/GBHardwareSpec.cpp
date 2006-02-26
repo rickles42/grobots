@@ -95,59 +95,6 @@ const GBEnergy kEnemySyphonCostPerRange = 10;
 const GBMass kEnemySyphonMassPerPower = kEnemySyphonCostPerPower * kStandardMassPerCost;
 const GBMass kEnemySyphonMassPerRange = kEnemySyphonCostPerRange * kStandardMassPerCost;
 
-const GBEnergy kRadioBaseCost = 10;
-const GBEnergy kRadioTransmissionCost = 3;
-const GBEnergy kRadioReceptionCost = 2;
-const GBEnergy kRadioWriteCost = 2;
-const GBEnergy kRadioReadCost = 3;
-const GBEnergy kRadioSendCost = 2;
-const GBEnergy kRadioReceiveCost = 3;
-const GBRatio kRadioMassPerCost = kStandardMassPerCost * 0.4;
-
-// GBRadioSpec //
-
-GBRadioSpec::GBRadioSpec()
-	: write(false), read(false), send(false), receive(false)
-{}
-
-GBRadioSpec::~GBRadioSpec() {}
-
-GBRadioSpec & GBRadioSpec::operator=(const GBRadioSpec & arg) {
-	write = arg.write;
-	read = arg.read;
-	send = arg.send;
-	receive = arg.receive;
-	return *this;
-}
-
-bool GBRadioSpec::Write() const { return write; }
-bool GBRadioSpec::Read() const { return read; }
-bool GBRadioSpec::Send() const { return send; }
-bool GBRadioSpec::Receive() const { return receive; }
-
-void GBRadioSpec::Set(bool wrt, bool rd, bool snd, bool rcv) {
-	write = wrt;
-	read = rd;
-	send = snd;
-	receive = rcv;
-}
-
-GBEnergy GBRadioSpec::Cost() const {
-	if ( write || read || send || receive ) {
-		return kRadioBaseCost
-			+ (write || send ? kRadioTransmissionCost : GBNumber(0))
-			+ (read || receive ? kRadioReceptionCost : GBNumber(0))
-			+ (write ? kRadioWriteCost : GBNumber(0))
-			+ (read ? kRadioReadCost : GBNumber(0))
-			+ (send ? kRadioSendCost : GBNumber(0))
-			+ (receive ? kRadioReceiveCost : GBNumber(0));
-	} else
-		return 0;
-}
-
-GBMass GBRadioSpec::Mass() const {
-	return Cost() * kRadioMassPerCost;
-}
 
 // GBConstructorSpec //
 
@@ -447,7 +394,7 @@ GBHardwareSpec::GBHardwareSpec()
 	armor(1),
 	repairRate(0), shield(0), bomb(0),
 // complex hw
-	radio(), constructor(),
+	constructor(),
 	sensor1(), sensor2(), sensor3(),
 	blaster(), grenades(), forceField(),
 	syphon(), enemySyphon(),
@@ -470,7 +417,6 @@ GBHardwareSpec & GBHardwareSpec::operator=(const GBHardwareSpec & arg) {
 	repairRate = arg.repairRate;
 	shield = arg.shield;
 	bomb = arg.bomb;
-	radio = arg.radio;
 	constructor = arg.constructor;
 	sensor1 = arg.sensor1;
 	sensor2 = arg.sensor2;
@@ -551,14 +497,12 @@ void GBHardwareSpec::SetBomb(const GBDamage amt) {
 void GBHardwareSpec::Recalculate() {
 	hardwareCost = ChassisCost()
 		+ ProcessorCost()
-		+ radio.Cost()
 		+ EngineCost()
 		+ sensor1.Cost() + sensor2.Cost() + sensor3.Cost()
 		+ forceField.Cost()
 		+ GrowthCost() + DefenseCost() + WeaponsCost();
 	mass = ChassisMass()
 		+ ProcessorMass()
-		+ radio.Mass()
 		+ EngineMass()
 		+ EnergyMass()
 		+ SolarCellsMass() + EaterMass()

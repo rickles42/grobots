@@ -38,6 +38,8 @@ GBObjectClass GBTimedDecoration::Class() const {
 	else return ocDead;
 }
 
+string GBTimedDecoration::Description() const {return "Decoration";}
+
 void GBTimedDecoration::Act(GBWorld *) {
 	lifetime --;
 }
@@ -47,6 +49,8 @@ void GBTimedDecoration::Act(GBWorld *) {
 GBSmoke::GBSmoke(const GBPosition where, const GBVelocity vel, const GBFrames life)
 	: GBTimedDecoration(where, kSmokeRadius, vel, life)
 {}
+
+string GBSmoke::Description() const {return "Smoke";}
 
 const GBColor GBSmoke::Color() const {
 	float intensity = 0.8 * (float)lifetime / (lifetime + kSmokeHalfBrightnessTime);
@@ -91,9 +95,11 @@ void GBTransmission::Act(GBWorld * world) {
 		radius += kTransmissionGrowthRate;
 }
 
+string GBTransmission::Description() const {return "Radio transmission";}
+
 const GBColor GBTransmission::Color() const {
-	if ( message ) return GBColor(0.6, 0.5, 1);
-	return GBColor(1, 0.8, 0.5);
+	if ( message ) return GBColor(0.6f, 0.5f, 1);
+	return GBColor(1, 0.8f, 0.5f);
 }
 
 GBObjectClass GBTransmission::Class() const {
@@ -130,6 +136,6 @@ void GBSparkle::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) co
 }
 
 void GBSparkle::DrawMini(GBGraphics & g, const GBRect & where) const {
-	g.DrawSolidRect(where, color * 0.7);
+	g.DrawSolidRect(where, color * 0.7f);
 }
 

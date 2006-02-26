@@ -10,11 +10,13 @@
 #include "GBRobot.h"
 #include "GBSide.h"
 #include "GBSound.h"
+#include "GBStringUtilities.h"
 
 
 const GBRatio kBlastPushRatio = 0.003;
+const GBDamage kBlastRadiusThreshold = 40;
 const GBDistance kBlastRadius = 0.1875;
-const GBRatio kBlastMomentumPerPower = 0.05;
+const GBNumber kBlastMomentumPerPower = 0.05;
 
 const GBDamage kGrenadeRadiusThreshold = 40;
 const GBDistance kGrenadeLargeRadius = 0.1875;
@@ -61,15 +63,6 @@ GBObjectClass GBShot::Class() const {
 	return ocShot;
 }
 
-bool GBShot::CollidesWith(GBObjectClass what) const {
-	switch ( what ) {
-		case ocRobot: case ocSensorShot:
-			return true;
-		default:
-			return false;
-	}
-}
-
 GBSide * GBShot::Owner() const {
 	return owner;
 }
@@ -78,6 +71,10 @@ long GBShot::Type() const { return 0; }
 
 GBEnergy GBShot::Power() const {
 	return power;
+}
+
+string GBShot::Description() const {
+	return "Shot from " + owner->Name() + " (" + ToString(power) + ')';
 }
 
 // GBTimedShot //
@@ -153,10 +150,11 @@ const GBColor GBBlast::Color() const {
 }
 
 void GBBlast::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
-	short cx = where.CenterX() - 1;
-	short cy = where.CenterY() - 1;
-	g.DrawLine(where.left, cy, where.right - 2, cy, Color(), 2);
-	g.DrawLine(cx, where.top, cx, where.bottom - 2, Color(), 2);
+	int extra = (power > kBlastRadiusThreshold ? 1 : 0);
+	short cx = where.CenterX();
+	short cy = where.CenterY();
+	g.DrawLine(where.left - extra, cy, where.right + extra, cy, Color(), 2);
+	g.DrawLine(cx, where.top - extra, cx, where.bottom + extra, Color(), 2);
 }
 
 // GBGrenade //
@@ -183,15 +181,6 @@ void GBGrenade::Act(GBWorld * world) {
 }
 
 long GBGrenade::Type() const { return 2; }
-
-bool GBGrenade::CollidesWith(GBObjectClass what) const {
-	switch ( what ) {
-		case ocSensorShot:
-			return true;
-		default:
-			return false;
-	}
-}
 
 const GBColor GBGrenade::Color() const {
 	return GBColor::yellow;
@@ -242,7 +231,7 @@ void GBExplosion::Act(GBWorld * world) {
 }
 
 const GBColor GBExplosion::Color() const {
-	return GBColor(1, 0.9, 0.2);
+	return GBColor(1, 0.9f, 0.2f);
 }
 
 void GBExplosion::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
@@ -255,14 +244,19 @@ GBDistance GBExplosion::PowerRadius(GBDamage pow) {
 
 // GBForceField //
 
-GBForceField::GBForceField(const GBPosition & where, GBSide * const who, const GBPower pwr, const GBAngle dir)
-	: GBShot(where, PowerRadius(pwr), who, pwr),
+GBForceField::GBForceField(const GBPosition & where, const GBVelocity & vel,
+						   GBSide * const who, const GBPower pwr, const GBAngle dir)
+	: GBShot(where, PowerRadius(pwr), vel, who, pwr),
 	dead(false),
 	direction(dir)
 {}
 
 GBObjectClass GBForceField::Class() const {
 	return dead ? ocDead : ocArea;
+}
+
+void GBForceField::Move() {
+	// don't move! velocity is only apparent.
 }
 
 void GBForceField::CollideWith(GBObject * other) {
@@ -283,14 +277,14 @@ GBNumber GBForceField::Interest() const {
 }
 
 const GBColor GBForceField::Color() const {
-	return GBColor(0, 0.8, 1);
+	return GBColor(0, 0.8f, 1);
 }
 
 void GBForceField::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
 	short cx = (where.right + where.left) / 2;
 	short cy = (where.bottom + where.top) / 2;
-	g.DrawLine(cx, cy, cx + (direction.Cos() * (where.right - where.left) / 2).Round(),
-		cy - (direction.Sin() * (where.bottom - where.top) / 2).Round(), owner->Color());
+	g.DrawLine(cx, cy, cx + (direction.Cos() * where.Width() / 2).Round(),
+		cy - (direction.Sin() * where.Height() / 2).Round(), owner->Color());
 	g.DrawOpenOval(where, Color(), 2);
 }
 
@@ -375,11 +369,11 @@ GBNumber GBSyphon::Interest() const {
 }
 
 const GBColor GBSyphon::Color() const {
-	return (hitsEnemies ? GBColor(0.6, 1, 0) : GBColor(0.5, 0.8, 1.0));
+	return (hitsEnemies ? GBColor(0.6f, 1, 0) : GBColor(0.5f, 0.8f, 1));
 }
 
 void GBSyphon::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
-	g.DrawLine(where.left, where.top, where.right - 1, where.bottom - 1, Color());
-	g.DrawLine(where.right - 1, where.top, where.left, where.bottom - 1, Color());
+	g.DrawLine(where.left, where.top, where.right, where.bottom, Color());
+	g.DrawLine(where.right, where.top, where.left, where.bottom, Color());
 }
 

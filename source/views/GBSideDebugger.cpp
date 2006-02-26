@@ -9,7 +9,6 @@
 #include "GBStringUtilities.h"
 #include "GBErrors.h"
 
-const short kEdgeSpace = 2;
 
 GBSideDebuggerView::GBSideDebuggerView(const GBWorld & wrld)
 	: GBView(), world(wrld), worldChanges(-1), pane(0), lastDrawnPane(-1)
@@ -51,7 +50,8 @@ void GBSideDebuggerView::DrawSharedMemory(GBRect & box) {
 // determine range, for color-coding
 	GBNumber smallest = GBNumber::infinity;
 	GBNumber largest = -GBNumber::infinity;
-	for (int i = 0; i < numsHigh; i++)
+	int i;
+	for (i = 0; i < numsHigh; i++)
 		for (int j = 1; j <= numsWide; j++) {
 			bool worked = false;
 			GBNumber read = GetSM(minNumThisPane + i*numsWide + j, &worked, side);
@@ -63,7 +63,7 @@ void GBSideDebuggerView::DrawSharedMemory(GBRect & box) {
 	GBNumber range = (largest - smallest).Max(GBNumber::epsilon);
 // draw main
 	short curY = box.top + 16;
-	for (int i = numsHigh; i >= 0; i--) { //starts at numsHigh for header row
+	for (i = numsHigh; i >= 0; i--) { //starts at numsHigh for header row
 		short curX = box.left + 5;
 		if (i != numsHigh) {
 			DrawStringLeft(ToString(minNumThisPane + i*numsWide) + ":", curX, curY, 10, GBColor(0), true);

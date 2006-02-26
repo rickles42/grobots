@@ -5,8 +5,6 @@
 #include "GBListView.h"
 
 
-const short kBoxEdgeSpace = 2;
-
 GBListView::GBListView()
 	: GBView()
 {}
@@ -20,23 +18,23 @@ bool GBListView::Resizable() const {
 void GBListView::Draw() {
 	DrawBackground();
 	GBRect box;
-	box.left = kBoxEdgeSpace;
-	box.top = kBoxEdgeSpace;
-	box.right = Width() - kBoxEdgeSpace;
+	box.left = kEdgeSpace;
+	box.top = kEdgeSpace;
+	box.right = Width() - kEdgeSpace;
 	box.bottom = box.top + HeaderHeight();
 	if ( box.bottom > box.top )
 		DrawHeader(box);
 	else
-		box.bottom -= kBoxEdgeSpace;
+		box.bottom -= kEdgeSpace;
 // draw items
 	long items = Items();
 	for ( long i = 1; i <= items; ++ i ) {
-		box.top = box.bottom + kBoxEdgeSpace;
+		box.top = box.bottom + kEdgeSpace;
 		box.bottom = box.top + ItemHeight();
 		DrawItem(i, box);
 	}
 // draw footer
-	box.top = box.bottom + kBoxEdgeSpace;
+	box.top = box.bottom + kEdgeSpace;
 	box.bottom = box.top + FooterHeight();
 	if ( box.bottom > box.top )
 		DrawFooter(box);
@@ -45,9 +43,9 @@ void GBListView::Draw() {
 short GBListView::PreferredHeight() const {
 	short hh = HeaderHeight();
 	short fh = FooterHeight();
-	return (hh ? kBoxEdgeSpace + hh : 0) + kBoxEdgeSpace
-		+ (ItemHeight() + kBoxEdgeSpace) * Items()
-		+ (fh ? kBoxEdgeSpace + fh : 0);
+	return (hh ? kEdgeSpace + hh : 0) + kEdgeSpace
+		+ (ItemHeight() + kEdgeSpace) * Items()
+		+ (fh ? kEdgeSpace + fh : 0);
 }
 
 void GBListView::AcceptClick(short x, short y, int /*clicks*/) {
@@ -55,11 +53,11 @@ void GBListView::AcceptClick(short x, short y, int /*clicks*/) {
 }
 
 void GBListView::AcceptDrag(short x, short y) {
-	if ( x >= kBoxEdgeSpace && x <= Width() - kBoxEdgeSpace ) {
+	if ( x >= kEdgeSpace && x <= Width() - kEdgeSpace ) {
 		short hh = HeaderHeight();
-		short top = kBoxEdgeSpace + (hh ? hh + kBoxEdgeSpace : 0);
+		short top = kEdgeSpace + (hh ? hh + kEdgeSpace : 0);
 		if ( y >= top ) {
-			short bh = ItemHeight() + kBoxEdgeSpace;
+			short bh = ItemHeight() + kEdgeSpace;
 			long index = (y - top) / bh + 1;
 			if ( index >= 1 && index <= Items() && (y - top) % bh < ItemHeight() ) {
 				ItemClicked(index);

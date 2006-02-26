@@ -1,10 +1,9 @@
 // GBScores.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2006 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBScores.h"
-#include "math.h"
-
+#include <math.h>
 
 const GBFrames kEarlyDeathTime = 4500;
 const long kMaxSterileConstructor = 10;
@@ -129,7 +128,8 @@ GBScores::GBScores()
 	dead(0), killed(0), suicide(0),
 	income(), expenditure(), seeded(0),
 	biomassFraction(0.0), earlyBiomassFraction(0.0),
-	killedFraction(0.0)
+	killedFraction(0.0),
+	biomassFractionSquared(0.0)
 {}
 
 GBScores::~GBScores() {}
@@ -147,6 +147,9 @@ void GBScores::Reset() {
 	dead = killed = suicide = 0;
 	biomassFraction = earlyBiomassFraction = 0.0;
 	killedFraction = 0.0;
+	biomassFractionSquared = 0.0;
+	biomassHistory.resize(1);
+	biomassHistory[0] = 0;
 }
 
 void GBScores::OneRound() { rounds = 1; }
@@ -173,6 +176,12 @@ GBScores & GBScores::operator +=(const GBScores & other) {
 	biomassFraction += other.biomassFraction;
 	earlyBiomassFraction += other.earlyBiomassFraction;
 	killedFraction += other.killedFraction;
+	biomassFractionSquared += other.biomassFractionSquared;
+//add biomass
+	if (biomassHistory.size() < other.biomassHistory.size())
+		biomassHistory.resize(other.biomassHistory.size(), 0);
+	for ( int i = 0; i < biomassHistory.size(); ++i )
+		biomassHistory[i] += other.biomassHistory[i];
 	return *this;
 }
 
@@ -234,6 +243,8 @@ float GBScores::EarlyBiomassFraction() const {
 float GBScores::SurvivalBiomassFraction() const {
 	return biomassFraction / (survived ? survived : 1);}
 
+const std::vector<long> & GBScores::BiomassHistory() const { return biomassHistory; }
+
 long GBScores::Constructor() const { return constructor / rounds; }
 
 long GBScores::Territory() const { return territory; }
@@ -270,7 +281,20 @@ float GBScores::Efficiency() const {
 
 GBFrames GBScores::Doubletime(GBFrames currentTime) const {
 	if ( ! seeded.Round() || ! biomass.Round() ) return 0;
-	return currentTime * (log(2.0) / log((double)biomass.Round() / (double)seeded.Round()));
+	return (GBFrames)(currentTime
+		* (log(2.0) / log((double)biomass.Round() / (double)seeded.Round())));
+}
+
+float GBScores::BiomassFractionSD() const {
+	float frac = BiomassFraction();
+	if (!rounds) return 0.0;
+	float variance = biomassFractionSquared / rounds - frac * frac;
+	return variance < 0 ? 0 : sqrt(variance); //rounding error can make variance slightly negative when it should be zero
+}
+
+//Sampling error: twice the standard deviation of the mean.
+float GBScores::BiomassFractionError() const {
+	return rounds > 1 ? BiomassFractionSD() / sqrt(rounds - 1) * 2.0 : 1.0;
 }
 
 // GBSideScores //
@@ -306,6 +330,7 @@ void GBSideScores::ReportSuicide(const GBEnergy en) { suicide += en; }
 
 void GBSideScores::ReportSeeded(const GBEnergy en) {
 	seeded += en;
+	biomassHistory[0] = seeded.Round();
 	sides = 1;
 	rounds = 1;
 }
@@ -314,6 +339,7 @@ void GBSideScores::ReportTerritory() { ++ territory; }
 
 void GBSideScores::ReportTotals(const GBScores & totals) {
 	biomassFraction = totals.Biomass() ? (float)biomass.Round() / totals.Biomass() : 0.0;
+	biomassFractionSquared = biomassFraction * biomassFraction;
 	earlyBiomassFraction = totals.EarlyBiomass() ?
 		(float)earlyBiomass.Round() / totals.EarlyBiomass() : 0.0;
 	killedFraction = totals.Killed() ? (float)killed.Round() / totals.Killed() : 0.0;
@@ -344,6 +370,8 @@ void GBSideScores::ReportFrame(const GBFrames frame) {
 		earlyBiomass = biomass;
 		if ( sterile ) earlyDeaths = 1;
 	}
+	if ( frame % 100 == 0 )
+		biomassHistory.push_back(biomass.Round());
 }
 
 GBFrames GBSideScores::ExtinctTime() const { return extinctTime; }

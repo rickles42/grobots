@@ -7,14 +7,21 @@
 #include "GBErrors.h"
 #include <exception>
 
-#if MAC
+#if MAC && ! CARBON
 	QDGlobals qd;
 #endif
 
-void main() {
+#if WINDOWS
+	int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int showCmd) {
+#else
+	int main() {
+#endif
 	try {
+#if WINDOWS
+		GBApplication app(hInstance, showCmd);
+#else
 		GBApplication app;
-		
+#endif		
 		app.Run();
 	} catch ( GBError & err ) {
 		FatalError("Uncaught GBError: " + err.ToString());
@@ -22,9 +29,13 @@ void main() {
 		FatalError("Uncaught GBRestart: " + r.ToString());
 	} catch ( std::exception & e ) {
 		FatalError("Uncaught std::exception: " + string(e.what()));
-	} catch ( ... ) {
+	}
+#if 0//!(DEBUG && WINDOWS) //this interferes with debugging on Windows
+	catch ( ... ) {
 		FatalError("Uncaught mystery exception.");
 	}
+#endif
+	return EXIT_SUCCESS;
 }
 
 // that was short.

@@ -22,7 +22,7 @@ double GBNumber::ToDouble() const {
 // ToString is no longer a method, and is now in GBStringUtilities.
 
 GBNumber GBNumber::operator*=(const GBNumber factor) {
-	long long temp = ((long long)data * (long long)factor.data) >> kNumFractionBits;
+	GBLongLong temp = ((GBLongLong)data * (GBLongLong)factor.data) >> kNumFractionBits;
 	if ( temp > kMaxValueRaw || temp < - kMaxValueRaw )
 		throw GBOverflowError();
 	data = temp;
@@ -31,7 +31,7 @@ GBNumber GBNumber::operator*=(const GBNumber factor) {
 
 GBNumber GBNumber::operator/=(const GBNumber divisor) {
 	if ( ! divisor.data ) throw GBDivideByZeroError();
-	data = ((long long)data << kNumFractionBits) / (long long)divisor.data;
+	data = ((GBLongLong)data << kNumFractionBits) / (GBLongLong)divisor.data;
 	return *this;
 }
 
@@ -59,7 +59,7 @@ GBNumber GBNumber::operator/=(const double divisor) {
 }
 
 GBNumber GBNumber::operator*(const GBNumber factor) const {
-	long long temp = ((long long)data * (long long)factor.data) >> kNumFractionBits;
+	GBLongLong temp = ((GBLongLong)data * (GBLongLong)factor.data) >> kNumFractionBits;
 	if ( temp > kMaxValueRaw || temp < - kMaxValueRaw )
 		throw GBOverflowError();
 	return MakeRaw(temp);
@@ -71,7 +71,7 @@ GBNumber GBNumber::operator*(const double factor) const {
 
 GBNumber GBNumber::operator/(const GBNumber divisor) const {
 	if ( ! divisor.data ) throw GBDivideByZeroError();
-	return MakeRaw(((long long)data << kNumFractionBits) / (long long)divisor.data);
+	return MakeRaw(((GBLongLong)data << kNumFractionBits) / (GBLongLong)divisor.data);
 }
 
 GBNumber GBNumber::operator/(const int divisor) const {
