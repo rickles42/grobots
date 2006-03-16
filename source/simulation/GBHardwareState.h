@@ -80,6 +80,7 @@ public:
 	bool reloading;
 	long type;
 	long ID;
+	GBNumber flag;
 	
 	GBSensorResult & operator=(const GBSensorResult & other);
 	GBSensorResult();
@@ -130,6 +131,7 @@ public:
 	GBNumber ShieldFraction() const;
 	GBNumber Bomb() const;
 	bool Reloading() const;
+	GBNumber Flag() const;
 	GBVector WhereOverall() const;
 // actions
 	void SetDistance(const GBDistance dist);

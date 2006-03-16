@@ -197,16 +197,18 @@ GBSensorResult & GBSensorResult::operator=(const GBSensorResult & other) {
 	shieldFraction = other.shieldFraction;
 	bomb = other.bomb;
 	reloading = other.reloading;
+	flag = other.flag;
 	return *this;
 }
 
 GBSensorResult::GBSensorResult() : where(), vel(), radius(0), mass(0), energy(0),
-	dist(), side(nil), type(0), ID(0), shieldFraction(1), bomb(0), reloading(false) {}
+	dist(), side(nil), type(0), ID(0), shieldFraction(1), bomb(0), reloading(false), flag(0) {}
 
 GBSensorResult::GBSensorResult(const GBObject * obj, const GBDistance dis)
 	: where(obj->Position()), vel(obj->Velocity()), dist(dis),
 	side(obj->Owner()), radius(obj->Radius()),
-	mass(obj->Mass()), energy(obj->Energy()), type(nil), ID(0), shieldFraction(1), bomb(0), reloading(false)
+	mass(obj->Mass()), energy(obj->Energy()), type(nil), ID(0),
+	shieldFraction(1), bomb(0), reloading(false), flag(0)
 {
 	const GBRobot * rob = dynamic_cast<const GBRobot *>(obj);
 	if ( rob ) {
@@ -215,6 +217,7 @@ GBSensorResult::GBSensorResult(const GBObject * obj, const GBDistance dis)
 		shieldFraction = rob->ShieldFraction();
 		bomb = rob->hardware.Bomb();
 		reloading = rob->hardware.blaster.Cooldown() || rob->hardware.grenades.Cooldown();
+		flag = rob->flag;
 		return;
 	}
 	const GBShot * shot = dynamic_cast<const GBShot *>(obj);
@@ -367,6 +370,13 @@ GBNumber GBSensorState::Bomb() const {
 
 bool GBSensorState::Reloading() const {
 	return currentResult < NumResults() && results[currentResult].reloading;
+}
+
+GBNumber GBSensorState::Flag() const {
+	if ( currentResult < NumResults() )
+		return results[currentResult].flag;
+	else
+		return 0;
 }
 
 GBVector GBSensorState::WhereOverall() const {
