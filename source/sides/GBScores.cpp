@@ -130,7 +130,9 @@ GBScores::GBScores()
 	biomassFraction(0.0), earlyBiomassFraction(0.0),
 	killedFraction(0.0),
 	biomassFractionSquared(0.0)
-{}
+{
+	biomassHistory.resize(1, 0);
+}
 
 GBScores::~GBScores() {}
 
@@ -148,8 +150,7 @@ void GBScores::Reset() {
 	biomassFraction = earlyBiomassFraction = 0.0;
 	killedFraction = 0.0;
 	biomassFractionSquared = 0.0;
-	biomassHistory.resize(1);
-	biomassHistory[0] = 0;
+	biomassHistory.resize(1, 0);
 }
 
 void GBScores::OneRound() { rounds = 1; }
@@ -180,7 +181,7 @@ GBScores & GBScores::operator +=(const GBScores & other) {
 //add biomass
 	if (biomassHistory.size() < other.biomassHistory.size())
 		biomassHistory.resize(other.biomassHistory.size(), 0);
-	for ( int i = 0; i < biomassHistory.size(); ++i )
+	for ( int i = 0; i < other.biomassHistory.size(); ++i )
 		biomassHistory[i] += other.biomassHistory[i];
 	return *this;
 }
