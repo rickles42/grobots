@@ -10,7 +10,7 @@
 
 
 const short kStatusBoxHeight = 30;
-const short kPCBoxHeight = 75;
+const short kPCBoxHeight = 95;
 const short kStackBoxHeight = 65;
 const short kPrintBoxHeight = 15;
 const short kHardwareBoxWidth = 150;
@@ -40,10 +40,10 @@ void GBDebuggerView::DrawPCBox(const GBRect & box, const GBStackBrain * brain) {
 	GBStackAddress pc = brain->PC();
 	DrawStringPair("PC:", ToString(pc) + " (line " + ToString(brain->PCLine()) + ')',
 		box.left + 3, box.right - 3, box.top + 11, 10, GBColor::black, true);
-	for ( long i = -3; i <= 2; i ++ )
+	for ( long i = -4; i <= 3; i ++ )
 		if ( brain->ValidAddress(pc + i) )
 			DrawStringPair(brain->AddressName(pc + i) + ':', brain->DisassembleAddress(pc + i),
-				box.left + 3, box.right - 3, box.bottom - 24 + 10 * i, 10,
+				box.left + 3, box.right - 3, box.bottom - 34 + 10 * i, 10,
 				i == 0 ? GBColor::blue : GBColor::black);
 }
 
@@ -108,34 +108,45 @@ void GBDebuggerView::DrawHardwareBox(const GBRect & box) {
 	DrawStringPair("Mass:", ToString(target->Mass(), 1), left, right, box.top + 11, 10);
 	DrawStringPair("Position:", ToString(target->Position(), 1), left, right, box.top + 21, 10);
 	DrawStringPair("Velocity:", ToString(target->Velocity(), 2), left, right, box.top + 31, 10);
-	DrawStringPair("Energy:", ToString(hw.Energy(), 1), left, right, box.top + 41, 10);
-	DrawStringPair("Eaten:", ToString(hw.Eaten(), 1), left, right, box.top + 51, 10);
+	DrawStringPair("Speed:", ToString(target->Speed(), 2), left, right, box.top + 41, 10);
+	DrawStringPair("Energy:", ToString(hw.Energy(), 1), left, right, box.top + 55, 10, GBColor::darkGreen);
+	DrawStringPair("Eaten:", ToString(hw.Eaten(), 1), left, right, box.top + 65, 10);
 	DrawStringPair("Armor:", ToString(hw.Armor()) + '/' + ToString(hw.MaxArmor()),
-		left, right, box.top + 71, 10);
-	DrawStringPair("Shield:", ToString(hw.ActualShield()) + " ("
-		+ ToPercentString(target->ShieldFraction()) + ')', left, right, box.top + 81, 10);
-	DrawStringLeft("Constructor", left, box.top + 111, 10, GBColor::black, true);
+		left, right, box.top + 75, 10);
+	if (hw.ActualShield().Nonzero())
+		DrawStringPair("Shield:", ToString(hw.ActualShield()) + " ("
+			+ ToPercentString(target->ShieldFraction()) + ')', left, right, box.top + 85,
+			10, GBColor::blue);
 	if ( hw.constructor.Type() ) {
+		DrawStringLeft("Constructor", left, box.top + 111, 10, GBColor::black, true);
 		DrawStringPair("type:", hw.constructor.Type()->Name(), left, right, box.top + 121,
 			10, hw.constructor.Type()->Color().ContrastingTextColor());
 		DrawStringPair("progress:", ToString(hw.constructor.Progress(), 0)
 				+ '/' + ToString(hw.constructor.Type()->Cost(), 0),
 			left, right, box.top + 131, 10);
-	} else
-		DrawStringLeft("inactive", left, box.top + 121, 10, GBColor::gray);
+	}
 	//sensor times? result details?
-	DrawStringLongPair("robot-found:", hw.sensor1.NumResults(), left, right, box.top + 161, 10);
-	DrawStringLongPair("food-found:", hw.sensor2.NumResults(), left, right, box.top + 171, 10);
-	DrawStringLongPair("shot-found:", hw.sensor3.NumResults(), left, right, box.top + 181, 10);
+	if (hw.sensor1.Radius().Nonzero())
+		DrawStringLongPair("robot-found:", hw.sensor1.NumResults(), left, right, box.top + 161, 10);
+	if (hw.sensor2.Radius().Nonzero())
+		DrawStringLongPair("food-found:", hw.sensor2.NumResults(), left, right, box.top + 171, 10);
+	if (hw.sensor3.Radius().Nonzero())
+		DrawStringLongPair("shot-found:", hw.sensor3.NumResults(), left, right, box.top + 181, 10);
 	DrawStringLeft("Weapons", left, box.top + 191, 10, GBColor::black, true);
-	DrawStringLongPair("blaster-cooldown:", hw.blaster.Cooldown(), left, right, box.top + 201, 10);
-	DrawStringLongPair("grenades-cooldown:", hw.grenades.Cooldown(), left, right, box.top + 211, 10);
-	DrawStringPair("force-field-angle:", ToString(hw.forceField.Angle(), 2), left, right, box.top + 221, 10);
-	DrawStringLongPair("blaster-cooldown:", hw.blaster.Cooldown(), left, right, box.top + 231, 10);
-	DrawStringPair("syphoned:", ToString(hw.syphon.Syphoned(), 2) + '/'
-		+ ToString(hw.syphon.Rate(), 2), left, right, box.top + 241, 10);
-	DrawStringPair("enemy-syphoned:", ToString(hw.enemySyphon.Syphoned(), 2) + '/'
-		+ ToString(hw.enemySyphon.Rate(), 2), left, right, box.top + 251, 10);
+	if (hw.blaster.Damage().Nonzero())
+		DrawStringLongPair("blaster-cooldown:", hw.blaster.Cooldown(), left, right, box.top + 201, 10);
+	if (hw.grenades.Damage().Nonzero())
+		DrawStringLongPair("grenades-cooldown:", hw.grenades.Cooldown(), left, right, box.top + 211, 10);
+	if (hw.forceField.MaxPower().Nonzero())
+		DrawStringPair("force-field-angle:", ToString(hw.forceField.Angle(), 2), left, right, box.top + 221, 10);
+	if (hw.syphon.MaxRate().Nonzero())
+		DrawStringPair("syphoned:", ToString(hw.syphon.Syphoned(), 2) + '/'
+			+ ToString(hw.syphon.Rate(), 2), left, right, box.top + 241, 10);
+	if (hw.enemySyphon.MaxRate().Nonzero())
+		DrawStringPair("enemy-syphoned:", ToString(hw.enemySyphon.Syphoned(), 2) + '/'
+			+ ToString(hw.enemySyphon.Rate(), 2), left, right, box.top + 251, 10);
+	if (target->flag.Nonzero())
+		DrawStringPair("flag:", ToString(target->flag, 2), left, right, box.top + 271, 10);
 }
 
 void GBDebuggerView::DrawProfileBox(const GBRect & box) {
