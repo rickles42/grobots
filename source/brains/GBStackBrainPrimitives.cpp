@@ -34,6 +34,7 @@ GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * rob
 		case hvPopulation: return robot->Owner()->Scores().Population();
 		case hvEnginePower: return robot->hardware.EnginePower();
 		case hvEngineMaxPower: return robot->hardware.EngineMaxPower();
+		case hvFlag: return robot->flag;
 	// collisions
 		case hvCollision: return robot->Collisions();
 		case hvFriendlyCollision: return robot->FriendlyCollisions();
@@ -86,6 +87,7 @@ GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * rob
 		case hvRobotSensorShieldFractionFound: return robot->hardware.sensor1.ShieldFraction();
 		case hvRobotSensorBombFound: return robot->hardware.sensor1.Bomb();
 		case hvRobotSensorReloadingFound: return robot->hardware.sensor1.Reloading();
+		case hvRobotSensorFlagFound: return robot->hardware.sensor1.Flag();
 		case hvRobotSensorRangeOverall: return (robot->hardware.sensor1.WhereOverall() - robot->Position()).Norm();
 		case hvRobotSensorAngleOverall: return (robot->hardware.sensor1.WhereOverall() - robot->Position()).Angle();
 		case hvRobotSensorCurrentResult: return robot->hardware.sensor1.CurrentResult();
@@ -182,6 +184,7 @@ void GBStackBrain::WriteHardware(const GBSymbolIndex index, const GBStackDatum v
 		case hvPopulation:
 			throw GBReadOnlyError();
 		case hvEnginePower: robot->hardware.SetEnginePower(value); break;
+		case hvFlag: robot->flag = value; break;
 		case hvEngineMaxPower:
 		case hvCollision: case hvFriendlyCollision: case hvEnemyCollision:
 		case hvFoodCollision: case hvShotCollision: case hvWallCollision:

@@ -101,6 +101,7 @@ enum { // hardware (or other magic) variables
 	hvSideID, hvTypeID, hvRobotID, hvParentID,
 	hvPopulation,
 	hvEnginePower, hvEngineMaxPower,
+	hvFlag,
 	hvCollision, hvFriendlyCollision, hvEnemyCollision, hvFoodCollision, hvShotCollision, hvWallCollision,
 // energy
 	hvEnergy, hvMaxEnergy,
@@ -120,7 +121,7 @@ enum { // hardware (or other magic) variables
 	hvRobotSensorTime, hvRobotSensorFound, hvRobotSensorRangeFound, hvRobotSensorAngleFound,
 	hvRobotSensorSideFound, hvRobotSensorRadiusFound, hvRobotSensorMassFound, hvRobotSensorEnergyFound,
 	hvRobotSensorTypeFound, hvRobotSensorIDFound, hvRobotSensorShieldFractionFound,
-	hvRobotSensorBombFound, hvRobotSensorReloadingFound,
+	hvRobotSensorBombFound, hvRobotSensorReloadingFound, hvRobotSensorFlagFound,
 	hvRobotSensorRangeOverall, hvRobotSensorAngleOverall,
 	hvRobotSensorCurrentResult, hvRobotSensorNumResults, hvRobotSensorMaxResults,
 // food sensor

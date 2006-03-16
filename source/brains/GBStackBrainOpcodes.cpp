@@ -82,6 +82,7 @@ const string hardwareVariableNames[kNumHardwareVariables] = {
 	"side", "type", "id", "parent-id",
 	"population",
 	"engine-power", "engine-max-power",
+	"flag",
 	"collision", "friendly-collision", "enemy-collision", "food-collision", "shot-collision", "wall-collision",
 // energy
 	"energy", "max-energy",
@@ -100,7 +101,7 @@ const string hardwareVariableNames[kNumHardwareVariables] = {
 	"robot-sensor-time", "robot-found", "robot-distance", "robot-direction",
 	"robot-side", "robot-radius", "robot-mass", "robot-energy",
 	"robot-type", "robot-ID", "robot-shield-fraction",
-	"robot-bomb", "robot-reloading",
+	"robot-bomb", "robot-reloading", "robot-flag",
 	"robot-distance-overall", "robot-direction-overall",
 	"current-robot-result", "num-robot-results", "max-robot-results",
 // food sensor
