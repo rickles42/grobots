@@ -157,20 +157,22 @@ GBStackBrainSpec::GBStackBrainSpec()
 	gensymCounter(0)
 {}
 
+GBStackBrainSpec::GBStackBrainSpec(const GBStackBrainSpec & original)
+	: code(original.code),
+	lineNumbers(original.lineNumbers),
+	constants(original.constants),
+	variables(original.variables),
+	vectorVariables(original.vectorVariables),
+	labels(original.labels),
+	startingLabel(original.startingLabel),
+	cStack(original.cStack),
+	gensymCounter(original.gensymCounter)
+{}
+
 GBStackBrainSpec::~GBStackBrainSpec() {}
 
 GBBrainSpec * GBStackBrainSpec::Copy() const {
-	GBStackBrainSpec * spec = new GBStackBrainSpec();
-	spec->code = code;
-	spec->lineNumbers = lineNumbers;
-	spec->constants = constants;
-	spec->variables = variables;
-	spec->vectorVariables = vectorVariables;
-	spec->labels = labels;
-	spec->startingLabel = startingLabel;
-	spec->cStack = cStack;
-	spec->gensymCounter = gensymCounter;
-	return spec;
+	return new GBStackBrainSpec(*this);
 }
 
 GBBrain * GBStackBrainSpec::MakeBrain() const {

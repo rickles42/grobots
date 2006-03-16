@@ -47,6 +47,7 @@ class GBSideReader {
 	GBSide * side; // the side being read
 	GBRobotType * type; // current type
 	GBStackBrainSpec * brain;
+	GBStackBrainSpec * commonBrain; //global code; may move to side
 	GBElementType state; // what we're in
 	string line; // current line
 	int lineno; // current line number

@@ -70,6 +70,7 @@ class GBStackBrainSpec : public GBBrainSpec {
 	long gensymCounter;
 public:
 	GBStackBrainSpec();
+	GBStackBrainSpec(const GBStackBrainSpec & original);
 	~GBStackBrainSpec();
 	GBBrainSpec * Copy() const;
 // using

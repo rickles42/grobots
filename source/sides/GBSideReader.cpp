@@ -306,7 +306,11 @@ void GBSideReader::ProcessTag(GBElementType element) {
 			}
 			break;
 		case etType:
-			if ( state != etNone ) {
+			if ( !type && brain ) {
+				commonBrain = brain;
+				brain = nil;
+			}
+			{
 				string name;
 				if ( ! ExtractRest(name, line, pos) )
 					throw GBMissingElementArgumentError();
@@ -315,8 +319,7 @@ void GBSideReader::ProcessTag(GBElementType element) {
 				type = new GBRobotType(side);
 				type->SetName(name);
 				state = etType;
-			} else
-				throw GBMisplacedElementError();
+			}
 			break;
 		case etDecoration:
 			if ( ! type ) throw GBMisplacedElementError();
@@ -346,12 +349,13 @@ void GBSideReader::ProcessTag(GBElementType element) {
 				throw GBMisplacedElementError();
 			break;
 		case etCode:
-			if ( type ) {
-				if ( ! brain )
+			if ( ! brain ) {
+				if (type && commonBrain)
+					brain = new GBStackBrainSpec(*commonBrain);
+				else
 					brain = new GBStackBrainSpec();
-				state = etCode;
-			} else
-				throw GBMisplacedElementError();
+			}
+			state = etCode;
 			break;
 		case etStart:
 			if ( state == etCode ) {
@@ -605,7 +609,7 @@ GBSideReader::GBSideReader(const GBFilename & filename)
 #else
 	: fin(filename.c_str()),
 #endif
-	side(nil), type(nil), brain(nil),
+	side(nil), type(nil), brain(nil), commonBrain(nil),
 	state(etNone),
 	lineno(0), pos(0)
 {
@@ -622,6 +626,7 @@ GBSideReader::~GBSideReader() {
 	if ( state != etEnd )
 		delete side;
 	delete type;
+	if ( commonBrain != brain ) delete commonBrain;
 	delete brain;
 #if USE_MAC_IO
 	if ( refNum && FSClose(refNum) )
