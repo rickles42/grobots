@@ -44,7 +44,8 @@ GBRobot::GBRobot(GBRobotType * rtype, const GBPosition & where)
 	lastHit(nil),
 	friendlyCollisions(0), enemyCollisions(0), foodCollisions(0), shotCollisions(0), wallCollisions(0),
 	hardware(&rtype->Hardware()),
-	dead(false)
+	dead(false),
+	flag(0)
 {
 	if ( ! rtype ) throw GBNilPointerError();
 	hardware.radio.Reset(Owner());
@@ -59,7 +60,8 @@ GBRobot::GBRobot(GBRobotType * rtype, const GBPosition & where, const GBVelocity
 	lastHit(nil),
 	friendlyCollisions(0), enemyCollisions(0), foodCollisions(0), shotCollisions(0), wallCollisions(0),
 	hardware(&rtype->Hardware()),
-	dead(false)
+	dead(false),
+	flag(0)
 {
 	if ( ! rtype ) throw GBNilPointerError();
 	hardware.radio.Reset(Owner());

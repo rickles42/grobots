@@ -25,6 +25,7 @@ public:
 // hardware state
 	GBHardwareState hardware;
 	bool dead;
+	GBNumber flag;
 private:
 	void Recalculate();
 public:
