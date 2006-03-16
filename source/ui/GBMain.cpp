@@ -30,7 +30,7 @@
 	} catch ( std::exception & e ) {
 		FatalError("Uncaught std::exception: " + string(e.what()));
 	}
-#if 0//!(DEBUG && WINDOWS) //this interferes with debugging on Windows
+#if !WINDOWS //this interferes with debugging on Windows
 	catch ( ... ) {
 		FatalError("Uncaught mystery exception.");
 	}
