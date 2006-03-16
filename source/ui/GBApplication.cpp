@@ -139,19 +139,30 @@ void GBApplication::DoLoadSide() {
 	OpenFile(reply.sfFile);
 #elif WINDOWS
 	OPENFILENAME ofn;
-	char filename[512] = "";
+	char buff[2048] = "";
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = mainWindow->win;
 	ofn.lpstrFilter = "Grobots sides (*.gb)\0*.gb\0All Files (*.*)\0*.*\0";
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = 512;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.lpstrFile = buff;
+	ofn.nMaxFile = 2048;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
 	ofn.lpstrDefExt = "gb";
 
 	if (GetOpenFileName(&ofn)) {
-		GBSide * side = GBSideReader::Load(filename);
-		if (side) world.AddSide(side);
+		if (buff[ofn.nFileOffset - 1] != '\0') { //Only one file selected
+			GBSide * side = GBSideReader::Load(buff);
+			if (side) world.AddSide(side);
+		} else { //There are multiple files selected.
+			//Buffer is formatted as "path\0file1\0file2\0...filelast\0\0"
+			string path = buff;
+			path += '\\';
+			for ( const char * filename = buff + path.size(); *filename;
+					filename += strlen(filename) + 1 ) {
+				GBSide * side = GBSideReader::Load(path + filename);
+				if(side) world.AddSide(side);
+			 }
+		}
 	}
 #endif
 }
