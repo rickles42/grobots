@@ -124,9 +124,9 @@ const string GBSideDebuggerView::Name() const {
 }
 
 void GBSideDebuggerView::AcceptKeystroke(const char what) {
-	if (what == 'n') {
+	if (what == 'n' || what == 'N') {
 		pane = pane + 1;
-	} else if (what == 'p') {
+	} else if (what == 'p' || what == 'P') {
 		pane = pane <= 0 ? 0 : pane - 1;
 	} else if ( what == '0') {
 		pane = 0;
