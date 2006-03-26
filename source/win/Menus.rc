@@ -58,8 +58,8 @@ BEGIN
         MENUITEM "Show &Meters",                13105, CHECKED
         MENUITEM SEPARATOR
         MENUITEM "Minimap Robots",              13107, CHECKED
-        MENUITEM "Minimap Sensors",             13108
-        MENUITEM "Minimap Food",                13109, CHECKED
+        MENUITEM "Minimap Food",                13108, CHECKED
+        MENUITEM "Minimap Sensors",             13109
         MENUITEM "Minimap Decorations",         13110
         MENUITEM "Minimap Trails",              13111
         MENUITEM SEPARATOR
