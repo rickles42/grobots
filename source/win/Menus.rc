@@ -70,6 +70,8 @@ BEGIN
         MENUITEM "Follow Random",               13117
         MENUITEM "Follow Near",                 13118
         MENUITEM "&Autofollow",                 13119
+        MENUITEM SEPARATOR
+        MENUITEM "&Graph All Rounds",           13121
     END
     POPUP "&Simulation"
     BEGIN
@@ -78,21 +80,23 @@ BEGIN
         MENUITEM "Step",                        13203, GRAYED
         MENUITEM "&Pause",                      13204
         MENUITEM SEPARATOR
-        MENUITEM "Slow (&10 fps)",              13206
-        MENUITEM "Normal (&30 fps)",            13207, CHECKED
-        MENUITEM "Fast (&60 fps)",              13208
-        MENUITEM "&Unlimited",                  13209
+        MENUITEM "Slowest (2 fps)",             13206
+        MENUITEM "Slow (&10 fps)",              13207
+        MENUITEM "Normal (&30 fps)",            13208, CHECKED
+        MENUITEM "Fast (&60 fps)",              13209
+        MENUITEM "Faster (120 fps)",            13210
+        MENUITEM "&Unlimited",                  13211
         MENUITEM SEPARATOR
-        MENUITEM "&New Round",                  13211
-        MENUITEM "R&estart",                    13212
-        MENUITEM "&Seed",                       13213
-        MENUITEM "Resee&d",                     13214
+        MENUITEM "&New Round",                  13213
+        MENUITEM "R&estart",                    13214
+        MENUITEM "&Seed",                       13215
+        MENUITEM "Resee&d",                     13216
         MENUITEM SEPARATOR
-        MENUITEM "Rules",                       13216, GRAYED
-        MENUITEM "&Tournament",                 13217
-        MENUITEM "Reset Sc&ores",               13218
+        MENUITEM "Rules",                       13218, GRAYED
+        MENUITEM "&Tournament",                 13219
+        MENUITEM "Reset Sc&ores",               13220
         MENUITEM SEPARATOR
-        MENUITEM "Start/Stop &Brain",           13220
+        MENUITEM "Start/Stop &Brain",           13222
     END
     POPUP "&Tools"
     BEGIN
