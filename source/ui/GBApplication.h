@@ -17,6 +17,7 @@ class GBRobot;
 class GBPortal;
 class GBMiniMapView;
 class GBDebuggerView;
+class GBScoresView;
 
 class GBApplication : public GBViewsApplication {
 	GBWorld world;
@@ -24,6 +25,7 @@ class GBApplication : public GBViewsApplication {
 	GBPortal * portal;
 	GBMiniMapView * minimap;
 	GBDebuggerView * debugger;
+	GBScoresView * scores;
 	GBWindow * minimapWindow;
 	GBWindow * rosterWindow;
 	GBWindow * scoresWindow;
