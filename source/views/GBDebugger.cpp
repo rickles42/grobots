@@ -304,6 +304,18 @@ void GBDebuggerView::AcceptClick(short x, short y, int /*clicks*/) {
 }
 
 void GBDebuggerView::AcceptKeystroke(const char what) {
-	if ( what == 's' || what == 'S' )
-		StartStopBrain();
+	switch (tolower(what)) {
+		case 's': StartStopBrain(); break;
+		case 'b':
+			if ( Active() )
+				Step();
+			break;
+		case 'f':
+			world.AdvanceFrame();
+			world.running = false;
+			break;
+		case 'r': world.running = true; break;
+		case 'p': world.running = false; break;
+		default: break;
+	}
 }
