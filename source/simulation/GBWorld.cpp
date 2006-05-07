@@ -140,6 +140,7 @@ GBWorld::GBWorld()
 	mannaSize(kDefaultMannaSize), mannaDensity(kDefaultMannaDensity), mannaRate(kDefaultMannaRate),
 	seedValue(kDefaultSeedValue), seedTypePenalty(kDefaultSeedTypePenalty),
 	previousSidesAlive(0),
+	sidesSeeded(0),
 	mannas(0), corpses(0),
 	mannaValue(0), corpseValue(0), robotValue(0)
 {
@@ -244,13 +245,16 @@ void GBWorld::CollectStatistics() {
 void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 	try {
 		GBEnergy cost = seedValue - seedTypePenalty * side->CountTypes();
+	//give side a number
+		if ( ! side->ID() )
+			side->SetID(++sidesSeeded);
+	//add cells
 		GBRobotType * type;
 		GBRobot * bot = nil;
 		GBRobot * firstPlaced = nil;
 		std::vector<GBRobot *> placed;
-		int i = 0;
 		int lastPlaced = -1; //last value of i for last successful place
-		while ( cost > 0 ) {
+		for (int i = 0; ; i++) {
 			type = side->GetSeedType(i);
 			if ( ! type )
 				throw GBGenericError("must have at least one type to seed");
@@ -261,13 +265,14 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 				cost -= type->Cost();
 				lastPlaced = i;
 				placed.push_back(bot);
-			}
-			if (i - lastPlaced >= side->NumSeedTypes())
-				// gone through list once without placing anything
-				break;
-			i++;
+			} else
+				break; //if unseedable, stop - this one will be a fetus
+			//Old version: keep trying until we've gone through list once
+				//without placing anything
+			//if (i - lastPlaced >= side->NumSeedTypes())
+			//	break;
 		}
-		// give excess energy as construction
+	// give excess energy as construction
 		int placedIndex;
 		for (placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
 			GBRobot * placee = placed[placedIndex];
@@ -281,14 +286,14 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 					throw GBGenericError("When seeding, energy left-over after bonus fetus");
 			}
 		}
-		//energy still left (implies constructor-less side!); try giving as energy
+	//energy still left (implies constructor-less side!); try giving as energy
 		for (placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
 			if (cost == 0) break;
 			GBEnergy amt = placed[placedIndex]->hardware.GiveEnergy(cost);
 			side->Scores().ReportSeeded(amt);
 			cost -= amt;
 		}
-		//all else fails, make a manna.
+	//all else fails, make a manna.
 		if ( cost > 0 )
 			AddObjectDirectly(new GBManna(where, cost)); // no ReportSeeded because it's pretty worthless
 
@@ -323,7 +328,7 @@ void GBWorld::ReseedDeadSides() {
 // since this uses side statistics, be sure statistics have been gathered
 	for ( GBSide * side = sides; side != nil; side = side->next )
 		if ( side->Scores().Sterile() ) {
-			side->Reset();
+			//side->Reset(); //why?
 			AddSeed(side, RandomLocation());
 		}
 	CollectStatistics();
@@ -332,6 +337,7 @@ void GBWorld::ReseedDeadSides() {
 void GBWorld::Reset() {
 	currentFrame = 0;
 	mannaLeft = 0;
+	sidesSeeded = 0;
 	ClearLists();
 	for ( GBSide * cur = sides; cur != nil; cur = cur->next )
 		cur->Reset();
@@ -370,14 +376,11 @@ void GBWorld::AddSide(GBSide * side) {
 	side->next = nil;
 	if ( sides == nil ) {
 		sides = side;
-		side->SetID(1);
 	} else {
-		long curid = 2;
 		GBSide * cur;
 		for ( cur = sides; cur->next != nil; cur = cur->next )
-			curid ++;
+			;
 		cur->next = side;
-		side->SetID(curid);
 	}
 	Changed();
 }
@@ -397,7 +400,6 @@ void GBWorld::ReplaceSide(GBSide * oldSide, GBSide * newSide) {
 		if ( ! cur ) throw GBBadArgumentError();
 	}
 	if ( oldSide == selectedSide ) selectedSide = newSide;
-	newSide->SetID(oldSide->ID());
 	newSide->next = oldSide->next;
 	delete oldSide;
 	Changed();
@@ -410,17 +412,12 @@ void GBWorld::RemoveSide(GBSide * side) {
 	if ( sides == side ) {
 		sides = side->next;
 		delete side;
-		long curid = 1;
-		for ( GBSide * cur = sides; cur != nil; cur = cur->next )
-			cur->SetID(curid ++);
 	} else {
-		long curid = 1;
 		for ( GBSide * cur = sides; cur != nil; cur = cur->next ) {
 			if ( cur->next == side ) {
 				cur->next = cur->next->next;
 				delete side;
 			}
-			cur->SetID(curid ++); // FIXME: is renumbering working?
 		}
 	}
 	Changed();
@@ -455,10 +452,6 @@ GBSide * GBWorld::GetSide(long index) const {
 
 GBSide * GBWorld::SelectedSide() const {
 	return selectedSide;
-}
-
-long GBWorld::SelectedSideID() const {
-	return selectedSide ? selectedSide->ID() : 0;
 }
 
 void GBWorld::SelectSide(GBSide * which) {
@@ -514,10 +507,11 @@ void GBWorld::ReportRobot(GBEnergy amount) {
 
 void GBWorld::ReportRound() {
 	roundScores.Reset();
-	for ( GBSide * cur = sides; cur != nil; cur = cur->next ) {
-		roundScores += cur->Scores(); // re-sum sides to get elimination right
-		cur->TournamentScores() += cur->Scores();
-	}
+	for ( GBSide * cur = sides; cur != nil; cur = cur->next )
+		if ( cur->Scores().Seeded() ) {
+			roundScores += cur->Scores(); // re-sum sides to get elimination right
+			cur->TournamentScores() += cur->Scores();
+		}
 	roundScores.OneRound();
 	tournamentScores += roundScores;
 }
