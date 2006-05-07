@@ -403,6 +403,8 @@ GBObject * GBObjectWorld::ObjectNear(const GBPosition where, bool hitSensors) co
 		FOR_EACH_OBJECT_IN_WORLD(i, cl, ob, {
 			if ( (ob->Class() != ocSensorShot || hitSensors)
 					&& ob->Class() != ocDecoration
+					&& (ob->Class() == ocRobot || ! best || best->Class() != ocRobot
+						|| where.InRange(ob->Position(), ob->Radius()))
 					&& ob->Position().InRange(where, dist) ) {
 				best = ob;
 				dist = (best->Position() - where).Norm();
