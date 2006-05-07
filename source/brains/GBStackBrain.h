@@ -12,7 +12,7 @@
 
 class GBRobot;
 class GBWorld;
-
+class GBSensorState;
 
 const long kStackLimit = 100;
 const long kReturnStackLimit = 50;
@@ -49,6 +49,7 @@ private:
 	void ExecutePrimitive(GBSymbolIndex ins, GBRobot * robot, GBWorld * world);
 	void ExecuteCall(GBStackAddress addr);
 	void DoPrint(const string & str);
+	void FirePeriodic(GBSensorState & sensor, GBWorld * world);
 // operations
 	void NumberToNumberOp(GBNumber (GBNumber::* op)() const);
 	void TwoNumberToNumberOp(GBNumber (GBNumber::* op)(const GBNumber) const);

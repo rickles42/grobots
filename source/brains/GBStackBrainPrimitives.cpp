@@ -552,25 +552,13 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opFoodSensorNext: Push(robot->hardware.sensor2.NextResult() ? 1 : 0); break;
 		case opShotSensorNext: Push(robot->hardware.sensor3.NextResult() ? 1 : 0); break;
 		case opPeriodicRobotSensor:
-			if ( world->CurrentFrame() >= robot->hardware.sensor1.Time() + PopInteger() ) {
-				robot->hardware.sensor1.Fire();
-				remaining = 0;
-				PushBoolean(true);
-			} else PushBoolean(false);
+			FirePeriodic(robot->hardware.sensor1, world);
 			break;
 		case opPeriodicFoodSensor:
-			if ( world->CurrentFrame() >= robot->hardware.sensor2.Time() + PopInteger() ) {
-				robot->hardware.sensor2.Fire();
-				remaining = 0;
-				PushBoolean(true);
-			} else PushBoolean(false);
+			FirePeriodic(robot->hardware.sensor2, world);
 			break;
 		case opPeriodicShotSensor:
-			if ( world->CurrentFrame() >= robot->hardware.sensor3.Time() + PopInteger() ) {
-				robot->hardware.sensor3.Fire();
-				remaining = 0;
-				PushBoolean(true);
-			} else PushBoolean(false);
+			FirePeriodic(robot->hardware.sensor3, world);
 			break;
 	// weapons
 		case opFireBlaster: robot->hardware.blaster.Fire(Pop()); break;
@@ -609,3 +597,11 @@ static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpe
 	return pos + vel * dt;
 }
 
+void GBStackBrain::FirePeriodic(GBSensorState & sensor, GBWorld * world) {
+	GBFrames period = PopInteger();
+	if ( world->CurrentFrame() >= sensor.Time() + period || sensor.Time() <= 0 ) {
+		sensor.Fire();
+		remaining = 0;
+		PushBoolean(true);
+	} else PushBoolean(false);
+}
