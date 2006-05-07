@@ -270,9 +270,11 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 			Owner()->Color().ChooseContrasting(GBColor::lightGray, GBColor::darkGray, kMinMeterContrast), 2);
 	// gestation meter
 		meterRect.Shrink(2);
-		arcsize = (hardware.constructor.Fraction() * 360).Round();
-		g.DrawArc(meterRect, 360 - arcsize, arcsize,
-			Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), 1);
+		if ( hardware.constructor.Progress().Nonzero() ) {
+			arcsize = (hardware.constructor.Fraction() * 360).Round();
+			g.DrawArc(meterRect, 360 - arcsize, arcsize,
+				Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), 1);
+		}
 	}
 // decoration
 	short thickness = (where.right - where.left) > 15 ? 2 : 1;
