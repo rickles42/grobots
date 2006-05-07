@@ -80,8 +80,7 @@ void GBTournamentView::DrawHeader(const GBRect & box) {
 	DrawStringRight("Early", box.left + kEarlyScoreRight, box.bottom - 13, 10, GBColor::black);
 	DrawStringRight("Score", box.left + kEarlyScoreRight, box.bottom - 3, 10, GBColor::black);
 	DrawStringRight("Fraction", box.left + kFractionRight + 10, box.bottom - 3, 10, GBColor::black);
-	DrawStringRight("Kill", box.left + kKillsRight, box.bottom - 13, 10, GBColor::black);
-	DrawStringRight("rate", box.left + kKillsRight, box.bottom - 3, 10, GBColor::black);
+	DrawStringRight("Kills", box.left + kKillsRight, box.bottom - 3, 10, GBColor::black);
 	DrawStringRight("Rounds", box.left + kRoundsRight, box.bottom - 3, 10, GBColor::black);
 }
 
@@ -91,7 +90,7 @@ void GBTournamentView::DrawItem(long index, const GBRect & box) {
 	if ( ! side ) return;
 	const GBScores & scores = side->TournamentScores();
 // draw ID and name
-	DrawStringRight(ToString(side->ID()) + '.', box.left + kNameLeft - 5, box.bottom - 4, 10, side->Color());
+	DrawStringRight(ToString(index) + '.', box.left + kNameLeft - 5, box.bottom - 4, 10, side->Color());
 	DrawStringLeft(side->Name(), box.left + kNameLeft, box.bottom - 4, 10, GBColor::black);
 // draw various numbers
 	long rounds = scores.Rounds();
@@ -103,8 +102,8 @@ void GBTournamentView::DrawItem(long index, const GBRect & box) {
 	if ( rounds > 0 ) {
 		GBNumber score = scores.BiomassFraction();
 		DrawStringRight(ToPercentString(score, 1), box.left + kPercentRight, box.bottom - 4,
-			10, (rounds + survived < kMinColorRounds * 2 && scores.BiomassFractionError() < 0.01f)
-				? GBColor::gray : GBColor::black, true);
+			10, (rounds + survived < kMinColorRounds * 2 || score < scores.BiomassFractionError() * 2)
+			? GBColor::gray : GBColor::black, true);
 		float survival = scores.SurvivalNotSterile();
 		DrawStringRight(ToPercentString(survival),
 			box.left + kSurvivalRight, box.bottom - 4,
@@ -133,12 +132,12 @@ void GBTournamentView::DrawItem(long index, const GBRect & box) {
 			10, RangeColor(fraction, 0.2f, 0.4f, GBColor::blue, GBColor::purple, survived));
 	}
 	if ( rounds > 0 ) {
-		float kills = scores.KillRate();
+		float kills = scores.KilledFraction();
 		DrawStringRight(ToPercentString(kills, 0), box.left + kKillsRight, box.bottom - 4,
-			10, RangeColor(kills, 1.0f, 2.0f, GBColor::blue, GBColor::purple, survived));
+			10, RangeColor(kills, 0.05f, 0.15f, GBColor::blue, GBColor::purple, survived));
 	}
 	DrawStringRight(ToString(rounds), box.left + kRoundsRight, box.bottom - 4,
-			10, rounds < kMinColorRounds ? GBColor::darkRed : GBColor::blue);
+			10, rounds < kMinColorRounds ? GBColor::darkRed : GBColor::black);
 }
 
 void GBTournamentView::DrawFooter(const GBRect & box) {
