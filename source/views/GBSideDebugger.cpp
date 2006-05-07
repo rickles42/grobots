@@ -11,7 +11,8 @@
 
 
 GBSideDebuggerView::GBSideDebuggerView(const GBWorld & wrld)
-	: GBView(), world(wrld), worldChanges(-1), pane(0), lastDrawnPane(-1)
+	: GBView(), world(wrld),
+	worldChanges(-1), pane(0), lastDrawnPane(-1), lastSideDrawn(nil)
 {}
 
 GBSideDebuggerView::~GBSideDebuggerView() {}
@@ -21,7 +22,7 @@ GBMilliseconds GBSideDebuggerView::RedrawInterval() const {
 }
 
 bool GBSideDebuggerView::InstantChanges() const {
-	return sideID != world.SelectedSideID() || lastDrawnPane != pane;
+	return lastSideDrawn != world.SelectedSide() || lastDrawnPane != pane;
 }
 
 bool GBSideDebuggerView::DelayedChanges() const {
@@ -104,7 +105,7 @@ void GBSideDebuggerView::Draw() {
 	}
 // record
 	lastDrawnPane = pane;
-	sideID = world.SelectedSideID();
+	lastSideDrawn = world.SelectedSide();
 	worldChanges = world.ChangeCount();
 }
 

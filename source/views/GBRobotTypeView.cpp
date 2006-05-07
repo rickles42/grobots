@@ -78,7 +78,7 @@ void GBRobotTypeView::DrawHardwareSummaryLine(const GBRect & box, short base,
 GBRobotTypeView::GBRobotTypeView(const GBWorld & targ)
 	: GBListView(),
 	world(targ),
-	sideID(-1), typeID(-1), lastDrawn(-1)
+	lastSideDrawn(nil), typeID(-1), lastDrawn(-1)
 {}
 
 GBRobotTypeView::~GBRobotTypeView() {}
@@ -87,7 +87,7 @@ void GBRobotTypeView::Draw() {
 	GBListView::Draw();
 // record
 	const GBSide * side = world.SelectedSide();
-	sideID = world.SelectedSideID();
+	lastSideDrawn = world.SelectedSide();
 	typeID = world.SelectedSide() ? world.SelectedSide()->SelectedTypeID() : -1;
 	lastDrawn = world.ChangeCount();
 }
@@ -211,9 +211,8 @@ GBMilliseconds GBRobotTypeView::RedrawInterval() const {
 }
 
 bool GBRobotTypeView::InstantChanges() const {
-	if ( sideID != world.SelectedSideID() ) return true;
 	const GBSide * side = world.SelectedSide();
-	return side && typeID != side->SelectedTypeID();
+	return lastSideDrawn != side || side && typeID != side->SelectedTypeID();
 }
 
 bool GBRobotTypeView::DelayedChanges() const {

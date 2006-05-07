@@ -16,7 +16,8 @@ class GBWorld;
 class GBRobotTypeView : public GBListView {
 	const GBWorld & world;
 	GBChangeCount lastDrawn;
-	long sideID, typeID;
+	const GBSide * lastSideDrawn;
+	long typeID;
 // drawing
 	const GBRobotType * SelectedType() const;
 	void DrawHardwareLine(const GBRect & box, short base,

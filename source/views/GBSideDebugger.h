@@ -14,7 +14,7 @@ class GBWorld;
 class GBSideDebuggerView : public GBView {
 	const GBWorld & world;
 	GBChangeCount worldChanges;
-	long sideID;
+	const GBSide * lastSideDrawn;
 	short pane;
 	short lastDrawnPane;
 	
