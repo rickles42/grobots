@@ -350,9 +350,13 @@ void GBSideReader::ProcessTag(GBElementType element) {
 			break;
 		case etCode:
 			if ( ! brain ) {
-				if (type && commonBrain)
+				if (type && commonBrain) {
 					brain = new GBStackBrainSpec(*commonBrain);
-				else
+				//default to beginning of type-specific code
+					GBSymbolIndex label = brain->AddGensym("start");
+					brain->ResolveGensym(label);
+					brain->SetStartingLabel(label);
+				} else
 					brain = new GBStackBrainSpec();
 			}
 			state = etCode;
