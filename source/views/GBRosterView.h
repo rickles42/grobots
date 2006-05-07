@@ -10,11 +10,13 @@
 #include "GBTypes.h"
 
 class GBWorld;
+class GBSide;
 
 class GBRosterView : public GBListView {
 	GBWorld & world;
 	GBChangeCount worldChanges;
-	long sideID, numSides;
+	const GBSide * lastSideSelected;
+	long numSides;
 // framecounter
 	GBFrames lastFrame;
 	GBMilliseconds lastTime;

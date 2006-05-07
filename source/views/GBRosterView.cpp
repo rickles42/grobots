@@ -15,7 +15,7 @@ const short kPopulationWidth = 30;
 GBRosterView::GBRosterView(GBWorld & wrld)
 	: GBListView(),
 	world(wrld),
-	worldChanges(-1), sideID(-1), numSides(0),
+	worldChanges(-1), lastSideSelected(nil), numSides(0),
 	lastFrame(0), lastTime(-1)
 {}
 
@@ -23,7 +23,7 @@ void GBRosterView::Draw() {
 	GBListView::Draw();
 // record
 	worldChanges = world.ChangeCount();
-	sideID = world.SelectedSideID();
+	lastSideSelected = world.SelectedSide();
 	numSides = world.CountSides();
 }
 
@@ -32,7 +32,7 @@ GBMilliseconds GBRosterView::RedrawInterval() const {
 }
 
 bool GBRosterView::InstantChanges() const {
-	return sideID != world.SelectedSideID() || numSides != world.CountSides() || world.CurrentFrame() < lastFrame;
+	return lastSideSelected != world.SelectedSide() || numSides != world.CountSides() || world.CurrentFrame() < lastFrame;
 	// FIXME: when sides reloaded
 }
 
@@ -81,11 +81,11 @@ void GBRosterView::DrawItem(long index, const GBRect & box) {
 	bool selected = side == world.SelectedSide();
 	DrawBox(box, selected);
 	if ( ! side ) return;
-// draw ID and name
-	DrawStringRight(ToString(side->ID()) + '.', box.left + 25, box.top + 13, 12, side->Color());
+// draw name
 	DrawStringLeft(side->Name(), box.left + 30, box.top + 13, 12, selected ? GBColor::white : GBColor::black);
-// draw numbers
+// draw ID and stats
 	if ( side->Scores().Seeded() ) {
+		DrawStringRight(ToString(side->ID()) + '.', box.left + 25, box.top + 13, 12, side->Color());
 		if ( side->Scores().Population() ) {
 			if ( side->Scores().Sterile() )
 				DrawStringRight(string("Sterile at ") + ToString(side->Scores().SterileTime()),
