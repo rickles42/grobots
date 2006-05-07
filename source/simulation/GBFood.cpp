@@ -10,7 +10,7 @@
 
 const GBDistance kFoodMinRadius = 0.1;
 const GBRatio kFoodRadiusFactor = 0.01;
-const GBRatio kFoodMassPerValue = 0.02;
+const GBRatio kFoodMassPerValue = 0.015;
 const GBEnergy kFoodDecayRate = 0.12;
 
 const GBSpeed kFriction = 0.004;
