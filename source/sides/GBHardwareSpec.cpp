@@ -17,7 +17,7 @@ const GBEnergy kCostPerProcessor = 2;
 const GBMass kMassPerProcessor = kCostPerProcessor * kStandardMassPerCost * 0.5;
 const GBEnergy kCostPerMemory = 0.05;
 const GBMass kMassPerMemory = kCostPerProcessor * kStandardMassPerCost * 0.5;
-const GBEnergy kCostPerEngine = 1000;
+const GBEnergy kCostPerEngine = 800;
 const GBMass kMassPerEngine = kCostPerEngine * kStandardMassPerCost;
 
 const GBEnergy kCostPerMaxEnergy = 0.10;
@@ -78,9 +78,9 @@ const GBDistance kGrenadesLifetimeSpeedTradeoff = 250;   // range at which speed
 const GBNumber kGrenadesSpeedExponent = 0.35;   // how much range is adjusted using speed instead of lifetime
 const GBRatio kGrenadesRecoil = 0.001;
 
-const GBEnergy kForceFieldCostPerPower = 500;
+const GBEnergy kForceFieldCostPerPower = 800;
 const GBMass kForceFieldMassPerPower = kForceFieldCostPerPower * kStandardMassPerCost;
-const GBEnergy kForceFieldCostPerRange = 40;
+const GBEnergy kForceFieldCostPerRange = 80;
 const GBMass kForceFieldMassPerRange = kForceFieldCostPerRange * kStandardMassPerCost;
 
 const GBEnergy kCostPerBomb = 0.25; // much higher than grenades, but who's gonna notice?
