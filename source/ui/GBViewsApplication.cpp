@@ -231,6 +231,10 @@ void GBViewsApplication::ExpireClicks(int x, int y) {
 }
 
 #if WINDOWS
+GBWindow * GBViewsApplication::MainWindow() {
+	return mainWindow;
+}
+
 WNDCLASS wclass = {CS_OWNDC | CS_VREDRAW | CS_HREDRAW, GBViewsApplication::WindowProc,
 	0, 0, 0, 0, 0, 0, 0, kWindowClassName};
 

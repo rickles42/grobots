@@ -6,6 +6,7 @@
 #include "GBWindow.h"
 #include "GBErrors.h"
 #include "GBStringUtilities.h"
+#include "GBViewsApplication.h"
 
 #if MAC
 #include <Windows.h>
@@ -57,16 +58,16 @@ GBWindow::GBWindow(GBView * contents, short left, short top, bool vis)
 #elif WINDOWS
 GBWindow::GBWindow(GBView * v, int x, int y, bool vis,
 				   HINSTANCE hInstance, GBViewsApplication * _app)
-	: view(v), isMain(v->Name() == "World"), visible(vis), app(_app)
+	: view(v), isMain(! _app->MainWindow()), visible(vis), app(_app)
 {
 //determine bounds
 	RECT bounds;
 	SetRect(&bounds, x, y, x + v->PreferredWidth(), y + v->PreferredHeight());
 	AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, isMain);
 	win = CreateWindow(kWindowClassName,
-		v->Name().c_str(), WS_OVERLAPPEDWINDOW,
+		(isMain ? "Grobots" : v->Name().c_str()), WS_OVERLAPPEDWINDOW,
 		bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top,
-		0, 0, hInstance, 0);
+		(isMain ? 0 : app->MainWindow()->win), 0, hInstance, 0);
 	if (!win)
 		FatalError("Couldn't create window.");
 	SetWindowLong(win, GWL_USERDATA, reinterpret_cast<long>(this));

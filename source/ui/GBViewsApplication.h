@@ -60,6 +60,7 @@ public:
 	static void SetCursor(GBCursor curs);
 	long SleepTime();
 #elif WINDOWS
+	GBWindow * MainWindow();
 	static HRESULT CALLBACK WindowProc(HWND hWin, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 	void SetStepPeriod(int period);
