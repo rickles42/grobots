@@ -24,6 +24,7 @@ class GBWorld : public GBObjectWorld, public GBModel, public GBDeletionListener 
 	GBSide * selectedSide;
 	GBFrames currentFrame;
 	int previousSidesAlive; //num of non-extinct sides last frame
+	int sidesSeeded;
 	GBRandomState random;
 	GBObject * followed;
 	GBEnergy mannaLeft;
@@ -90,7 +91,6 @@ public:
 	GBSide * GetSide(long index) const;
 // selected side
 	GBSide * SelectedSide() const;
-	long SelectedSideID() const; // to detect when selection has changed
 	void SelectSide(GBSide * which);
 // stats
 	long CountSides() const;
