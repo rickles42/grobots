@@ -151,6 +151,7 @@ void GBScores::Reset() {
 	killedFraction = 0.0;
 	biomassFractionSquared = 0.0;
 	biomassHistory.resize(1, 0);
+	biomassHistory[0] = 0;
 }
 
 void GBScores::OneRound() { rounds = 1; }
@@ -244,7 +245,14 @@ float GBScores::EarlyBiomassFraction() const {
 float GBScores::SurvivalBiomassFraction() const {
 	return biomassFraction / (survived ? survived : 1);}
 
-const std::vector<long> & GBScores::BiomassHistory() const { return biomassHistory; }
+const std::vector<long> GBScores::BiomassHistory() const {
+	if ( rounds <= 1 )
+		return biomassHistory;
+	std::vector<long> avg = biomassHistory;
+	for ( int i = 0; i < avg.size(); ++i )
+		avg[i] /= rounds;
+	return avg;
+}
 
 long GBScores::Constructor() const { return constructor / rounds; }
 
@@ -331,7 +339,8 @@ void GBSideScores::ReportSuicide(const GBEnergy en) { suicide += en; }
 
 void GBSideScores::ReportSeeded(const GBEnergy en) {
 	seeded += en;
-	biomassHistory[0] = seeded.Round();
+	if ( biomassHistory.size() == 1 )
+		biomassHistory[0] = seeded.Round();
 	sides = 1;
 	rounds = 1;
 }

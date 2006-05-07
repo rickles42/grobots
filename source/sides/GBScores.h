@@ -133,7 +133,7 @@ public:
 	float BiomassFraction() const;
 	float EarlyBiomassFraction() const;
 	float SurvivalBiomassFraction() const;
-	const std::vector<long> & BiomassHistory() const;
+	const std::vector<long> BiomassHistory() const;
 	long Constructor() const;
 	long Territory() const;
 // cumulative
