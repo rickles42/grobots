@@ -150,25 +150,6 @@ void GBSide::AddType(GBRobotType * type) {
 	Changed();
 }
 
-void GBSide::RemoveType(GBRobotType * type) {
-	if ( ! type )
-		throw GBNilPointerError();
-	if ( types == type ) {
-		types = type->next;
-		delete type;
-	} else {
-		long curid = 1;
-		for ( GBRobotType * cur = types; cur != nil; cur = cur->next ) {
-			if ( cur->next == type ) {
-				cur->next = cur->next->next;
-				delete type;
-			}
-			cur->SetID(curid ++);
-		}
-	}
-	Changed();
-}
-
 void GBSide::RemoveAllTypes() {
 	GBRobotType * temp;
 	for ( GBRobotType * cur = types; cur != nil; cur = temp ) {
@@ -194,6 +175,7 @@ int GBSide::NumSeedTypes() const {
 }
 
 void GBSide::Reset() {
+	id = 0;
 	scores.Reset();
 	int i;
 	for ( i = 0; i < kSharedMemorySize; i ++ )
