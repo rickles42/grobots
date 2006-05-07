@@ -25,7 +25,7 @@ const GBDistance kGrenadeSmallRadius = 0.125;
 const GBFrames kExplosionLifetime = 2;
 const GBMass kExplosionMinEffectiveMass = 0.1;
 const GBRatio kExplosionPushRatio = 0.01;
-const GBRatio kExplosionFoodPushRatio = 0.004;
+const GBRatio kExplosionFoodPushRatio = 0.0025;
 const GBNumber kExplosionRadiusExponent = 0.33;
 const GBRatio kExplosionRadiusRatio = 0.6;
 const GBNumber kExplosionDamageMassExponent = 0.5;
@@ -36,7 +36,7 @@ const GBFrames kExplosionSmokeLifetimeFactor = 10;
 
 const GBNumber kForceFieldRadiusExponent = 0.3;
 const GBRatio kForceFieldRadiusRatio = 4;
-const GBRatio kForceFieldPushRatio = 0.04;
+const GBRatio kForceFieldPushRatio = 0.03;
 const GBSpeed kMinEffectiveSpeed = 0.05;
 
 const GBDistance kSyphonRadius = 0.125;
@@ -284,7 +284,7 @@ void GBForceField::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/)
 	short cx = (where.right + where.left) / 2;
 	short cy = (where.bottom + where.top) / 2;
 	g.DrawLine(cx, cy, cx + (direction.Cos() * where.Width() / 2).Round(),
-		cy - (direction.Sin() * where.Height() / 2).Round(), owner->Color());
+		cy - (direction.Sin() * where.Height() / 2).Round(), owner ? owner->Color() : Color());
 	g.DrawOpenOval(where, Color(), 2);
 }
 
