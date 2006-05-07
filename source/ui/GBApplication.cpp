@@ -55,14 +55,15 @@ enum {
 		miMinimapTrails,
 		miReportErrors = 13113, miReportPrints,
 		miRefollow = 13116, miFollowRandom, miRandomNear, miAutofollow,
+		miGraphAllRounds = 13121,
 	kSimulationMenu = 132,
 		miRun = 13201, miSingleFrame, miStep, miPause,
-		miSlowSpeed = 13206, miNormalSpeed, miFastSpeed, miUnlimitedSpeed,
-		miNewRound = 13211, miRestart,
-		miSeed = 13213, miReseed,
-		miRules = 13216,
-		miTournament = 13217, miResetScores,
-		miStartStopBrain = 13220,
+		miSlowerSpeed = 13206, miSlowSpeed, miNormalSpeed, miFastSpeed, miFasterSpeed, miUnlimitedSpeed,
+		miNewRound = 13213, miRestart,
+		miSeed = 13215, miReseed,
+		miRules = 13218,
+		miTournament = 13219, miResetScores,
+		miStartStopBrain = 13222,
 	kToolsMenu = 133,
 		miScroll = 13301,
 		miAddManna = 13303, miAddRobot, miAddSeed,
@@ -71,11 +72,14 @@ enum {
 
 const short kRulesDialogID = 129;
 
+const GBMilliseconds kSlowerSpeedLimit = 500;
 const GBMilliseconds kSlowSpeedLimit = 100;
 const GBMilliseconds kNormalSpeedLimit = 33;
 const GBMilliseconds kFastSpeedLimit = 17;
+const GBMilliseconds kFasterSpeedLimit = 10;
 const GBMilliseconds kNoSpeedLimit = 0;
 
+const int kMaxFasterSteps = 2;
 const GBMilliseconds kMaxEventInterval = 50;
 
 void GBApplication::SetupMenus() {
@@ -402,11 +406,11 @@ GBApplication::GBApplication()
 	debuggerWindow(nil), sideDebuggerWindow(nil)
 {
 	SetupSound();
+	portal = new GBPortal(world);
+	mainWindow = MakeWindow(new GBDoubleBufferedView(portal), 291, 43);
 	debugger = new GBDebuggerView(world);
 	debuggerWindow = MakeWindow(debugger, 616, 43, false);
 	sideDebuggerWindow = MakeWindow(new GBSideDebuggerView(world), 200, 400, false);
-	portal = new GBPortal(world);
-	mainWindow = MakeWindow(new GBDoubleBufferedView(portal), 291, 43);
 	minimap = new GBMiniMapView(world, *portal);
 	minimapWindow = MakeWindow(new GBDoubleBufferedView(minimap), 7,
 		#if MAC && ! CARBON
@@ -417,7 +421,8 @@ GBApplication::GBApplication()
 		true);
 	rosterWindow = MakeWindow(new GBRosterView(world), 7, 43);
 	aboutWindow = MakeWindow(new GBAboutBox(), 200, 150, false);
-	scoresWindow = MakeWindow(new GBScoresView(world), 291, 384, false);
+	scores = new GBScoresView(world);
+	scoresWindow = MakeWindow(scores, 291, 384, false);
 	typeWindow = MakeWindow(new GBRobotTypeView(world), 616, 270, false);
 	tournamentWindow = MakeWindow(new GBTournamentView(world), 100, 100, false);
 	SetupMenus();
@@ -471,15 +476,18 @@ void GBApplication::AdjustMenus() {
 	CheckOne(miReportErrors, world.reportErrors);
 	CheckOne(miReportPrints, world.reportPrints);
 	CheckOne(miAutofollow, portal->autofollow);
+	CheckOne(miGraphAllRounds, scores->graphAllRounds);
 //Simulation menu
 	EnableOne(miRun, ! world.running);
 	EnableOne(miSingleFrame, ! world.running);
 	EnableOne(miStep, ! world.running && debugger->Active());
 	EnableOne(miPause, world.running);
 
+	CheckOne(miSlowerSpeed, stepPeriod == kSlowerSpeedLimit);
 	CheckOne(miSlowSpeed, stepPeriod == kSlowSpeedLimit);
 	CheckOne(miNormalSpeed, stepPeriod == kNormalSpeedLimit);
 	CheckOne(miFastSpeed, stepPeriod == kFastSpeedLimit);
+	CheckOne(miFasterSpeed, stepPeriod == kFasterSpeedLimit);
 	CheckOne(miUnlimitedSpeed, stepPeriod == kNoSpeedLimit);
 
 	CheckOne(miTournament, world.tournament);
@@ -563,6 +571,7 @@ void GBApplication::HandleMenuSelection(int item) {
 			case miFollowRandom: portal->FollowRandom(); break;
 			case miRandomNear: portal->FollowRandomNear(); break;
 			case miAutofollow: portal->autofollow = ! portal->autofollow; break;
+			case miGraphAllRounds: scores->graphAllRounds = ! scores->graphAllRounds; break;
 		//Simulation menu:
 			case miRun:
 				world.running = true;
@@ -578,9 +587,11 @@ void GBApplication::HandleMenuSelection(int item) {
 				world.running = false;
 				break;
 			case miPause: world.running = false; break;
+			case miSlowerSpeed: SetStepPeriod(kSlowerSpeedLimit); break;
 			case miSlowSpeed: SetStepPeriod(kSlowSpeedLimit); break;
 			case miNormalSpeed: SetStepPeriod(kNormalSpeedLimit); break;
 			case miFastSpeed: SetStepPeriod(kFastSpeedLimit); break;
+			case miFasterSpeed: SetStepPeriod(kFasterSpeedLimit); break;
 			case miUnlimitedSpeed: SetStepPeriod(kNoSpeedLimit); break;
 			case miNewRound:
 				world.Reset();
@@ -631,9 +642,11 @@ void GBApplication::Process() {
 	if ( !world.running ) return;
 	try {
 		lastStep = Milliseconds();
+		int steps = 0;
 		do {
 			world.AdvanceFrame();
-		} while ( stepPeriod <= 0 && world.running
+			++steps;
+		} while ( world.running && (stepPeriod <= 0 || stepPeriod <= 10 && steps < kMaxFasterSteps)
 			&& Milliseconds() <= lastStep + kMaxEventInterval );
 	} catch ( GBError & err ) {
 		NonfatalError("Error simulating: " + err.ToString());
