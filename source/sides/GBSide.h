@@ -67,7 +67,6 @@ public:
 	long CountTypes() const;
 // adding/removing types
 	void AddType(GBRobotType * type);
-	void RemoveType(GBRobotType * type);
 	void RemoveAllTypes();
 // seeding
 	void AddSeedID(long id);
