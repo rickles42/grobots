@@ -52,6 +52,7 @@ public:
 	GBSide * Side() const;
 	const string & Name() const;
 	void SetName(const string & newname);
+	string Description() const;
 	long ID() const;
 	void SetID(long newid);
 	GBColor Color() const;

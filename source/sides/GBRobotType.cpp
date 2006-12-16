@@ -5,7 +5,7 @@
 #include "GBRobotType.h"
 #include "GBErrors.h"
 #include "GBBrainSpec.h"
-
+#include "GBSide.h"
 
 GBRobotType::GBRobotType() {
 	throw GBBadConstructorError();
@@ -55,6 +55,11 @@ const string & GBRobotType::Name() const { return name; }
 void GBRobotType::SetName(const string & newname) {
 	name = newname;
 	Changed();
+}
+
+string GBRobotType::Description() const {
+	const string & sidename = side->Name();
+	return sidename + (sidename[sidename.size() - 1] == 's' ? "' " : "'s ") + name;
 }
 
 long GBRobotType::ID() const { return id; }
