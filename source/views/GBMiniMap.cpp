@@ -12,7 +12,7 @@ GBMiniMapView::GBMiniMapView(const GBWorld & targ, GBPortal & port)
 	worldChanges(-1), portalChanges(-1), frameLastDrawn(0),
 	trails(nil),
 	showRobots(true), showFood(true), showSensors(false), showDecorations(false),
-	showTrails(false), whiteBackground(false)
+	showTrails(false)
 {}
 
 GBMiniMapView::~GBMiniMapView() {
@@ -64,8 +64,7 @@ void GBMiniMapView::DrawObjectListTrails(const GBObject * list, const short minS
 		where.right = where.left + (cur->Radius() * 2 * scalex).Max(minSize).Round();
 		where.bottom = where.top + (cur->Radius() * 2 * scaley).Max(minSize).Round();
 		trails->Graphics().DrawSolidRect(CalcExternalRect(where),
-			cur->Color().Mix(kTrailIntensity,
-				whiteBackground ? GBColor::white : GBColor::black));
+			cur->Color() * kTrailIntensity);
 	}
 	trails->StopDrawing();
 }
@@ -105,13 +104,12 @@ void GBMiniMapView::Draw() {
 	}
 	if ( newTrails || frameLastDrawn > world.CurrentFrame() ) {
 		trails->StartDrawing();
-		trails->Graphics().DrawSolidRect(trails->Bounds(),
-			whiteBackground ? GBColor::white : GBColor::black);
+		trails->Graphics().DrawSolidRect(trails->Bounds(), GBColor::black);
 		trails->StopDrawing();
 	}
 // draw background and grid
 	if ( showTrails ) BlitAll(*trails, trails->Bounds());
-	else DrawBackground(whiteBackground ? GBColor::white : GBColor::black);
+	else DrawBackground(GBColor::black);
 	long bTilesX = world.BackgroundTilesX();
 	long bTilesY = world.BackgroundTilesY();
 	long tx, ty;
@@ -143,7 +141,7 @@ void GBMiniMapView::Draw() {
 	box.top = ToScreenY(portal.ViewTop());
 	box.right = ToScreenX(portal.ViewRight());
 	box.bottom = ToScreenY(portal.ViewBottom());
-	DrawOpenRect(box, whiteBackground ? GBColor::black : GBColor::white);
+	DrawOpenRect(box, GBColor::white);
 // record
 	portalChanges = portal.ChangeCount();
 	worldChanges = world.ChangeCount();
@@ -227,13 +225,6 @@ void GBMiniMapView::AcceptKeystroke(const char what) {
 		case 's': case 'S': showSensors = ! showSensors; break;
 		case 'd': case 'D': showDecorations = ! showDecorations; break;
 		case 't': case 'T': showTrails = ! showTrails; break;
-		case 'w': case 'W':
-			whiteBackground = ! whiteBackground;
-			if ( trails ) {
-				delete trails;
-				trails = nil;
-			}
-			break;
 		case '\n': case '\r': portal.FollowRandom(); break;
 		case '\t': portal.FollowRandomNear(); break;
 		case '`': portal.Refollow(); break;

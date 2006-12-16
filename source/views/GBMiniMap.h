@@ -20,7 +20,7 @@ class GBMiniMapView : public GBView {
 	GBBitmap * trails;
 public:
 	bool showRobots, showFood, showSensors, showDecorations;
-	bool showTrails, whiteBackground;
+	bool showTrails;
 private:
 // drawing internals
 	void DrawLayer(const GBObjectClass layer, const short minSize) const;
