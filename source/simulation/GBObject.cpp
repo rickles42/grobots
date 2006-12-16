@@ -239,6 +239,10 @@ std::string GBObject::Description() const {
 	return "Generic object";
 }
 
+std::string GBObject::Details() const {
+	return "";
+}
+
 const GBColor GBObject::Color() const {
 	return GBColor(1);
 }

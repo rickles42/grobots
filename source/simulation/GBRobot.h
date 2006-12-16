@@ -67,6 +67,7 @@ public:
 	GBEnergy Biomass() const;
 	GBNumber Interest() const;
 	string Description() const;
+	string Details() const;
 // evil antimodular drawing code
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;

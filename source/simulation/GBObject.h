@@ -83,6 +83,7 @@ public:
 	virtual GBEnergy Energy() const;
 	virtual GBNumber Interest() const; // how attractive to autocamera
 	virtual string Description() const;
+	virtual string Details() const;
 // evil antimodular drawing code
 	virtual const GBColor Color() const;
 	virtual void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
