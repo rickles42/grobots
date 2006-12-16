@@ -666,9 +666,18 @@ string GBStackBrainSpec::AddressName(const GBStackAddress addr) const {
 	return ToString(addr);
 }
 
+string GBStackBrainSpec::AddressLastLabel(const GBStackAddress addr) const {
+	const GBLabel * closest = nil;
+	for ( GBSymbolIndex i = 0; i < labels.size(); i ++ )
+		if ( !labels[i].gensym && labels[i].address < addr && (!closest || labels[i].address > closest->address) )
+			closest = &labels[i];
+	if ( closest ) return closest->name;
+	else return ToString(addr);
+}
+
 string GBStackBrainSpec::DisassembleAddress(const GBStackAddress addr) const {
 	if ( addr < 0 || addr >= code.size() )
-		return "out-of-range";
+		return "";
 	return DisassembleInstruction(code[addr]);
 }
 

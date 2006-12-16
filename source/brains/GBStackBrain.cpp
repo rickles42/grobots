@@ -330,6 +330,9 @@ bool GBStackBrain::ValidAddress(const GBStackAddress addr) const {
 string GBStackBrain::AddressName(const GBStackAddress addr) const {
 	return spec->AddressName(addr);}
 
+string GBStackBrain::AddressLastLabel(const GBStackAddress addr) const {
+	return spec->AddressLastLabel(addr);}
+
 string GBStackBrain::DisassembleAddress(const GBStackAddress addr) const {
 	return spec->DisassembleAddress(addr);}
 

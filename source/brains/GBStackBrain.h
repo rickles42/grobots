@@ -93,6 +93,7 @@ public:
 	GBStackAddress ReturnStackAt(long index) const;
 	bool ValidAddress(const GBStackAddress addr) const;
 	string AddressName(const GBStackAddress addr) const;
+	string AddressLastLabel(const GBStackAddress addr) const;
 	string DisassembleAddress(const GBStackAddress addr) const;
 	string LastPrint() const;
 	GBSymbolIndex NumVariables() const;

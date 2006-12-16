@@ -139,6 +139,7 @@ public: // loader access
 // debugger access
 	GBLineNumber LineNumber(const GBStackAddress addr) const;
 	string AddressName(const GBStackAddress addr) const;
+	string AddressLastLabel(const GBStackAddress addr) const;
 	string DisassembleAddress(const GBStackAddress addr) const;
 	string DisassembleInstruction(const GBStackInstruction ins) const;
 	const string & VariableName(GBSymbolIndex index) const;
