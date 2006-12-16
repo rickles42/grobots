@@ -194,9 +194,10 @@ void GBRobotTypeView::DrawFooter(const GBRect & box) {
 		hw.Bomb(), hw.BombCost(), hw.BombMass());
 // totals and brain
 	DrawHardwareSummaryLine(box, -40, "Ordinary hardware:", GBColor::black,
-		hw.HardwareCost() - hw.CoolingCost(), hw.Mass() - hw.CoolingMass());
-	DrawHardwareLine(box, -30, "cooling charge", GBColor::red,
-		"", "", "", "", hw.CoolingCost(), hw.CoolingMass());
+		hw.Cost() - hw.CoolingCost(), hw.Mass() - hw.CoolingMass());
+	DrawHardwareLine(box, -30,
+		ToPercentString(hw.CoolingCost() / (hw.Cost() - hw.CoolingCost()), 0) + " cooling charge",
+		GBColor::red, "", "", "", "", hw.CoolingCost(), hw.CoolingMass());
 	const GBBrainSpec * brain = type->Brain();
 	if ( brain )
 		DrawHardwareSummaryLine(box, -18, "Code", GBColor::black, brain->Cost(), brain->Mass());
@@ -233,7 +234,7 @@ const string GBRobotTypeView::Name() const {
 
 void GBRobotTypeView::ItemClicked(long index) {
 	const GBSide * side = world.SelectedSide();
-	if ( ! side ) return;
-	side->SelectType(index ? side->GetType(index) : nil);
+	if ( ! side || ! index ) return;
+	side->SelectType(side->GetType(index));
 }
 
