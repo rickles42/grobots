@@ -63,6 +63,7 @@ enum { // primitives
 	opVectorNorm, opVectorAngle,
 	opDotProduct, opProject, opCross, opUnitize,
 	opDistance, opInRange,
+	opVectorEqual, opVectorNotEqual,
 // comparisons and Boolean operations
 	opEqual, opNotEqual,
 	opLessThan, opGreaterThan, opLessThanOrEqual, opGreaterThanOrEqual,

@@ -413,6 +413,8 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 			Push(pos.x.Max(temp).Min(world->Size().x - temp));
 			Push(pos.y.Max(temp).Min(world->Size().y - temp));
 			} break;
+		case opVectorEqual: PushBoolean(PopVector() == PopVector()); break;
+		case opVectorNotEqual: PushBoolean(PopVector() != PopVector()); break;
 	// comparisons
 		case opEqual: PushBoolean(Pop() == Pop()); break;
 		case opNotEqual: PushBoolean(Pop() != Pop()); break;

@@ -47,6 +47,7 @@ const string primitiveNames[kNumPrimitives] = {
 	"norm", "angle",
 	"dot", "project", "cross", "unitize",
 	"dist", "in-range",
+	"v=", "v<>",
 // comparisons and Boolean ops
 	"=", "<>",
 	"<", ">", "<=", ">=",
