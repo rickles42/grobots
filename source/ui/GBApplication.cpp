@@ -62,8 +62,8 @@ enum {
 		miNewRound = 13213, miRestart,
 		miSeed = 13215, miReseed,
 		miRules = 13218,
-		miTournament = 13219, miResetScores,
-		miStartStopBrain = 13222,
+		miTournament = 13219, miSaveScores, miResetScores,
+		miStartStopBrain = 13223,
 	kToolsMenu = 133,
 		miScroll = 13301,
 		miAddManna = 13303, miAddRobot, miAddSeed,
@@ -79,7 +79,7 @@ const GBMilliseconds kFastSpeedLimit = 17;
 const GBMilliseconds kFasterSpeedLimit = 10;
 const GBMilliseconds kNoSpeedLimit = 0;
 
-const int kMaxFasterSteps = 2;
+const int kMaxFasterSteps = 3;
 const GBMilliseconds kMaxEventInterval = 50;
 
 void GBApplication::SetupMenus() {
@@ -613,6 +613,7 @@ void GBApplication::HandleMenuSelection(int item) {
 #endif
 					world.tournament = true;
 				break;
+			case miSaveScores: world.DumpTournamentScores(); break;
 			case miResetScores: world.ResetTournamentScores(); break;
 			case miStartStopBrain: debugger->StartStopBrain(); break;
 		//Tools menu

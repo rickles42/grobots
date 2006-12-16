@@ -84,7 +84,7 @@ BEGIN
         MENUITEM "Slow (&10 fps)",              13207
         MENUITEM "Normal (&30 fps)",            13208, CHECKED
         MENUITEM "Fast (&60 fps)",              13209
-        MENUITEM "Faster (120 fps)",            13210
+        MENUITEM "Faster (300 fps)",            13210
         MENUITEM "&Unlimited",                  13211
         MENUITEM SEPARATOR
         MENUITEM "&New Round",                  13213
@@ -94,9 +94,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Rules",                       13218, GRAYED
         MENUITEM "&Tournament",                 13219
-        MENUITEM "Reset Sc&ores",               13220
+        MENUITEM "Sa&ve Scores",               13220
+        MENUITEM "Reset Sc&ores",               13221
         MENUITEM SEPARATOR
-        MENUITEM "Start/Stop &Brain",           13222
+        MENUITEM "Start/Stop &Brain",           13223
     END
     POPUP "&Tools"
     BEGIN
