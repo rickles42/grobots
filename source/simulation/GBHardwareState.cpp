@@ -176,7 +176,7 @@ void GBConstructorState::Act(GBRobot * robot, GBWorld * world) {
 	}
 	if ( abortion > 0 ) {
 		world->AddObjectNew(new GBCorpse(robot->Position(), robot->Velocity(),
-			abortion * kAbortionCorpseFactor, robot->Owner(), nil));
+			abortion * kAbortionCorpseFactor, robot->Type(), nil)); //should really be child type, but we don't know that any more
 		abortion = 0;
 	}
 }
@@ -821,7 +821,7 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 	if ( armor <= 0 || robot->dead ) {
 		robot->dead = true;
 		world->AddObjectNew(new GBCorpse(robot->Position(), robot->Velocity(),
-			Biomass() * kCorpsePerBiomass, robot->Owner(), robot->LastHit()));
+			Biomass() * kCorpsePerBiomass, robot->Type(), robot->LastHit()));
 		world->AddObjectNew(new GBExplosion(robot->Position(), robot->Owner(),
 			(Biomass() * kDeathExplosionDamagePerBiomass + spec->Bomb()) * robot->ShieldFraction()));
 		return;

@@ -7,6 +7,7 @@
 #include "GBWorld.h"
 #include "GBSide.h"
 #include "GBStringUtilities.h"
+#include "GBRobotType.h"
 
 const GBDistance kFoodMinRadius = 0.1;
 const GBRatio kFoodRadiusFactor = 0.01;
@@ -115,15 +116,15 @@ const GBColor GBManna::Color() const {
 // GBCorpse //
 
 GBCorpse::GBCorpse(const GBPosition & where, const GBVelocity & vel,
-		const GBEnergy val, GBSide * const who, GBSide * const cause)
+		const GBEnergy val, GBRobotType * const who, GBSide * const cause)
 	: GBFood(where, vel, val),
-	owner(who), killer(cause)
+	type(who), killer(cause)
 {}
 
 GBCorpse::~GBCorpse() {}
 
 GBSide * GBCorpse::Owner() const {
-	return owner;
+	return type->Side();
 }
 
 void GBCorpse::CollectStatistics(GBWorld * world) const {
@@ -135,8 +136,11 @@ GBNumber GBCorpse::Interest() const {
 }
 
 string GBCorpse::Description() const {
-	return Owner()->Name() + " killed by " + (killer ? killer->Name() : string("accident"))
-		+ " (" + ToString(value, 0) + ')';
+	return "Corpse of " + type->Description();
+}
+
+string GBCorpse::Details() const {
+	return ToString(value, 0) + " energy, killed by " + (killer ? killer->Name() : string("accident"));
 }
 
 const GBColor GBCorpse::Color() const {
@@ -146,7 +150,7 @@ const GBColor GBCorpse::Color() const {
 void GBCorpse::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 	GBFood::Draw(g, where, detailed);
 	if ( detailed ) {
-		g.DrawOpenRect(where, owner->Color());
+		g.DrawOpenRect(where, Owner()->Color());
 		if ( killer && where.Width() >= 6 ) {
 			GBRect dot(where.CenterX() - 1, where.CenterY() - 1,
 				where.CenterX() + 1, where.CenterY() + 1);

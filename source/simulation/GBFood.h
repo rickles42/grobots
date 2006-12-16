@@ -8,6 +8,7 @@
 #include "GBObject.h"
 
 class GBWorld;
+class GBRobotType;
 
 class GBFood : public GBObject {
 protected:
@@ -41,16 +42,17 @@ public:
 };
 
 class GBCorpse : public GBFood {
-	GBSide * const owner;
+	GBRobotType * const type;
 	GBSide * const killer;
 public:
 	GBCorpse(const GBPosition & where, const GBVelocity & vel,
-		const GBEnergy val, GBSide * const who, GBSide * const cause);
+		const GBEnergy val, GBRobotType * const who, GBSide * const cause);
 	~GBCorpse();
 	GBSide * Owner() const;
 	void CollectStatistics(GBWorld * world) const;
 	GBNumber Interest() const;
 	string Description() const;
+	string Details() const;
 	const GBColor Color() const;
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
 };
