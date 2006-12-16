@@ -252,7 +252,7 @@ void GBGraphics::DrawArc(const GBRect & r, short startAngle, short length,
 
 void GBGraphics::DrawString(const string & str, short x, short y,
 		short size, const GBColor & color, bool useBold) {
-	HFONT f = CreateFont(size + 2, 0, 0, 0, useBold ? FW_BOLD : FW_NORMAL,
+	HFONT f = CreateFont(- size, 0, 0, 0, useBold ? FW_BOLD : FW_NORMAL,
 		0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Arial");
 	HGDIOBJ old = SelectObject(hdc, f);
