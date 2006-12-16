@@ -27,7 +27,7 @@ const GBRatio kQuadraticDragFactor = 0.15;
 
 const GBNumber kShieldEffectiveness = 1;
 const GBPower kStandardShieldPerMass = 1.0; //shield per mass for blue-white shield graphic
-const float kMinMinimapBotContrast = 0.3f;
+const float kMinMinimapBotContrast = 0.35f;
 const float kMinMeterContrast = 0.25f;
 
 
@@ -83,8 +83,15 @@ long GBRobot::ParentID() const {
 	return parent;}
 
 string GBRobot::Description() const {
-	const string & sidename = type->Side()->Name();
-	return sidename + (sidename[sidename.size() - 1] == 's' ? "' " : "'s ") + type->Name() + " #" + ToString(id);
+	return type->Description() + " #" + ToString(id);
+}
+
+string GBRobot::Details() const {
+	string dets = ToString(Energy(), 0) + " energy, " + ToString(hardware.Armor(), 0) + " armor";
+	if (hardware.constructor.Progress().Nonzero())
+		dets += ", " + ToPercentString(hardware.constructor.Progress() / hardware.constructor.Type()->Cost(), 0)
+			+ " " + hardware.constructor.Type()->Name();
+	return dets;
 }
 
 int GBRobot::Collisions() const {
@@ -242,8 +249,10 @@ GBNumber GBRobot::Interest() const {
 	return interest;
 }
 
+//This color is only used for the minimap, so it has built-in contrast handling.
 const GBColor GBRobot::Color() const {
-	return Owner()->Color().Mix(0.9f, type->Color());
+	return Owner()->Color().EnsureContrastWithBlack(kMinMinimapBotContrast)
+		.Mix(0.9f, type->Color());
 }
 
 void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
@@ -333,7 +342,7 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 
 void GBRobot::DrawMini(GBGraphics & g, const GBRect & where) const {
 	if ( where.Width() <= 4 )
-		g.DrawSolidRect(where, Color().EnsureContrastWithBlack(kMinMinimapBotContrast));
+		g.DrawSolidRect(where, Color());
 	else {
 		g.DrawSolidOval(where, Owner()->Color());
 		g.DrawOpenOval(where, Owner()->Color().Mix(0.5f, type->Color()));
