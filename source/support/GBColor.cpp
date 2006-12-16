@@ -61,7 +61,7 @@ const GBColor GBColor::EnsureContrastWithBlack(const float minimum) const {
 		return *this;
 	if ( contrast == 0.0f )
 		return GBColor(minimum);
-	return *this * minimum / contrast;
+	return *this * (minimum / contrast);
 }
 
 // Returns one of two colors which best contrasts with *this. If the primary color
