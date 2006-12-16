@@ -38,7 +38,7 @@ void GBDebuggerView::DrawStatusBox(const GBRect & box) {
 void GBDebuggerView::DrawPCBox(const GBRect & box, const GBStackBrain * brain) {
 	DrawBox(box);
 	GBStackAddress pc = brain->PC();
-	DrawStringPair("PC:", ToString(pc) + " (line " + ToString(brain->PCLine()) + ')',
+	DrawStringPair("PC:", brain->AddressLastLabel(pc) + " (line " + ToString(brain->PCLine()) + ')',
 		box.left + 3, box.right - 3, box.top + 11, 10, GBColor::black, true);
 	for ( long i = -4; i <= 3; i ++ )
 		if ( brain->ValidAddress(pc + i) )
@@ -65,7 +65,8 @@ void GBDebuggerView::DrawReturnStackBox(const GBRect & box, const GBStackBrain *
 	long height = brain->ReturnStackHeight();
 	if ( height ) {
 		for ( long i = 0; i < 5 && i < height; i ++ )
-			DrawStringPair(ToString(height - i) + ':', ToString(brain->ReturnStackAt(height - i - 1)),
+			DrawStringPair(ToString(height - i) + ':',
+				brain->AddressLastLabel((brain->ReturnStackAt(height - i - 1))),
 				box.left + 3, box.right - 3, box.bottom - 44 + 10 * i, 10);
 	} else
 		DrawStringRight("empty", box.right - 3, box.top + 31, 10);
@@ -109,21 +110,23 @@ void GBDebuggerView::DrawHardwareBox(const GBRect & box) {
 	DrawStringPair("Position:", ToString(target->Position(), 1), left, right, box.top + 21, 10);
 	DrawStringPair("Velocity:", ToString(target->Velocity(), 2), left, right, box.top + 31, 10);
 	DrawStringPair("Speed:", ToString(target->Speed(), 2), left, right, box.top + 41, 10);
-	DrawStringPair("Energy:", ToString(hw.Energy(), 1), left, right, box.top + 55, 10, GBColor::darkGreen);
-	DrawStringPair("Eaten:", ToString(hw.Eaten(), 1), left, right, box.top + 65, 10);
+	if (hw.EnginePower().Nonzero())
+		DrawStringPair("Engine vel:", ToString(hw.EngineVelocity(), 2), left, right, box.top + 51, 10);
+	DrawStringPair("Energy:", ToString(hw.Energy(), 1), left, right, box.top + 65, 10, GBColor::darkGreen);
+	DrawStringPair("Eaten:", ToString(hw.Eaten(), 1), left, right, box.top + 75, 10, GBColor::darkGreen);
 	DrawStringPair("Armor:", ToString(hw.Armor()) + '/' + ToString(hw.MaxArmor()),
-		left, right, box.top + 75, 10);
+		left, right, box.top + 85, 10);
 	if (hw.ActualShield().Nonzero())
 		DrawStringPair("Shield:", ToString(hw.ActualShield()) + " ("
-			+ ToPercentString(target->ShieldFraction()) + ')', left, right, box.top + 85,
+			+ ToPercentString(target->ShieldFraction()) + ')', left, right, box.top + 95,
 			10, GBColor::blue);
 	if ( hw.constructor.Type() ) {
-		DrawStringLeft("Constructor", left, box.top + 111, 10, GBColor::black, true);
-		DrawStringPair("type:", hw.constructor.Type()->Name(), left, right, box.top + 121,
+		DrawStringLeft("Constructor", left, box.top + 121, 10, GBColor::black, true);
+		DrawStringPair("type:", hw.constructor.Type()->Name(), left, right, box.top + 131,
 			10, hw.constructor.Type()->Color().ContrastingTextColor());
 		DrawStringPair("progress:", ToString(hw.constructor.Progress(), 0)
 				+ '/' + ToString(hw.constructor.Type()->Cost(), 0),
-			left, right, box.top + 131, 10);
+			left, right, box.top + 141, 10);
 	}
 	//sensor times? result details?
 	if (hw.sensor1.Radius().Nonzero())
@@ -132,7 +135,7 @@ void GBDebuggerView::DrawHardwareBox(const GBRect & box) {
 		DrawStringLongPair("food-found:", hw.sensor2.NumResults(), left, right, box.top + 171, 10);
 	if (hw.sensor3.Radius().Nonzero())
 		DrawStringLongPair("shot-found:", hw.sensor3.NumResults(), left, right, box.top + 181, 10);
-	DrawStringLeft("Weapons", left, box.top + 191, 10, GBColor::black, true);
+	DrawStringLeft("Weapons:", left, box.top + 191, 10, GBColor::black, true);
 	if (hw.blaster.Damage().Nonzero())
 		DrawStringLongPair("blaster-cooldown:", hw.blaster.Cooldown(), left, right, box.top + 201, 10);
 	if (hw.grenades.Damage().Nonzero())
