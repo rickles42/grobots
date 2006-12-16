@@ -10,7 +10,7 @@
 #include "GBRobotType.h"
 #include "GBRandomState.h"
 #include "GBRobot.h"
-
+#include "GBStringUtilities.h"
 
 const short kScale = 16; // number of pixels per unit. Make variable someday?
 const GBSpeed kAutoScrollSpeed = 0.4;
@@ -197,10 +197,15 @@ void GBPortal::Draw() {
 	}
 	DrawBackground();
 	DrawObjects();
-	if ( following && world.Followed() )
-		DrawStringCentered(world.Followed()->Description(), ToScreenX(followPosition.x),
-			ToScreenY(followPosition.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13,
+	if ( following && world.Followed() ) {
+		int y = ToScreenY(followPosition.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13;
+		DrawStringCentered(world.Followed()->Description(), ToScreenX(followPosition.x), y,
 			10, GBColor::white);
+		const string & details = world.Followed()->Details();
+		if (details.length() > 0)
+			DrawStringCentered(details, ToScreenX(followPosition.x), y + 10,
+				10, GBColor::white);
+	}
 // record drawn
 	worldChanges = world.ChangeCount();
 	selfChanges = ChangeCount();
