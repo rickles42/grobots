@@ -11,12 +11,19 @@
 #include "GBRobotType.h"
 #include "GBSound.h"
 #include "GBStringUtilities.h"
+#include <fstream.h>
 
 #if MAC
 #include <Timer.h>
 #include <Math64.h>
 #endif
 
+#if WINDOWS
+//this seems to be missing in MSVC6
+ostream & operator << (ostream & s, const string & str) {
+	return s << str.c_str();
+}
+#endif
 
 const GBEnergy kDefaultMannaDensity = 150; // energy / tile
 const GBNumber kDefaultMannaRate = 0.25; // energy / tile / frame
@@ -521,6 +528,31 @@ void GBWorld::ResetTournamentScores() {
 		cur->TournamentScores().Reset();
 	tournamentScores.Reset();
 	Changed();
+}
+
+void GBWorld::DumpTournamentScores() {
+	ofstream f("tournament-scores.html", ios::app);
+	if ( !f.good() ) return;
+	f << "\n<table>\n"
+		"<colgroup><col><col><colgroup><col class=key><col><col><col><col><col><col>\n"
+		"<thead><tr><th>Side<th>Author\n"
+		"<th>Score<th>Nonsterile<br>survival<th>Early<br>death<th>Late<br>death"
+		"<th>Early<br>score<th>Fraction<th>Kills\n"
+		"<tbody>\n";
+	for (const GBSide * s = sides; s; s = s->next) {
+		f << "<tr><td>" << s->Name() << "<td>" << s->Author() << "\n";
+		const GBScores & sc = s->TournamentScores();
+		f << "<td>" << ToPercentString(sc.BiomassFraction(), 1);
+		f << "<td>" << ToPercentString(sc.SurvivalNotSterile(), 0);
+		f << "<td>" << ToPercentString(sc.EarlyDeathRate(), 0);
+		f << "<td>" << ToPercentString(sc.LateDeathRate(), 0);
+		f << "<td>" << ToPercentString(sc.EarlyBiomassFraction(), 1);
+		f << "<td>" << ToPercentString(sc.SurvivalBiomassFraction(), 0);
+		f << "<td>" << ToPercentString(sc.KilledFraction(), 0) << "\n";
+	}
+	f << "<tfoot><tr><th colspan=3>Overall:<td>" << tournamentScores.SurvivalNotSterile()
+	  << "<td>" << tournamentScores.EarlyDeathRate()
+	  << "<td>" << tournamentScores.LateDeathRate() << "<th colspan=3>\n</table>\n";
 }
 
 const GBScores & GBWorld::RoundScores() const {
