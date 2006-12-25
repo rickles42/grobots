@@ -17,8 +17,6 @@
 	using std::ifstream;
 #endif
 
-const size_t kBufferSize = 512;
-
 const string tagNames[kNumElementTypes] = {
 	"none-illegal",
 	"side", "seed",
@@ -422,8 +420,7 @@ void GBSideReader::ProcessTag(GBElementType element) {
 	}
 }
 
-bool GBSideReader::GetNextLine() {
-	char buffer[kBufferSize];
+bool GBSideReader::GetNextBuffer() {
 #if USE_MAC_IO
 	IOParam params;
 // set up params
@@ -431,35 +428,41 @@ bool GBSideReader::GetNextLine() {
 	params.ioRefNum = refNum;
 	params.ioBuffer = buffer;
 	params.ioReqCount = kBufferSize;
-	params.ioPosMode = fsAtMark | 0x80 | ('\n' << 8);
+	params.ioPosMode = fsAtMark | 0x80 | ('\n' << 8); //TODO fix
 	params.ioPosOffset = 0;
 // read
 	PBReadSync((ParmBlkPtr)(&params));
-	if ( params.ioResult == eofErr ) {
-		if ( params.ioActCount == 0 ) {
-			line.clear();
-			return false;
-		}
-	} else if ( params.ioResult )
+	if ( params.ioResult && params.ioResult == eofErr )
 		throw GBFileError();
-	if ( params.ioActCount >= kBufferSize - 1 )
-		throw GBLineTooLongError();
-	line.assign(buffer, buffer[params.ioActCount - 1] == '\n' ? params.ioActCount - 1 : params.ioActCount);
+	buflen = params.ioActCount;
 #else
 	if ( fin.eof() )
 		return false;
-	fin.getline(buffer, kBufferSize);
-	line = buffer;
-	if ( line.size() >= kBufferSize - 1 )
-		throw GBLineTooLongError();
-	if ( fin.eof() && line.empty() )
-		return false;
-	if ( fin.fail() )
+	fin.read(buffer, kBufferSize);
+	buflen = fin.gcount();
+	if ( fin.fail() && ! buflen )
 		throw GBFileError();
 #endif
+	bufpos = 0;
+	return buflen > 0;
+}
+
+bool GBSideReader::GetNextLine() {
+	line = "";
 	pos = 0;
-	lineno++;
-	return true;
+	while ( bufpos < buflen || GetNextBuffer() ) {
+		char c = buffer[bufpos++];
+		if ( '\n' == c || '\r' == c ) {
+			lineno++;
+			return true;
+		} else
+			line += c;
+	}
+	if ( line.length() > 0 ) {
+		lineno++;
+		return true;
+	}
+	return false;
 }
 
 void GBSideReader::ProcessCodeLine() {
@@ -613,6 +616,7 @@ GBSideReader::GBSideReader(const GBFilename & filename)
 #else
 	: fin(filename.c_str()),
 #endif
+	bufpos(0), buflen(0),
 	side(nil), type(nil), brain(nil), commonBrain(nil),
 	state(etNone),
 	lineno(0), pos(0)

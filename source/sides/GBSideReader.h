@@ -38,12 +38,16 @@ typedef enum {
 
 class GBStackBrainSpec;
 
+const size_t kBufferSize = 512;
+
 class GBSideReader {
 #if USE_MAC_IO
 	short refNum; // file reference number
 #else
 	std::ifstream fin;
 #endif
+	char buffer[kBufferSize];
+	int bufpos, buflen;
 	GBSide * side; // the side being read
 	GBRobotType * type; // current type
 	GBStackBrainSpec * brain;
@@ -55,6 +59,7 @@ class GBSideReader {
 // reading
 	void ProcessLine();
 	void ProcessTag(GBElementType element); // process a tag line
+	bool GetNextBuffer(); // returns false if EOF is reached
 	bool GetNextLine(); // returns false if EOF is reached
 // specific line kinds
 	void ProcessHardwareLine();
