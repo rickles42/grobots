@@ -100,16 +100,11 @@ GBBrain * GBRobotType::MakeBrain() const {
 
 void GBRobotType::Recalculate() {
 	hardware.Recalculate();
+	cost = hardware.Cost() + (brain ? brain->Cost() : GBNumber(0));
+	mass = hardware.Mass() + (brain ? brain->Mass() : GBNumber(0));
 	Changed();
 }
 
-GBEnergy GBRobotType::Cost() const {
-	return hardware.Cost()
-		+ (brain ? brain->Cost() : GBNumber(0));
-}
-
-GBEnergy GBRobotType::Mass() const {
-	return hardware.Mass()
-		+ (brain ? brain->Mass() : GBNumber(0));
-}
+GBEnergy GBRobotType::Cost() const { return cost; }
+GBEnergy GBRobotType::Mass() const { return mass; }
 

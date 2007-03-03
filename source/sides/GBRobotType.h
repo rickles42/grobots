@@ -37,6 +37,8 @@ class GBRobotType : public GBModel {
 public:
 	GBRobotType * next;
 private:
+	GBEnergy cost;
+	GBMass mass;
 // forbidden
 	GBRobotType();
 public:
