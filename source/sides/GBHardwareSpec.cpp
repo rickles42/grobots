@@ -52,8 +52,7 @@ const GBEnergy kBlasterCostPerRange = 8.0;
 const GBMass kBlasterMassPerRange = kBlasterCostPerRange * kStandardMassPerCost;
 const GBEnergy kBlasterCostPerRangeSquared = 0;
 const GBMass kBlasterMassPerRangeSquared = kBlasterCostPerRangeSquared * kStandardMassPerCost * 1.5;
-const GBNumber kBlasterBarrelCost = 0.01; // 1/reloadtime such that barrel charge = reloader charge
-const GBNumber kBlasterBarrelMass = kBlasterBarrelCost;
+const GBNumber kBlasterBarrel = 0.01; // 1/reloadtime such that barrel charge = reloader charge
 const GBEnergy kBlasterFiringCostPerDamage = kBlasterCostPerDamageRate * 0.0015; //1000 frames of use is about weapon cost (ignoring barrel charge)
 const GBEnergy kBlasterFiringCostPerRange = kBlasterCostPerRange * 0.0015;
 const GBEnergy kBlasterFiringCostPerRangeSquared = kBlasterCostPerRangeSquared * 0.0015;
@@ -211,7 +210,7 @@ void GBBlasterSpec::Set(const GBDamage dmg, const GBDistance rng, const GBFrames
 
 GBEnergy GBBlasterSpec::Cost() const {
 	if ( damage > 0 )
-		return (GBNumber(1) / reloadTime + kBlasterBarrelCost) * (damage + kBlasterDamageOverhead) * (kBlasterCostPerDamageRate
+		return (GBNumber(1) / reloadTime + kBlasterBarrel) * (damage + kBlasterDamageOverhead) * (kBlasterCostPerDamageRate
 							+ range * kBlasterCostPerRange + range.Square() * kBlasterCostPerRangeSquared);
 	else
 		return 0;
@@ -219,7 +218,7 @@ GBEnergy GBBlasterSpec::Cost() const {
 
 GBMass GBBlasterSpec::Mass() const {
 	if ( damage > 0 )
-		return (GBNumber(1) / reloadTime + kBlasterBarrelMass) * (damage + kBlasterDamageOverhead) * (kBlasterMassPerDamageRate
+		return (GBNumber(1) / reloadTime + kBlasterBarrel) * (damage + kBlasterDamageOverhead) * (kBlasterMassPerDamageRate
 							+ range * kBlasterMassPerRange + range.Square() * kBlasterMassPerRangeSquared);
 	else
 		return 0;
