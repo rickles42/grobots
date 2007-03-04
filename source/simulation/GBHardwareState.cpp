@@ -821,9 +821,9 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 	if ( armor <= 0 || robot->dead ) {
 		robot->dead = true;
 		world->AddObjectNew(new GBCorpse(robot->Position(), robot->Velocity(),
-			Biomass() * kCorpsePerBiomass, robot->Type(), robot->LastHit()));
+			robot->Biomass() * kCorpsePerBiomass, robot->Type(), robot->LastHit()));
 		world->AddObjectNew(new GBExplosion(robot->Position(), robot->Owner(),
-			(Biomass() * kDeathExplosionDamagePerBiomass + spec->Bomb()) * robot->ShieldFraction()));
+			(robot->Biomass() * kDeathExplosionDamagePerBiomass + spec->Bomb()) * robot->ShieldFraction()));
 		return;
 	}
 // energy intake
@@ -835,9 +835,11 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 		GBSpeed effective = robot->Speed().Max(kEngineMinEffectiveSpeed);
 		GBVector delta = engineVelocity - robot->Velocity();
 		GBPower power = delta.Norm() * robot->Mass() * effective / kEngineEfficiency;
-		power = UseEnergyUpTo(power.Min(enginePower));
-		robot->Owner()->Scores().Expenditure().ReportEngine(power);
-		robot->PushBy(power * kEngineEfficiency / effective, delta.Angle());
+		if ( power.Nonzero() ) {
+			power = UseEnergyUpTo(power.Min(enginePower));
+			robot->Owner()->Scores().Expenditure().ReportEngine(power);
+			robot->PushBy(delta * (power * kEngineEfficiency / effective / delta.Norm()));
+		}
 	}
 // complex hardware
 	constructor.Act(robot, world);
@@ -870,8 +872,4 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 		robot->Owner()->Scores().Expenditure().ReportWasted(energy - MaxEnergy());
 		energy = energy.Min(MaxEnergy());
 	}
-}
-
-GBEnergy GBHardwareState::Biomass() const {
-	return spec->HardwareCost() + energy + constructor.Progress();
 }
