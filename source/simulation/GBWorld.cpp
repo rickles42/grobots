@@ -11,9 +11,9 @@
 #include "GBRobotType.h"
 #include "GBSound.h"
 #include "GBStringUtilities.h"
-#include <fstream.h>
+#include <fstream>
 
-#if MAC
+#if MAC && ! MAC_OS_X
 #include <Timer.h>
 #include <Math64.h>
 #endif
@@ -48,11 +48,11 @@ const GBEnergy kDefaultSeedTypePenalty = 100;
 
 
 void GBWorld::ThinkAllObjects() {
+	//only bothers with robots
 	try {
 		for ( long i = 0; i <= tilesX * tilesY; i ++ )
-			for ( GBObjectClass cur = ocRobot; cur < kNumObjectClasses; cur ++ )
-				for ( GBObject * ob = objects[i][cur]; ob != nil; ob = ob->next )
-					ob->Think(this);
+			for ( GBObject * ob = objects[i][ocRobot]; ob != nil; ob = ob->next )
+				ob->Think(this);
 	} catch ( GBError & err ) {
 		NonfatalError(string("Error thinking object: ") + err.ToString());
 	}
@@ -258,7 +258,6 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 	//add cells
 		GBRobotType * type;
 		GBRobot * bot = nil;
-		GBRobot * firstPlaced = nil;
 		std::vector<GBRobot *> placed;
 		int lastPlaced = -1; //last value of i for last successful place
 		for (int i = 0; ; i++) {
@@ -531,7 +530,7 @@ void GBWorld::ResetTournamentScores() {
 }
 
 void GBWorld::DumpTournamentScores() {
-	ofstream f("tournament-scores.html", ios::app);
+	std::ofstream f("tournament-scores.html", std::ios::app);
 	if ( !f.good() ) return;
 	f << "\n<table>\n"
 		"<colgroup><col><col><colgroup><col class=key><col><col><col><col><col><col>\n"
@@ -550,9 +549,9 @@ void GBWorld::DumpTournamentScores() {
 		f << "<td>" << ToPercentString(sc.SurvivalBiomassFraction(), 0);
 		f << "<td>" << ToPercentString(sc.KilledFraction(), 0) << "\n";
 	}
-	f << "<tfoot><tr><th colspan=3>Overall:<td>" << tournamentScores.SurvivalNotSterile()
-	  << "<td>" << tournamentScores.EarlyDeathRate()
-	  << "<td>" << tournamentScores.LateDeathRate() << "<th colspan=3>\n</table>\n";
+	f << "<tfoot><tr><th colspan=3>Overall:<td>" << ToPercentString(tournamentScores.SurvivalNotSterile(), 0)
+	  << "<td>" << ToPercentString(tournamentScores.EarlyDeathRate(), 0)
+	  << "<td>" << ToPercentString(tournamentScores.LateDeathRate(), 0) << "<th colspan=3>\n</table>\n";
 }
 
 const GBScores & GBWorld::RoundScores() const {
