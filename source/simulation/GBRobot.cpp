@@ -1,5 +1,5 @@
 // GBRobot.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2007 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBRobot.h"
@@ -109,7 +109,9 @@ GBSide * GBRobot::LastHit() const { return lastHit; }
 GBBrain * GBRobot::Brain() { return brain; }
 
 GBNumber GBRobot::ShieldFraction() const {
-	return GBNumber(1) / ((hardware.ActualShield() * kShieldEffectiveness / mass).Square() + 1);
+	if (hardware.ActualShield().Nonzero() )
+		return GBNumber(1) / ((hardware.ActualShield() * kShieldEffectiveness / mass).Square() + 1);
+	return 1;
 }
 
 void GBRobot::TakeDamage(const GBDamage amount, GBSide * origin) {
@@ -230,7 +232,7 @@ GBEnergy GBRobot::Energy() const {
 }
 
 GBEnergy GBRobot::Biomass() const {
-	return hardware.Biomass() + (type->Brain() ? type->Brain()->Cost() : GBEnergy(0));
+	return type->Cost() - type->Hardware().InitialEnergy() + hardware.Energy() + hardware.constructor.Progress();
 }
 
 GBNumber GBRobot::Interest() const {
