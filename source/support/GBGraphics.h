@@ -9,8 +9,12 @@
 #include "GBPlatform.h"
 
 #if MAC && ! HEADLESS
+#if MAC_OS_X
+#include <Carbon/Carbon.h>
+#else
 #include <Quickdraw.h>
 #include <QDOffscreen.h>
+#endif
 #elif WINDOWS
 #include <Windows.h>
 #undef SendMessage
