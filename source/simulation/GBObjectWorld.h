@@ -11,8 +11,8 @@
 // Background tiles are purely a display matter;
 // they are here as a reminder to use world sizes that
 // are a multiple of kBackgroundTileSize.
-const GBCoordinate kBackgroundTileSize = 10;
-const GBCoordinate kForegroundTileSize = 10;
+const int kBackgroundTileSize = 10;
+const int kForegroundTileSize = 10;
 
 
 typedef GBObject * GBObjectTile[kNumObjectClasses];
@@ -20,7 +20,7 @@ typedef GBObject * GBObjectTile[kNumObjectClasses];
 class GBObjectWorld {
 protected:
 	GBFinePoint size;
-	long tilesX, tilesY; // these are foreground tiles
+	int tilesX, tilesY; // these are foreground tiles
 	GBObjectTile * objects;
 	GBObject * news;
 // setup
