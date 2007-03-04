@@ -36,6 +36,9 @@ const GBDamage kEraseDamage = 10000;
 	for ( GBObject * ob = (list); ob != nil; ob = ob->next ) \
 		body
 
+#define FOR_EACH_OBJECT_IN_TILE(tileno, ob, body) \
+	FOR_EACH_OBJECT_CLASS(cl, { FOR_EACH_OBJECT_IN_LIST(objects[tileno][cl],  ob, body) })
+
 #define FOR_EACH_OBJECT_IN_LIST_SAFE(list, ob, temp, body) \
 	{ \
 		GBObject * temp; \
@@ -119,9 +122,15 @@ void GBObjectWorld::CollideObjectWithWalls(GBObject * ob) {
 
 void GBObjectWorld::MoveAllObjects() {
 	try {
-		FOR_EACH_OBJECT_IN_WORLD(i, cl, ob, {
-			ob->Move();
-			CollideObjectWithWalls(ob);
+		FOR_EACH_TILE(i, {
+			if ( i < tilesX || i > tilesX * (tilesY - 1)
+					|| i % tilesX == 0 || i % tilesX == tilesX - 1 )
+				FOR_EACH_OBJECT_IN_TILE(i,  ob, {
+					ob->Move();
+					CollideObjectWithWalls(ob); // only large objects and edge tiles
+				})
+			else
+				FOR_EACH_OBJECT_IN_TILE(i,  ob, { ob->Move(); })
 		})
 	} catch ( GBError & err ) {
 		NonfatalError(string("Error moving objects: ") + err.ToString());
@@ -158,11 +167,12 @@ void GBObjectWorld::CollideSameTile(long t) {
 		} catch ( GBError & err ) {
 			NonfatalError(string("Error colliding robots: ") + err.ToString());
 		}
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t][ocFood], food, { bot->BasicCollide(food); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding robot and food: ") + err.ToString());
-		}
+		if ( ((GBRobot *)bot)->hardware.EaterLimit().Nonzero() )
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t][ocFood], food, { bot->BasicCollide(food); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding robot and food: ") + err.ToString());
+			}
 		try {
 			FOR_EACH_OBJECT_IN_LIST(objects[t][ocShot], shot, { bot->BasicCollide(shot); })
 		} catch ( GBError & err ) {
@@ -185,21 +195,28 @@ void GBObjectWorld::CollideSameTile(long t) {
 }
 
 void GBObjectWorld::CollideTwoTiles(long t1, long t2) {
+	//Now tries to avoid looking at t2 when the object in t1 isn't even close to it.
+	GBCoordinate t2edge = (t2 / tilesX) * kForegroundTileSize - 2;
+	if ( t2 == tilesX * tilesY || t2 == t1 + 1 )
+		t2edge = -1000; //always do these tiles
 	FOR_EACH_OBJECT_IN_LIST(objects[t1][ocRobot], bot, {
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot2, { bot->SolidCollide(bot2, kRobotRestitution); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding robots: ") + err.ToString());
-		}
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocFood], food, { bot->BasicCollide(food); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding robot and food: ") + err.ToString());
-		}
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocShot], shot, { bot->BasicCollide(shot); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding robot and shot: ") + err.ToString());
+		if ( bot->Top() > t2edge ) {
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot2, { bot->SolidCollide(bot2, kRobotRestitution); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding robots: ") + err.ToString());
+			}
+			if ( ((GBRobot *)bot)->hardware.EaterLimit().Nonzero() )
+				try {
+					FOR_EACH_OBJECT_IN_LIST(objects[t2][ocFood], food, { bot->BasicCollide(food); })
+				} catch ( GBError & err ) {
+					NonfatalError(string("Error colliding robot and food: ") + err.ToString());
+				}
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocShot], shot, { bot->BasicCollide(shot); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding robot and shot: ") + err.ToString());
+			}
 		}
 		try {
 			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocArea], area, { bot->BasicCollide(area); })
@@ -208,11 +225,12 @@ void GBObjectWorld::CollideTwoTiles(long t1, long t2) {
 		}
 	})
 	FOR_EACH_OBJECT_IN_LIST(objects[t1][ocFood], food, {
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { food->BasicCollide(bot); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding food and robot: ") + err.ToString());
-		}
+		if ( food->Top() > t2edge )
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { food->BasicCollide(bot); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding food and robot: ") + err.ToString());
+			}
 		try {
 			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocArea], area, { food->BasicCollide(area); })
 		} catch ( GBError & err ) {
@@ -221,21 +239,24 @@ void GBObjectWorld::CollideTwoTiles(long t1, long t2) {
 	})
 	try {
 		FOR_EACH_OBJECT_IN_LIST(objects[t1][ocShot], shot, {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { shot->BasicCollide(bot); })
+			if ( shot->Top() > t2edge )
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { shot->BasicCollide(bot); })
 		})
 	} catch ( GBError & err ) {
 		NonfatalError(string("Error colliding shot and robot: ") + err.ToString());
 	}
 	FOR_EACH_OBJECT_IN_LIST(objects[t1][ocArea], area, {
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { area->BasicCollide(bot); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding area and robot: ") + err.ToString());
-		}
-		try {
-			FOR_EACH_OBJECT_IN_LIST(objects[t2][ocFood], food, { area->BasicCollide(food); })
-		} catch ( GBError & err ) {
-			NonfatalError(string("Error colliding area and food: ") + err.ToString());
+		if ( area->Top() > t2edge ) {
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocRobot], bot, { area->BasicCollide(bot); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding area and robot: ") + err.ToString());
+			}
+			try {
+				FOR_EACH_OBJECT_IN_LIST(objects[t2][ocFood], food, { area->BasicCollide(food); })
+			} catch ( GBError & err ) {
+				NonfatalError(string("Error colliding area and food: ") + err.ToString());
+			}
 		}
 	})
 	CollideSensors(t1, t2);
@@ -244,15 +265,22 @@ void GBObjectWorld::CollideTwoTiles(long t1, long t2) {
 
 void GBObjectWorld::CollideSensors(long sensorTile, long otherTile) {
 	try {
+		GBCoordinate tileBottom = (otherTile / tilesX) * kForegroundTileSize - 2;
+		GBCoordinate tileTop = (otherTile / tilesX + 1) * kForegroundTileSize - 2;
+		if ( otherTile == tilesX * tilesY ) {
+			tileBottom = -1000;
+			tileTop = size.y + 1000;
+		}
 		FOR_EACH_OBJECT_IN_LIST(objects[sensorTile][ocSensorShot], sensor, {
 			GBObjectClass seen = ((GBSensorShot *)sensor)->Seen();
 			if ( seen != ocDead ) {
 				CheckObjectClass(seen);
-				FOR_EACH_OBJECT_IN_LIST(objects[otherTile][seen], ob, {
-					if ( sensor->Intersects(ob) )
-						sensor->CollideWith(ob);
-						// note one-directional collision, since ob mustn't care it's been sensed
-				})
+				if ( sensor->Top() > tileBottom && sensor->Bottom() < tileTop )
+					FOR_EACH_OBJECT_IN_LIST(objects[otherTile][seen], ob, {
+						if ( sensor->Intersects(ob) )
+							sensor->CollideWith(ob);
+							// note one-directional collision, since ob mustn't care it's been sensed
+					})
 				if ( seen == ocShot ) // shot sensors see area shots too
 					FOR_EACH_OBJECT_IN_LIST(objects[otherTile][ocArea], ob, {
 						if ( sensor->Intersects(ob) )
@@ -271,10 +299,10 @@ void GBObjectWorld::CheckObjectClass(const GBObjectClass cl) const {
 }
 
 long GBObjectWorld::FindTile(const GBPosition where) const {
-	long tx = (where.x / kForegroundTileSize).Floor();
+	long tx = where.x.Floor() / kForegroundTileSize;
 	if ( tx < 0 ) tx = 0;
 	if ( tx >= tilesX ) tx = tilesX - 1;
-	long ty = (where.y / kForegroundTileSize).Floor();
+	long ty = where.y.Floor() / kForegroundTileSize;
 	if ( ty < 0 ) ty = 0;
 	if ( ty >= tilesY ) ty = tilesY - 1;
 	return ty * tilesX + tx;
