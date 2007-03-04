@@ -311,7 +311,6 @@ public:
 	void SetShield(const GBPower power);
 // automation
 	void Act(GBRobot * robot, GBWorld * world);
-	GBEnergy Biomass() const;
 };
 
 #endif
