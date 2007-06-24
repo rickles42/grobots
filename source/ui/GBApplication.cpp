@@ -167,7 +167,7 @@ void GBApplication::DoLoadSide() {
 			path += '\\';
 			for ( const char * filename = buff + path.size(); *filename;
 					filename += strlen(filename) + 1 ) {
-				GBSide * side = GBSideReader::Load(strchr(filename. '\\') ? filename : path + filename);
+				GBSide * side = GBSideReader::Load(strchr(filename, '\\') ? filename : path + filename);
 				if(side) world.AddSide(side);
 			 }
 		}
