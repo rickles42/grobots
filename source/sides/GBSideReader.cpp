@@ -1,6 +1,6 @@
 // GBSideReader.cpp
 // parser for side files and hardware
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2007 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBSideReader.h"
@@ -11,8 +11,12 @@
 #include <ctype.h>
 
 #if USE_MAC_IO
-	#include <Devices.h>
-	#include <Errors.h>
+	#if CARBON
+		#include <Carbon/Carbon.h>
+	#else
+		#include <Devices.h>
+		#include <Errors.h>
+	#endif
 #else
 	using std::ifstream;
 #endif
@@ -123,11 +127,6 @@ public:
 	string ToString() const;
 };
 
-class GBEOFError : public GBFileError {
-public:
-	string ToString() const;
-};
-
 
 GBReaderError::GBReaderError() {}
 GBReaderError::~GBReaderError() {}
@@ -181,10 +180,6 @@ GBFileError::~GBFileError() {}
 
 string GBFileError::ToString() const {
 	return "file I/O error";
-}
-
-string GBEOFError::ToString() const {
-	return "premature end of file";
 }
 
 // GBSideReader //
@@ -432,14 +427,17 @@ bool GBSideReader::GetNextBuffer() {
 	params.ioPosOffset = 0;
 // read
 	PBReadSync((ParmBlkPtr)(&params));
-	if ( params.ioResult && params.ioResult == eofErr )
-		throw GBFileError();
 	buflen = params.ioActCount;
+	if ( params.ioResult == eofErr ) {
+		if ( ! buflen )
+			return false;
+	} else if ( params.ioResult )
+		 throw GBFileError();
 #else
-	if ( fin.eof() )
-		return false;
 	fin.read(buffer, kBufferSize);
 	buflen = fin.gcount();
+	if ( ! buflen && fin.eof() )
+		return false;
 	if ( fin.fail() && ! buflen )
 		throw GBFileError();
 #endif
