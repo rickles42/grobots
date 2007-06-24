@@ -618,8 +618,10 @@ GBSymbolIndex GBStackBrainSpec::NumLabels() const {
 	return labels.size();}
 
 GBStackInstruction GBStackBrainSpec::ReadInstruction(const GBStackAddress index) const {
-	if ( index < 0 || index >= code.size() )
+	if ( index < 0 )
 		throw GBBadAddressError();
+	if ( index >= code.size() )
+		throw GBOffEndError();
 	return code[index];
 }
 

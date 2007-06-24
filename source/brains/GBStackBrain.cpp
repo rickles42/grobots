@@ -281,8 +281,6 @@ void GBStackBrain::Think(GBRobot * robot, GBWorld * world) {
 }
 
 void GBStackBrain::ThinkOne(GBRobot * robot, GBWorld * world) {
-	if ( pc == spec->NumInstructions() )
-		throw GBOffEndError();
 	GBStackInstruction ins = spec->ReadInstruction(pc++);
 	remaining --; // currently all instructions take one cycle
 	used ++;
