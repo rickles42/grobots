@@ -28,10 +28,11 @@ void GBAboutBox::Draw() {
 	DrawStringLeft("Additional contributors:", 15, 115, 10, GBColor::white);
 	DrawStringLeft("Tilendor", 35, 128, 10, GBColor::white);
 	DrawStringLeft("Daniel von Fange", 35, 138, 10, GBColor::white);
-	DrawStringCentered("http://grobots.sourceforge.net/", Width() / 2, 165, 10, GBColor(0, 0.7f, 1));
-	DrawStringLeft("Grobots comes with ABSOLUTELY NO WARRANTY.", 10, 188, 10, GBColor::white);
-    DrawStringLeft("This is free software, and you are welcome to", 10, 200, 10, GBColor::white);
-	DrawStringLeft("redistribute it under the GNU General Public License.", 10, 212, 10, GBColor::white);
+	DrawStringLeft("Borg", 35, 148, 10, GBColor::white);
+	DrawStringCentered("http://grobots.sourceforge.net/", Width() / 2, 175, 10, GBColor(0, 0.7f, 1));
+	DrawStringLeft("Grobots comes with ABSOLUTELY NO WARRANTY.", 10, 198, 10, GBColor::white);
+    DrawStringLeft("This is free software, and you are welcome to", 10, 210, 10, GBColor::white);
+	DrawStringLeft("redistribute it under the GNU General Public License.", 10, 222, 10, GBColor::white);
 }
 
 short GBAboutBox::PreferredWidth() const {
@@ -39,7 +40,7 @@ short GBAboutBox::PreferredWidth() const {
 }
 
 short GBAboutBox::PreferredHeight() const {
-	return 225;
+	return 235;
 }
 
 const string GBAboutBox::Name() const {
