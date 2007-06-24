@@ -46,12 +46,12 @@ public:
 #endif
 	~GBApplication();
 	
-	long SleepTime();
 	void AdjustMenus();
 	void HandleMenuSelection(int item);
 	void Process();
 	void Redraw();
 #if MAC
+	long SleepTime();
 	void OpenFile(FSSpec & file);
 #endif
 	void Quit();
