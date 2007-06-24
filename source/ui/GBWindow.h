@@ -6,7 +6,11 @@
 #ifndef GBWindow_h
 #define GBWindow_h
 
+#if MAC && ! MAC_OS_X
 #include <Windows.h>
+#elif WINDOWS
+#include <Windows.h>
+#endif
 #include "GBView.h"
 
 // everything possible is delegated to the window's view.
