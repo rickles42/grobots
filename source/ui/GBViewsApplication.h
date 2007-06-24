@@ -8,7 +8,9 @@
 
 #include "GBView.h"
 #if MAC
+#if ! MAC_OS_X
 #include <Events.h>
+#endif
 class FSSpec;
 #endif
 
@@ -58,7 +60,6 @@ public:
 	static bool DoNumberDialog(ConstStr255Param prompt, long & value,
 		long min = -1000000000, long max = 1000000000);
 	static void SetCursor(GBCursor curs);
-	long SleepTime();
 #elif WINDOWS
 	GBWindow * MainWindow();
 	static HRESULT CALLBACK WindowProc(HWND hWin, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -76,6 +77,7 @@ protected: // to override
 	virtual void Redraw();
 public: // more to override
 #if MAC
+	virtual long SleepTime() = 0;
 	virtual void OpenApp();
 	virtual void OpenFile(FSSpec & file);
 	virtual void PrintFile(FSSpec & file);
