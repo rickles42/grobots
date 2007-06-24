@@ -9,8 +9,10 @@
 #include "GBViewsApplication.h"
 
 #if MAC
+#if ! MAC_OS_X
 #include <Windows.h>
 #include <ToolUtils.h>
+#endif
 
 #if ! CARBON
 	#define GetWindowPort(w) w
@@ -65,7 +67,8 @@ GBWindow::GBWindow(GBView * v, int x, int y, bool vis,
 	SetRect(&bounds, x, y, x + v->PreferredWidth(), y + v->PreferredHeight());
 	AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, isMain);
 	win = CreateWindow(kWindowClassName,
-		(isMain ? "Grobots" : v->Name().c_str()), WS_OVERLAPPEDWINDOW,
+		(isMain ? "Grobots" : v->Name().c_str()),
+		view->Resizable() ? WS_OVERLAPPEDWINDOW : WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
 		bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top,
 		(isMain ? 0 : app->MainWindow()->win), 0, hInstance, 0);
 	if (!win)
