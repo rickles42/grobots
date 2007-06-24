@@ -3,7 +3,7 @@
 // Distributed under the GNU General Public License.
 
 #include "GBPlatform.h"
-#if MAC
+#if MAC && ! MAC_OS_X
 #include <Quickdraw.h>
 #include <Events.h>
 #include <AppleEvents.h>
@@ -29,18 +29,18 @@ const short kNumberDialogID = 128;
 const short kClickRange = 5;
 
 #if MAC
-DEFINE_API(OSErr) HandleAEOpenApplication(const AppleEvent * evt, AppleEvent * reply, UInt32 refCon);
-DEFINE_API(OSErr) HandleAEOpenDocuments(const AppleEvent * evt, AppleEvent * reply, UInt32 refCon);
-DEFINE_API(OSErr) HandleAEPrintDocuments(const AppleEvent * evt, AppleEvent * reply, UInt32 refCon);
-DEFINE_API(OSErr) HandleAEQuitApplication(const AppleEvent * evt, AppleEvent * reply, UInt32 refCon);
+static pascal OSErr HandleAEOpenApplication(const AppleEvent * evt, AppleEvent * reply, long refCon);
+static pascal OSErr HandleAEOpenDocuments(const AppleEvent * evt, AppleEvent * reply, long refCon);
+static pascal OSErr HandleAEPrintDocuments(const AppleEvent * evt, AppleEvent * reply, long refCon);
+static pascal OSErr HandleAEQuitApplication(const AppleEvent * evt, AppleEvent * reply, long refCon);
 
 
-static DEFINE_API(OSErr) HandleAEOpenApplication(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, UInt32 refCon) {
+static pascal OSErr HandleAEOpenApplication(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, long refCon) {
 	((GBViewsApplication *)refCon)->OpenApp();
 	return noErr;
 }
 
-static DEFINE_API(OSErr) HandleAEOpenDocuments(const AppleEvent * evt, AppleEvent * /*reply*/, UInt32 refCon) {
+static pascal OSErr HandleAEOpenDocuments(const AppleEvent * evt, AppleEvent * /*reply*/, long refCon) {
 	OSErr err;
 	AEDescList list;
 	long items, dummySize;
@@ -66,12 +66,12 @@ static DEFINE_API(OSErr) HandleAEOpenDocuments(const AppleEvent * evt, AppleEven
 	return noErr;
 }
 
-static DEFINE_API(OSErr) HandleAEPrintDocuments(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, UInt32 refCon) {
+static pascal OSErr HandleAEPrintDocuments(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, long refCon) {
 	((GBViewsApplication *)refCon)->OpenApp();
 	return noErr;
 }
 
-static DEFINE_API(OSErr) HandleAEQuitApplication(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, UInt32 refCon) {
+static pascal OSErr HandleAEQuitApplication(const AppleEvent * /*evt*/, AppleEvent * /*reply*/, long refCon) {
 	((GBViewsApplication *)refCon)->Quit();
 	return noErr;
 }
@@ -111,8 +111,9 @@ void GBViewsApplication::HandleEvent(EventRecord * evt) {
 				HandleUpdate(evt);
 				break;
 			case kHighLevelEvent:
+				//This is failing on OSX (from an unexxpected event?).
 				if ( AEProcessAppleEvent(evt) )
-					NonfatalError("couldn't process AppleEvent");
+					;//NonfatalError("couldn't process AppleEvent");
 				break;
 			case nullEvent:
 				break;
@@ -206,6 +207,7 @@ void GBViewsApplication::HandleUpdate(EventRecord * evt) {
 }
 
 void GBViewsApplication::AdjustCursor(Point where) {
+#if ! MAC_OS_X
 	WindowPtr window;
 	if ( FindWindow(where, &window) == inContent && GBWindow::IsGBWindow(window) ) {
 		GBWindow * mw = GBWindow::GetFromWindow(window);
@@ -215,6 +217,7 @@ void GBViewsApplication::AdjustCursor(Point where) {
 			SetCursor(cuArrow);
 	} else
 		SetCursor(cuArrow);
+#endif
 }
 #endif
 
@@ -344,7 +347,9 @@ GBWindow * GBViewsApplication::MakeWindow(GBView * view, int x, int y, bool visi
 void GBViewsApplication::Run() {
 #if MAC
 	SetupAppleEvents();
+#if ! MAC_OS_X
 	InitCursor();
+#endif
 	EventRecord event;
 	do {
 		Process();
@@ -365,19 +370,11 @@ void GBViewsApplication::Run() {
 	}
 #endif
 }
-#if MAC
-//return sleep time for WNE, in ticks
-long GBViewsApplication::SleepTime() {
-	if ( stepPeriod <= 0 ) return 0;
-	GBMilliseconds delay = stepPeriod + lastStep - Milliseconds();
-	return delay < 0 ? 0 : (long)((delay * 60 + 30) / 1000);
-}
-#endif
 
 void GBViewsApplication::SetStepPeriod(int period) {
 	stepPeriod = period;
 #if WINDOWS
-	if (! ::SetTimer(mainWindow->win, 1, period < 0 ? 10 : period, 0))
+	if (! ::SetTimer(mainWindow->win, 1, period == 0 ? 10 : period < 0 ? 0 : period, 0)) //is this right?
 		FatalError("Couldn't set timer.");
 #endif
 }
@@ -475,6 +472,13 @@ void GBViewsApplication::Process() {} // override
 void GBViewsApplication::Redraw() {} // override
 
 #if MAC
+//return sleep time for WNE, in ticks
+long GBViewsApplication::SleepTime() {
+	if ( stepPeriod <= 0 ) return stepPeriod;
+	GBMilliseconds delay = stepPeriod + lastStep - Milliseconds();
+	return delay < 0 ? 0 : (long)((delay * 60 + 30) / 1000);
+}
+
 void GBViewsApplication::OpenApp() {} // override if you want to do anything
 void GBViewsApplication::OpenFile(FSSpec &) {} // override if you want to do anything
 void GBViewsApplication::PrintFile(FSSpec &) {} // override if you want to do anything
