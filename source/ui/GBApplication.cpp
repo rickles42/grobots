@@ -20,7 +20,7 @@
 #include "GBStringUtilities.h"
 #include "GBWindow.h"
 
-#if MAC
+#if MAC && ! MAC_OS_X
 #include <Sound.h>
 #include <NumberFormatting.h>
 #include <Dialogs.h>
@@ -118,9 +118,13 @@ void GBApplication::DoLoadSide() {
 	options.dialogOptionFlags |= kNavSelectAllReadableItem | kNavNoTypePopup;
 	options.dialogOptionFlags &= ~ kNavAllowPreviews;
 	ToPascalString(string("Load side"), options.windowTitle);
+	#if MAC_OS_X
+	if ( NavGetFile(nil, &reply, &options, nil, nil, nil, nil, nil) || ! reply.validRecord )
+	#else
 	NavTypeList types = { 'GBot', 0, 1, { 'TEXT' } };
 	NavTypeListPtr typesp = &types;
 	if ( NavGetFile(nil, &reply, &options, nil, nil, nil, &typesp, nil) || ! reply.validRecord )
+	#endif
 		return;
 //open the selected items
 	long items, dummySize;
@@ -163,7 +167,7 @@ void GBApplication::DoLoadSide() {
 			path += '\\';
 			for ( const char * filename = buff + path.size(); *filename;
 					filename += strlen(filename) + 1 ) {
-				GBSide * side = GBSideReader::Load(path + filename);
+				GBSide * side = GBSideReader::Load(strchr(filename. '\\') ? filename : path + filename);
 				if(side) world.AddSide(side);
 			 }
 		}
@@ -640,9 +644,12 @@ void GBApplication::HandleMenuSelection(int item) {
 #endif
 
 void GBApplication::Process() {
-	if ( !world.running ) return;
+	lastStep = Milliseconds();
+	if ( !world.running ) {
+		lastStep += 1000; //hack to prevent taking so much time when paused at Unlimited speed
+		return;
+	}
 	try {
-		lastStep = Milliseconds();
 		int steps = 0;
 		do {
 			world.AdvanceFrame();
@@ -672,8 +679,16 @@ void GBApplication::Redraw() {
 }
 
 #if MAC
+//return sleep time for WNE, in ticks
+long GBApplication::SleepTime() {
+	if ( ! world.running ) return -1;
+	return GBViewsApplication::SleepTime();
+}
+
 void GBApplication::OpenFile(FSSpec & file) {
+#if !MAC_OS_X
 	SetCursor(cuWait);
+#endif
 	GBSide * side = GBSideReader::Load(file);
 	if ( side ) world.AddSide(side);
 }
