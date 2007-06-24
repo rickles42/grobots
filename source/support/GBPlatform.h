@@ -6,7 +6,13 @@
 #ifndef GBPlatform_h
 #define GBPlatform_h
 
-#if defined __MRC__  // MrCpp
+
+#if (defined(__APPLE__) && defined(__GNUC__)) || defined(__MACOSX__)
+	#define MAC 1
+	#define MAC_OS_X 1
+	#define CARBON 1
+	
+#elif defined __MRC__  // MrCpp
 	#define MAC 1
 	#if CARBON
 		//#undef TARGET_API_MAC_CARBON

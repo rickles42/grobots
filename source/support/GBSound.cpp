@@ -8,8 +8,12 @@
 #include "GBPlatform.h"
 
 #if MAC
-#include <Sound.h>
-#include <Resources.h>
+	#if MAC_OS_X
+		#include <Carbon/Carbon.h>
+	#else
+		#include <Sound.h>
+		#include <Resources.h>
+	#endif
 
 
 const int kNumSoundChannels = 4;
@@ -26,14 +30,11 @@ public:
 	void StopSound();
 };
 
-
-
 // globals
 
 bool gSoundActive;
 GBSoundChannel * gSoundChannels;
 SndListHandle gSounds[kNumSounds];
-
 
 const short kSoundResourceIDs[kNumSounds] = {
 	300,
