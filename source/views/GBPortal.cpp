@@ -65,7 +65,7 @@ void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 // black background
 	g.DrawSolidRect(b, GBColor::black);
 // fine grid
-	for ( int i = 1; i < kBackgroundTileSize.Floor(); i ++ ) {
+	for ( int i = 1; i < kBackgroundTileSize; i ++ ) {
 		short x = b.left + i * kScale;
 		short y = b.top + i * kScale;
 		g.DrawLine(x, b.top, x, b.bottom, GBColor(0.4f));
@@ -77,7 +77,7 @@ void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 }
 
 void GBPortal::InitBackground() {
-	background = new GBBitmap(kScale * kBackgroundTileSize.Floor(), kScale * kBackgroundTileSize.Floor(), Graphics());
+	background = new GBBitmap(kScale * kBackgroundTileSize, kScale * kBackgroundTileSize, Graphics());
 	background->StartDrawing();
 	DrawOneTile(background->Bounds(), background->Graphics());
 	background->StopDrawing();
