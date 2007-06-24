@@ -86,7 +86,6 @@ GBRobotTypeView::~GBRobotTypeView() {}
 void GBRobotTypeView::Draw() {
 	GBListView::Draw();
 // record
-	const GBSide * side = world.SelectedSide();
 	lastSideDrawn = world.SelectedSide();
 	typeID = world.SelectedSide() ? world.SelectedSide()->SelectedTypeID() : -1;
 	lastDrawn = world.ChangeCount();
