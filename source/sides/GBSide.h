@@ -1,10 +1,11 @@
 // GBSide.h
-// Grobots (c) 2002-2006 Devon and Warren Schudy
+// Grobots (c) 2002-2007 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #ifndef GBSide_h
 #define GBSide_h
 
+#include "GBPlatform.h"
 #include "GBColor.h"
 #include "GBModel.h"
 #include "GBTypes.h"
@@ -15,7 +16,12 @@
 //identify files according to platform
 #define USE_MAC_IO (MAC)
 #if USE_MAC_IO
-	#include <Files.h>
+	#if MAC_OS_X
+		#include <Carbon/Carbon.h>
+	#else
+		#include <Files.h>
+	#endif
+
 	typedef FSSpec GBFilename;
 #else
 	typedef std::string GBFilename;
