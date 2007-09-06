@@ -33,28 +33,37 @@ CCLNFLAGS =  -lm
 CCFLAGS = $(CCOPT) $(INCLUDES) -DHEADLESS 
  
 # ------------------------------------------------------------ 
+default:
+	echo "To use, \"make prepare\" and then \"make all\""
+
+prepare:
+	mkdir brains
+	mkdir sides
+	mkdir support
+	mkdir simulation
+
 all     : $(EXEC) 
  
 clean : 
-        /bin/rm -f *.o *~ $(OFILES) 
-        /bin/rm -f $(EXEC) 
+	/bin/rm -f *.o *~ $(OFILES) 
+	/bin/rm -f $(EXEC) 
  
 $(EXEC): $(OFILES) 
-        @echo 
-        $(CCC) $(CCFLAGS) $(OFILES) -o $(EXEC) $(CCLNFLAGS) 
+	@echo 
+	$(CCC) $(CCFLAGS) $(OFILES) -o $(EXEC) $(CCLNFLAGS) 
  
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp 
-        $(CCC) $(CCFLAGS)  -c $< -o $@ 
+	$(CCC) $(CCFLAGS)  -c $< -o $@ 
  
 #For some reason it doesn't work without individual rules for the folders 
 $(OBJ_DIR)/brains/%.o:  $(SRC_DIR)/brains/%.cpp 
-        $(CCC) $(CCFLAGS)  -c $< -o $@ 
+	$(CCC) $(CCFLAGS)  -c $< -o $@ 
  
 $(OBJ_DIR)/sides/%.o:   $(SRC_DIR)/sides/%.cpp 
-        $(CCC) $(CCFLAGS)  -c $< -o $@ 
+	$(CCC) $(CCFLAGS)  -c $< -o $@ 
  
 $(OBJ_DIR)/simulation/%.o:      $(SRC_DIR)/simulation/%.cpp 
-        $(CCC) $(CCFLAGS)  -c $< -o $@ 
+	$(CCC) $(CCFLAGS)  -c $< -o $@ 
  
 $(OBJ_DIR)/support/%.o: $(SRC_DIR)/support/%.cpp 
-        $(CCC) $(CCFLAGS)  -c $< -o $@ 
+	$(CCC) $(CCFLAGS)  -c $< -o $@ 
