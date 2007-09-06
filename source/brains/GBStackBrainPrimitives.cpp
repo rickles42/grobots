@@ -12,7 +12,7 @@
 #include "GBSound.h"
 #include "GBWorld.h"
 
-GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed);
+static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed);
 
 GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * robot, GBWorld * world) const {
 	switch ( index ) {
