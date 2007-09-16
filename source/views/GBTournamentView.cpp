@@ -30,17 +30,18 @@ GBColor GBTournamentView::RangeColor(float value, float min, float max,
 }
 
 GBTournamentView::GBTournamentView(GBWorld & target)
-	: world(target), lastRounds(-1)
+	: world(target), lastRounds(-1), numSides(0)
 {}
 
 void GBTournamentView::Draw() {
 	GBListView::Draw();
 // record
 	lastRounds = world.TournamentScores().Rounds();
+	numSides = world.CountSides();
 }
 
 bool GBTournamentView::InstantChanges() const {
-	return world.TournamentScores().Rounds() != lastRounds;
+	return world.TournamentScores().Rounds() != lastRounds || numSides != world.CountSides();
 }
 
 short GBTournamentView::PreferredWidth() const {

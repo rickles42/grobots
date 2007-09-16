@@ -14,6 +14,7 @@ class GBWorld;
 class GBTournamentView : public GBListView {
 	GBWorld & world;
 	long lastRounds;
+	int numSides;
 	
 	static GBColor RangeColor(float value, float min, float max,
 		const GBColor & low, const GBColor & high,
