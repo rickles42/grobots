@@ -24,6 +24,7 @@ class GBApplication;
 class GBPortal : public GBView, public GBModel, public GBDeletionListener {
 	GBWorld & world;
 	GBPosition viewpoint;
+	short scale; //pixels per unit
 	bool following;
 	GBPosition followPosition;
 	GBMilliseconds lastFollow;
@@ -45,7 +46,7 @@ private:
 // drawing internals
 	void DrawBackground();
 	void DrawBackgroundTile(long ix, long iy);
-	static void DrawOneTile(const GBRect & b, GBGraphics & g);
+	void DrawOneTile(const GBRect & b, GBGraphics & g);
 	void InitBackground();
 	void DrawObjects();
 	void DrawObjectList(const GBObject * list);
@@ -86,6 +87,7 @@ public:
 	void ScrollTo(const GBFinePoint p);
 	void ScrollToward(const GBFinePoint p, const GBSpeed speed);
 	void ScrollBy(const GBFinePoint delta);
+	void Zoom(short direction);
 // following
 	void Follow(GBObject * ob);
 	bool Following() const;

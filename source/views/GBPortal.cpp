@@ -66,8 +66,8 @@ void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 	g.DrawSolidRect(b, GBColor::black);
 // fine grid
 	for ( int i = 1; i < kBackgroundTileSize; i ++ ) {
-		short x = b.left + i * kScale;
-		short y = b.top + i * kScale;
+		short x = b.left + i * scale;
+		short y = b.top + i * scale;
 		g.DrawLine(x, b.top, x, b.bottom, GBColor(0.4f));
 		g.DrawLine(b.left, y, b.right, y, GBColor(0.4f));
 	}
@@ -77,7 +77,8 @@ void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 }
 
 void GBPortal::InitBackground() {
-	background = new GBBitmap(kScale * kBackgroundTileSize, kScale * kBackgroundTileSize, Graphics());
+	if (background) delete background;
+	background = new GBBitmap(scale * kBackgroundTileSize, scale * kBackgroundTileSize, Graphics());
 	background->StartDrawing();
 	DrawOneTile(background->Bounds(), background->Graphics());
 	background->StopDrawing();
@@ -121,7 +122,7 @@ void GBPortal::DrawObjects() {
 
 void GBPortal::DrawObjectList(const GBObject * list) {
 	for ( const GBObject * cur = list; cur != nil; cur = cur->next ) {
-		short r = (cur->Radius() * kScale).Floor();
+		short r = (cur->Radius() * scale).Floor();
 		GBRect where(ToScreenX(cur->Position().x) - r,
 			ToScreenY(cur->Position().y) - r,
 			ToScreenX(cur->Position().x) + r,
@@ -134,19 +135,19 @@ void GBPortal::DrawObjectList(const GBObject * list) {
 }
 
 short GBPortal::ToScreenX(const GBCoordinate x) const {
-	return ((x - viewpoint.x) * kScale).Floor() + CenterX();
+	return ((x - viewpoint.x) * scale).Floor() + CenterX();
 }
 
 short GBPortal::ToScreenY(const GBCoordinate y) const {
-	return ((viewpoint.y - y) * kScale).Floor() + CenterY();
+	return ((viewpoint.y - y) * scale).Floor() + CenterY();
 }
 
 GBCoordinate GBPortal::FromScreenX(const short h) const {
-	return GBNumber(h - CenterX()) / kScale + viewpoint.x;
+	return GBNumber(h - CenterX()) / scale + viewpoint.x;
 }
 
 GBCoordinate GBPortal::FromScreenY(const short v) const {
-	return GBNumber(CenterY() - v) / kScale + viewpoint.y;
+	return GBNumber(CenterY() - v) / scale + viewpoint.y;
 }
 
 GBFinePoint GBPortal::FromScreen(short x, short y) const {
@@ -163,7 +164,7 @@ void GBPortal::RestrictScrolling() {
 
 GBPortal::GBPortal(GBWorld & newWorld)
 	: world(newWorld),
-	viewpoint(newWorld.Size() / 2),
+	viewpoint(newWorld.Size() / 2), scale(kScale),
 	following(false), followPosition(newWorld.Size() / 2), moving(nil),
 	autofollow(false), lastFollow(0),
 	tool(ptScroll),
@@ -279,6 +280,9 @@ void GBPortal::AcceptKeystroke(const char what) {
 		case '\n': case '\r': FollowRandom(); break;
 		case '\t': FollowRandomNear(); break;
 		case '`': Refollow(); break;
+		case '-': Zoom(-1); break;
+		case '+': case '=': Zoom(1); break;
+		case '0': scale = kScale; InitBackground(); Changed(); break;
 		default: break;
 	}
 }
@@ -313,19 +317,19 @@ void GBPortal::SetSize(short width, short height) {
 }
 
 GBCoordinate GBPortal::ViewLeft() const {
-	return viewpoint.x - GBNumber(Width()) / (kScale * 2);
+	return viewpoint.x - GBNumber(Width()) / (scale * 2);
 }
 
 GBCoordinate GBPortal::ViewTop() const {
-	return viewpoint.y + GBNumber(Height()) / (kScale * 2);
+	return viewpoint.y + GBNumber(Height()) / (scale * 2);
 }
 
 GBCoordinate GBPortal::ViewRight() const {
-	return viewpoint.x + GBNumber(Width()) / (kScale * 2);
+	return viewpoint.x + GBNumber(Width()) / (scale * 2);
 }
 
 GBCoordinate GBPortal::ViewBottom() const {
-	return viewpoint.y - GBNumber(Height()) / (kScale * 2);
+	return viewpoint.y - GBNumber(Height()) / (scale * 2);
 }
 
 void GBPortal::ScrollTo(const GBFinePoint p) {
@@ -356,6 +360,14 @@ void GBPortal::Follow(GBObject * ob) {
 		following = true;
 		lastFollow = Milliseconds();
 	}
+}
+
+void GBPortal::Zoom(short direction) {
+	if (direction < 0 ? scale <= 4 : scale >= 64)
+		return;
+	scale += (scale > 32 ? direction * 2 : direction);
+	InitBackground();
+	Changed();
 }
 
 bool GBPortal::Following() const {
