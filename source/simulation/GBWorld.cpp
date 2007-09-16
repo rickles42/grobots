@@ -18,7 +18,7 @@
 #include <Math64.h>
 #endif
 
-#if WINDOWS
+#if WINDOWS && _MSC_VER < 1300
 //this seems to be missing in MSVC6
 ostream & operator << (ostream & s, const string & str) {
 	return s << str.c_str();
@@ -93,6 +93,7 @@ void GBWorld::PickSeedPositions(GBPosition * positions, long numSeeds) {
 			do {
 				inRange = false;
 				positions[i] = RandomLocation(wallDist);
+				//TODO in small worlds, this leaves too much space in center
 				if ( positions[i].InRange(Size() / 2, separation - separation * iterations * 2 / iterLimit) )
 					inRange = true;
 				else
@@ -104,7 +105,7 @@ void GBWorld::PickSeedPositions(GBPosition * positions, long numSeeds) {
 				if ( ++ iterations > iterLimit ) throw GBTooManyIterationsError();
 			} while ( inRange ) ;
 		}
-		if ( reportErrors && iterations > iterLimit / 3 )
+		if ( reportErrors && iterations > iterLimit / 2 )
 			NonfatalError("Warning: seed placement took " + ToString(iterations) + " iterations");
 	// shuffle positions
 		//the above algorithm is not uniform, in that the first element may have different typical location than the last
@@ -194,6 +195,7 @@ void GBWorld::AdvanceFrame() {
 
 void GBWorld::EndRound() {
 		StartSound(siEndRound);
+		//TODO extend biomassHistory to 18k when ending? (to avoid misleading graph)
 		ReportRound();
 		if ( tournament ) {
 			if ( tournamentLength > 0 ) -- tournamentLength;
