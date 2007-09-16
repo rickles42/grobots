@@ -49,7 +49,7 @@ GBNumber GBRandomState::InRange(const GBNumber min, const GBNumber max) {
 }
 
 float GBRandomState::FloatInRange(const float min, const float max) {
-	return min + (float)(unsigned long)GenerateLong() * 2e-32 * (max - min);
+	return min + (float)(unsigned long)GenerateLong() / (float)0xFFFFFFFFUL * (max - min);
 }
 
 GBAngle GBRandomState::Angle() {
