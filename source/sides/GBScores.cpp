@@ -303,7 +303,7 @@ float GBScores::BiomassFractionSD() const {
 
 //Sampling error: twice the standard deviation of the mean.
 float GBScores::BiomassFractionError() const {
-	return rounds > 1 ? BiomassFractionSD() / sqrt(rounds - 1) * 2.0 : 1.0;
+	return rounds > 1 ? BiomassFractionSD() / sqrt((float)(rounds - 1)) * 2.0 : 1.0;
 }
 
 // GBSideScores //
