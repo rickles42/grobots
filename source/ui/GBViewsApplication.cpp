@@ -280,7 +280,9 @@ HRESULT CALLBACK GBViewsApplication::WindowProc(HWND hWin, UINT msg,
 			self->app->dragging = nil;
 			break;
 		case WM_KEYDOWN:
-			self->AcceptKeystroke(wParam);
+			#define MAPVK_VK_TO_CHAR 2 //should be in WinUser.h but it's not;
+			// see http://www.codeguru.com/forum/archive/index.php/t-426785.html
+			self->AcceptKeystroke(MapVirtualKey(wParam,MAPVK_VK_TO_CHAR));
 			break;
 		case WM_INITMENU:
 			self->app->AdjustMenus();
@@ -354,8 +356,10 @@ void GBViewsApplication::Run() {
 	do {
 		Process();
 		Redraw();
-		while ( alive && WaitNextEvent(everyEvent, &event, SleepTime(), nil) )
+		while ( alive && WaitNextEvent(everyEvent, &event, SleepTime(), nil) ) {
 			HandleEvent(&event);
+			Redraw();
+		}
 		if ( dragging && Button() )
 			dragging->AcceptDrag(event.where);
 		AdjustCursor(event.where);
