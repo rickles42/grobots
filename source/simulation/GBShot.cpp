@@ -74,7 +74,7 @@ GBEnergy GBShot::Power() const {
 }
 
 string GBShot::Description() const {
-	return "Shot from " + owner->Name() + " (" + ToString(power) + ')';
+	return (owner ? "Shot from " + owner->Name() : string("Shot")) + " (" + ToString(power) + ')';
 }
 
 // GBTimedShot //
