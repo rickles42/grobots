@@ -7,6 +7,8 @@
 #include "GBBrainSpec.h"
 #include "GBSide.h"
 
+const GBMass kStandardMass = 20;
+
 GBRobotType::GBRobotType() {
 	throw GBBadConstructorError();
 }
@@ -107,4 +109,10 @@ void GBRobotType::Recalculate() {
 
 GBEnergy GBRobotType::Cost() const { return cost; }
 GBEnergy GBRobotType::Mass() const { return mass; }
+
+GBNumber GBRobotType::MassiveDamageMultiplier(const GBMass mass) const {
+ 	GBNumber multiplier(1);
+	if ( mass > kStandardMass ) multiplier += (mass - kStandardMass) / 50;
+	return multiplier;
+}
 

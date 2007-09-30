@@ -71,6 +71,7 @@ public:
 	void Recalculate();
 	GBEnergy Cost() const;
 	GBEnergy Mass() const;
+	GBNumber MassiveDamageMultiplier(const GBMass mass) const; //takes parameter because mass changes when pregnant
 };
 
 #endif
