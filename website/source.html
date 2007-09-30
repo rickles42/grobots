@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html lang=en>
+
+<link rel=home href="./">
+<link rel=up href="./">
+<link rel=help title="Documentation" href="docs/">
+<link rel=made href='mailto:dschudy@yahoo.com,wschudy@alum.wpi.edu?subject=Grobots'>
+<link rel=stylesheet title="Grobots Stylesheet" href="grobots.css" media=all type="text/css">
+
+<title>Grobots - Source</title>
+
+<h1><a href='./'>Grobots</a> - Source</h1>
+
+<p>You can get the latest source to Grobots by <a href='https://sourceforge.net/cvs/?group_id=105050'>anonymous CVS</a> from grobots.cvs.sourceforge.net. (Use <code class=other>CVSROOT=:pserver:anonymous@grobots.cvs.sourceforge.net:/cvsroot/grobots</code>.) Or <a href='http://grobots.cvs.sourceforge.net/grobots/grobots/source/'>view the 
+CVS tree with your browser</a>.
+
+<p>You can also download the source in a zipfile. The latest version that we've gotten around to uploading is that of <a href='src20061230.zip'>30 December 2006</a> (260KB).
+
+<p>Grobots is free software, distributed under the <a href='http://www.gnu.org/licenses/gpl.html'>GNU General Public License</a>.
+
+<h2>Organization of the Code</h2>
+
+<p>Grobots is built in four layers. The lowest, Support, provides some useful portable library. The second (in three parts: Sides, Simulation, and Brains) implements the game engine. The third, Views, provides most of the user interface portably. The top layer, UI, embeds the views and engine in a cross-platform application. Lower layers do not depend on higher ones.
+
+<p>Most of the names below correspond to a .cpp file and a header file.
+
+<h3>Support</h3>
+
+<p>General-purpose, lower-level code used by the rest of the system.
+
+<dl>
+<dt>GBPlatform.h
+<dd>File for platform conditionalization.
+<dt>GBNumber
+<dd>Fixed-point number class, used throughout the simulation and brains.
+<dt>GBFinePoint
+<dd>2-vector of GBNumbers, used for positions and velocities.
+<dt>GBColor
+<dd>A more convenient representation of colors.
+<dt>GBErrors
+<dd>Most of the exception classes live here. (Maybe they shouldn't.)
+<dt>GBTypes.h
+<dd>Header file defining a bunch of widely used types and synonyms.
+<dt>GBLongNumber
+<dd>Extra-precision GBNumber, used for keeping scores.
+<dt>GBSound
+<dd>Some simple asynchronous sound functions.
+<dt>GBDeletionReporter
+<dd>Mixins for classes whose instances tell their dependents when they're deleted, to get around the lack of garbage collection.
+<dt>GBModel
+<dd>Mixin to keep a <q>version number</q> on an object, so views can tell when it's changed.
+<dt>GBRandomState
+<dd>A random-number generator.
+<dt>GBstringUtilities
+<dd>Various string utilities.
+<dt>GBGraphics
+<dd>Three classes for portable graphics.
+<dt>GBMilliseconds
+<dd>Portable timer function. (GBMilliseconds.h is the smallest file in Grobots.)
+</dl>
+
+<h3>Sides</h3>
+
+<p>This part describes sides. Some state is also here, but ought to be split out. Everything here should be portable.
+
+<dl>
+<dt>GBSide
+<dd>Side spec class.
+<dt>GBRobotType
+<dd>Type spec class.
+<dt>GBSideReader
+<dd>Loads side files.
+<dt>GBHardwareSpec
+<dd>A huge file describing the nature of hardware.
+<dt>GBScores
+<dd>Several classes for scores and statistics.
+</dl>
+
+<h3>Simulation</h3>
+
+<p>Everything here should be portable.
+
+<p>GBObject and GBWorld are the heart of the engine.
+
+<dl>
+<dt>GBObject
+<dd>Abstract class for simulation objects (sprites).
+<dt>GBObjectWorld
+<dd>Class that holds GBObjects and supports some operations on them.
+<dt>GBWorld
+<dd>Subclass of GBObjectWorld, with more features and a roster. This is an important class.
+</dl>
+
+<p>Lots of files containing subclasses of GBObject:
+
+<dl>
+<dt>GBDecorations
+<dd>Purely decorative sprites that have no game effect, like smoke and sparks.
+<dt>GBFood
+<dd>Classes for food.
+<dt>GBShot
+<dd>All shots, including syphons, force fields, and explosions.
+<dt>GBSensorShot
+<dd>Sensors are implemented using a <q>sensor shot</q>, which sees things by colliding with them.
+<dt>GBRobot
+<dd>Most of the actual work is in GBHardwareState.
+</dl>
+
+<p>Other files supporting GBRobot:
+
+<dl>
+<dt>GBHardwareState
+<dd>Unwieldy file describing most of the behavior of hardware.
+<dt>GBMessages
+<dd>Most of the message-passing communications system.
+</dl>
+
+<h3>Brains</h3>
+
+<p>All brain-related stuff (both spec and state) is here. Only one kind of brain is currently used, but there used to be others (for hardcoded sides), and there could be more in the future (to support other languages, for example).
+
+<dl>
+<dt>GBBrainSpec
+<dd>Abstract class.
+<dt>GBBrain
+<dd>Abstract class.
+<dt>GBStackBrainSpec
+<dd>Spec for the usual kind of brain. Represents compiled code, mostly. Also contains part of the compiler.
+<dt>GBStackBrain (including GBStackBrainPrimitives.cpp)
+<dd>Brain class: a simple stack-based virtual machine.
+<dt>GBStackBrainOpcodes
+<dd>Names of stack brain primitives.
+</dl>
+
+<h3>Views</h3>
+
+<p>This is a portable view system.
+
+<dl>
+<dt>GBView
+<dd>Abstract view class, and a few useful subclasses.
+<dt>GBListView
+<dd>Parent class for RosterView, ScoresView, and any other views that are lists of something.
+<dt>GBPortal
+<dd>The main view.
+<dt>GBRosterView
+<dt>GBMiniMap
+<dt>GBScoresView
+<dt>GBRobotTypeView
+<dt>GBTournamentView
+<dt>GBDebugger
+<dt>GBAboutBox
+</dl>
+
+<h3>UI</h3>
+
+<p>Top-level cross-platform user interface code. Nothing outside this part depends on anything in it.
+
+<dl>
+<dt>GBApplication
+<dd>GB-specific application-scope stuff.
+<dt>GBViewsApplication
+<dd>Non-Grobots-specific cross-platform application framework.
+<dt>GBWindow
+<dd>Cross-platform wrapper class for a window containing a view.
+<dt>GBMain.cpp
+<dd>This is a boring file, containing <code class=c>main()</code> and nothing else.
+</dl>
+
+<h3>Mac</h3>
+
+<dl>
+<dt>Mac Interface.rsrc
+<dd>Mac-specific resource file, containing menus and dialogs.
+<dt>Grobots*.make
+<dd>MPW makefiles.
+<dt>Sounds.rsrc
+<dd>Resource file with sounds.
+<dt>Carbon.rsrc
+<dd>Resource file with one resource needed for the Carbon build.
+<dt>Grobots.xcodeproj
+<dd>Project for building with XCode.
+<dt>info.plist
+<dd>Property list for OS X build.
+<dt>Grobots_Prefix.pch
+<dd>Prefix header for XCode. (It's useless. How do I turn it off?)
+</dl>
+
+<h3>Win</h3>
+
+<dl>
+<dt>Menus.rc, grobots.ico
+<dd>Windows-specific resource files.
+<dt>Grobots.dsw, GrobotsWin.dsp, GrobotsHeadless.dsp
+<dt>Build files for Microsoft Visual C++.
+</dl>
+
+<h2>Problems</h2>
+
+<ul>
+<li>Hardware has big files and poor modularity.
+<li>spec/state aren't distinguished for sides and types.
+<li>GBStackBrain has poor modularity. Adding an operator requires changes to three files.
+</ul>
+
+<h3>Places we could use the standard library</h3>
+
+<ul>
+<li>Collections in various places (roster, types)
+<li>Standard exception classes
+</ul>
+
+<h2 id=porting>Porting</h2>
+
+<h3>Headless</h3>
+
+<p>To begin with, port headless mode, which should be entirely portable. The main problem will be compatibility with your compiler. Grobots uses some C++ features which are not universally supported, such as <code class=c>long long</code>, <code class=c>dynamic_cast</code>, and <code class=c>std::string</code>. You may also need to define some missing parts in Support. Simulation, Sides, and Brains shouldn't require any changes.
+
+<dl>
+<dt>GBPlatform.h
+<dd>Add an <code class=c>#if defined</code> to identify your compiler and platform, if it's not there already.
+<dt>GBMilliseconds
+<dd><code class=c>Milliseconds()</code> should return the current time (since startup or whenever) in milliseconds. It doesn't need to be very precise.
+</dl>
+
+<p>Once you have headless mode working, start on the GUI. 
+
+<h3>Porting the GUI</h3>
+
+<dl>
+<dt>GBGraphics
+<dd>Make these three graphics classes work on your platform. Some parts exist only for portability, so it's OK if they don't do anything on your platform. You can live without GBBitmap but you'll lose double buffering, trails, and the portal background.
+<dt>GBErrors
+<dd>There are two error-reporting functions in GBErrors.cpp that need porting. These should be easy.
+<dt>GBSound
+<dd>This is stubbed out by default, so don't worry about it.
+<dt>GBWindow
+<dd>A way to make windows containing a GBView.
+<dt>GBViewsApplication, and GBApplication
+<dd>Make this framework work on your platform. Menu handling is a point of difficulty because different platforms vary greatly.
+</dl>
+
+<p>The Mac and Win folders should be replaced by an appropriately named one for your platform, containing makefiles and any other platform-specific files.
+
+<p>Note that the interface may want to be structured differently on some platforms, e.g. panes instead of separate windows.
+
+<h2>Sending Patches</h2>
+
+<p>If you've ported part of Grobots, fixed a bug, or added a feature, we want your changes. Send patches to <a href='mailto:dschudy@yahoo.com'>Devon</a> or to <a href='mailto:grobots@yahoogroups.com'>the mailing list</a>.
+
+<p>Patches should include enough context that they can be applied even if other changes have been made. <code class=misc>diff -u</code> is good. Or give the old and new versions of each function modified. Or just send us the changed files.
+
+<h2 id=todo>To-do list</h2>
+
+<p>If you feel like implementing some of these, go ahead.
+
+<h3>Views and UI</h3>
+
+<ul>
+<li>[Mac OS X] Why is blitting to the screen so slow?
+<li>Bug: framerate is irregular on Slowest.
+<li>[Windows] Replace confusing Abort/Retry/Ignore dialog for NonfatalError with Quit/Abort/Continue.
+<li>[Windows] Add keyboard shortcuts.
+<li>[Windows] Allow opening sides from command line.
+<li>Support graphing of more statistics.
+<li>[OS X] Put Quit in the application menu, not the File menu.
+<li>Make blasters prettier: directional line, varying thickness, more color variation.
+<li>Add more hardware variables to the debugger, and color-code them.
+<li>Show last non-gensym label in debugger, to help navigation.
+<li>Debugger should show multiple words on one line.
+<li>Show overall hardware statistics in Types view when no type is selected.
+<li>Make more information visible (sensor results, sensor foci, engine use).
+<li>[Windows] Make confirmation dialog work.
+<li>[Windows] Make tournament length dialog work.
+<li>It would be nice to be able to sort the Tournament view by score.
+<li>Bug: profile times are sometimes nonsense.
+<li>Use GBView::lastDrawn for GBRosterView's framerate? (But it's private.)
+<li>Move click-counting to GBView?
+<li>Allow scrolling with arrow keys.
+<li>[Mac] Open all sides in a dropped folder.
+<li>Save window positions and states.
+<li>Confirm (once) before using destructive tools during tournaments.
+<li>Bug: following jumps far ahead of syphons and forcefields.
+<li>[Windows] Bug: Closing a child window sometimes buries the main window.
+<li>Alternate portal background? (What's the point?)
+</ul>
+
+<h3>Engine</h3>
+
+<ul>
+<li>Keep more statistics in history.
+<li>Add a better language for brains.
+<li>Replace GBNumber methods like <code class=c>Sqrt</code> with overloaded functions, to make switching number types easy. Once that's done, we can try using floats instead of fixed-point numbers without breaking anything.
+<li>Report starting line numbers of unclosed compile-time words.
+<li>Make forcefields and syphons move instead of dying and being recreated, so they can be usefully followed. (Either shot or robot might get deleted, so whoever keeps the reference will have to listen for this.)
+<li>Profile and optimize. (Why is Act taking so long?)
+<li>Don't make decorations when no one's going to see them.
+<li>Track more total hardware (combat fraction?).
+<li>More statistics (who killed who?)
+<li>More flexibility in sensors: filters, sorting, tracking?
+<li>Add world-in-use layer between <code class=c>GBWorld</code> and <code class=c>GBPortal</code>. (viewpoint, tournament parameters, selection)
+<li>Add fake <code>time-limit</code>.
+</ul>
+
+<h3>Rules changes </h3>
+
+<p>We are reluctant to make these changes because they would alter the rules in ways that change the performance of existing sides.
+
+<ul>
+<li>More robust seed placement.
+<li>Find a better way to discourage large cells in combat than the current extra damage.
+<li>Remove or fix shields. (absorb damage?)
+<li>Bug: shields reduce syphon effectivenes twice.
+<li>Experiment with stunners.
+<li>Fix forcefield balance, possibly by reducing stacking.
+<li>Friendly syphons shouldn't show up on shot sensors.
+<li>Make shots last at least one frame. This might mean fiddling with phase order again.
+<li>Physics experiments: dot-product engines? gradual weapon reloading?
+</ul>
+
+<h3>Other</h3>
+
+<ul>
+<li>More documentation, including user interface, and the rest of the overview.
+<li>Write tests for lower two layers.
+<li>Provide more help for would-be porters.
+<li>Port UI to Linux.
+<li>Merge GBTournamentView, HTML output, and headless output?
+<li>Use STL (especially containers) more.
+<li>Replace pointers with references where appropriate.
+<li>[Mac] Convert FSSpecs to pathnames and use <code class=c>ifstream</code> to load sides.
+</ul>
+
+<h2>Statistics</h2>
+
+<p>(5 April 2003) I counted lines in the source, and was surprised to find it's over 16000 lines and a hundred files. I didn't count the makefile, which is mostly machine-generated, or the two resource files, which don't have lines.
+
+<table>
+<tr><th>Part<th>Files<th>Lines<th>Median<th>Mean
+<tr><td>Support<td>26<td>2477<td>64<td>95
+<tr><td>Sides<td>12<td>3177<td>205<td>265
+<tr><td>Brains<td>11<td>2144<td>143<td>195
+<tr><td>Simulation<td>21<td>3991<td>95<td>190
+<tr><td>Views<td>24<td>2821<td>172<td>118
+<tr><td>UI<td>7<td>1439<td>80<td>206
+<tr><th>Total:<td>101<td>16049<td>92<td>159
+</table>
+
+<p>The largest (and smallest) files are:
+
+<table>
+<tr><th>File<th>Part<th>Lines
+<tr><td>GBHardwareState.cpp<td>Simulation<td>819
+<tr><td>GBStackBrainSpec.cpp<td>Brains<td>714
+<tr><td>GBApplication.cpp<td>UI<td>667
+<tr><td>GBHardwareSpec.cpp<td>Sides<td>648
+<tr><td>GBScores.cpp<td>Sides<td>572
+<tr><td>GBSideReader.cpp<td>Sides<td>569
+<tr><td>GBStackBrainPrimitives.cpp<td>Brains<td>475
+<tr><td>GBObjectWorld.cpp<td>Simulation<td>420
+<tr><td>GBWorld.cpp<td>Simulation<td>418
+<tr><td>GBPortal.cpp<td>Views<td>405
+<tr><td>GBMilliseconds.h<td>Support<td>12
+</table>
+
+<address>
+<a href='./'>Grobots</a> by <a href='mailto:dschudy@yahoo.com?subject=Grobots'>Devon Schudy</a>
+and <a href="mailto:wschudy@alum.wpi.edu?subject=Grobots">Warren Schudy</a>
+</address>
+
+<a href="http://sourceforge.net/"><img 
+src="http://sourceforge.net/sflogo.php?group_id=grobots&amp;type=3" width="125" height="37" 
+border="0" alt="Hosted by Sourceforge.net"></a>

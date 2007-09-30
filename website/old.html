@@ -1,0 +1,857 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html lang=en>
+
+<link rel=home href="./">
+<link rel=up href="./">
+<link rel=help title="Documentation" href="docs/">
+<link rel=made href='mailto:dschudy@yahoo.com,wschudy@wpi.edu?subject=Grobots'>
+<link rel=stylesheet title="Grobots Stylesheet" href="grobots.css" media=all type="text/css">
+
+<title>Grobots - Old Stuff</title>
+
+<h1><a href='./'>Grobots</a> - Old Stuff</h1>
+
+<h2 id=news>Old News</h2>
+
+<h3>groups.yahoo.com is hungry</h3>
+
+<p>(Devon 20060507) The <a href='http://groups.yahoo.com/group/grobots/'>mailing list</a> has been silently eating any messages sent to it for several days. Last time this happened, it coughed up the missing messages a few days later. If it doesn't get better, I'll set up a replacement mailing list.
+
+<h3>Shared code</h3>
+
+<p>(Devon 20060315) Thanks to a patch from Tilendor, types can now share code. If there is a <code>#code</code> section before the first type, its contents are available in all types. This is convenient for communications code, which has sometimes been duplicated between types.
+
+<h3>Built-in graphs</h3>
+
+<p>(Devon 20060223) The Statistics window now includes a graph of biomass over time. It's as useful as it sounds. It would be even more useful if it showed average biomass for all sides at once, instead of just one at a time. [20060409: now it does.]
+
+<h3>Windows and Linux ports</h3>
+
+<p>(Devon 20051111-12) I have ported Grobots to Windows. Not everything is done yet, but it's enough to be useful. Download the <a href='starter-win20060507.zip'>starter kit</a> or just the <a href='win20060507.zip'>binary</a>.
+
+<p>Also, Warren ported headless mode to Linux.
+
+<h3>Robots running around with their heads cut off</h3>
+
+<p>(Devon 20050828) Grobots can now be built with no user interface. This version runs from a command line and is easy to port. So easy, in fact, that I made a <a href='headless-win20050828.zip'>Windows build</a>. This may be useful for people with slow Macs and fast Windows machines. You can't watch the rounds, but you can at least run tournaments.
+
+<p>Daniel von Fange implemented the first version of this in December, and used it to generate some interesting graphs. I only now got around to porting and uploading it. Someday I (or someone else) may get around to adding built-in graphs.
+
+<h3>Yay! Only nine windows!</h3>
+
+<p>(Devon 20040911) I was going to make the inspector prettier, but it's not much use for anything but robots. So I removed it. Basic information about the selected object is now shown as a caption in the main view. (This looks nice with autofollow.) More detailed information about robots is in the debugger. It only shows the most interesting hardware variables, since there are too many to show them all. If there are more variables you want added, let me know.
+
+<p>Then I got rid of the Status window too. The profile times are now shown in the debugger when no robot is selected. The object counts and energy totals replace the type list in the Statistics (previously Scores) window when no side is selected. The frame and framerate are at the top of the roster. (They were briefly in the debugger, but were too inconvenient there.)
+
+<h3>New sensor features</h3>
+
+<p>(Devon 20040815) It would be nice if sides could sometimes coexist without fighting. The simplest way to do this is to ignore cells that aren't attacking you. Missiles make this difficult, because you can't tell they're hostile until it's too late. So we added <code>robot-bomb</code>, which tells how much bomb a cell is carrying.
+
+<p>There's also <code>robot-reloading</code>, which tells whether the target's weapon has fired. (It may change to tell how fast the target is reloading.) This is so you can determine whether a cell is attacking without a shot-sensor and without waiting to be damaged.
+
+<h3>Moved</h3>
+
+<p>(20040322) The main Grobots website is now at <a href='http://grobots.sourceforge.net/'>http://grobots.sourceforge.net/</a>. Please update your links.
+
+<h3>GPL</h3>
+
+<p>(20040307) No more <q>Grobots is free software, but we haven't settled on a license yet</q>. Now it's under the <a href='http://www.gnu.org/licenses/gpl.html'>GNU General Public License</a>.
+
+<h3>Sterility</h3>
+
+<p>(20040105,09) The scoring system now keeps track of whether a side has any cells with constructors left. If not, the side is sterile, and is marked as such on the roster. This makes it easy to distinguish the many times when <a href='sides/not-quite-harmless-3.gb'>Not Quite Harmless</a> retains only a few unkillable decoys from its long-dead population. Sterility also replaces extinction as the criterion for early and late death. There are now two different survival scores: the Scores view shows how often the side had any cells left, and the Tournament view shows how often it was not sterile.
+
+<h3>No more tool-switching!</h3>
+
+<p>(20040105,08) Following, inspecting, and debugging a robot used to require several tedious switches between tools. Now it's automatic: just click on the robot with the Scroll/Follow tool. The inspector and debugger always show the currently followed object.
+
+<p>The Refollow (backquote), Follow Random (return, tab), and Autofollow (command-A) commands are useful too.
+
+<h3>Warren scratches a personal itch</h3>
+
+<p>(Warren 20030727) I made a side debugger today, which currently only displays the shared memory for a side. By a remarkable coincidence, it works well for debugging a particular side I'm writing, which keeps statistics for each 10x10 tile of the world. The debugger displays shared memory 100 at a time, displayed in a 10x10 grid. It also calculates the min and max for each pane, and color-codes the display based on this. Of course, the debugger works fine for debugging sides that do not use shared memory in this particular way - the color-coding will just be less useful.
+
+<p>To use, select the side debugger from the view menu. To advance to the next/previous 100 numbers, hit the 'n' key / 'p' key. To return to the first 100, hit '0'.
+
+<h3>Broken syphons</h3>
+
+<p>(Devon 20030721) I renamed syphons, so that the frequently used friendly syphons now have the short name <code>syphon</code>, and the rare enemy syphons are <code>enemy-syphon</code>. This breaks all fourteen syphon users. I've made fixed versions of the good ones.
+
+<p>While I was at it, I made <code>syphon-distance</code> measure from the center of the cell, not the edge. This makes syphons a little bit simpler to use. <code>syphon-range</code> still measures from the edge of the cell. Maybe it shouldn't.
+
+<h3>A bug you can drive a 100-cell colony through</h3>
+
+<p>(Warren 20030705) I tracked down a bug today that made Commune and Untouchable have expenditures 20 to 50 percent higher than their incomes. Friendly syphons didn't conserve energy, and probably haven't for a little over a month. This explains part of Commune and Untouchable's success. I also fixed a bunch of less serious syphon bugs. Here's how syphons work now:
+
+<ul>
+<li>The amount syphoned is multiplied by an efficency factor equal to the product of the shield fractions of the bots involved.
+<li>When taking energy from an enemy robot, efficiency also includes a factor equal to the target's energy divided by its max-energy. The idea behind this is that squeezing energy out of a starving enemy is hard, but giving to enemies, and giving or taking from friends, are not affected.
+<li>syphoned is the actual amount of energy syphoned, not the fraction of syphon-rate that was used (these differ by the efficiency factor). Therefore, syphoned may not equal syphon-rate, even if the syphon is working as hard as it can. This may break sides that use unfriendly-syphons (Gnats and Sucker come to mind).
+</ul>
+
+<h3>Yes, implicit conversions are bad</h3>
+
+<p>(Devon 20030516) I chased type ambiguities by removing an implicit type conversion operator, <code class=c>GBNumber::operator double</code>. This broke a lot of code. That conversion was being used in a lot of places where it shouldn't have, and most of these weren't obvious. Some were even minor bugs.
+
+<p>I also added more comparison operators. If there are any type ambiguities left, please report them - my compiler doesn't. :(
+
+<h3>New Top Nine tournament</h3>
+
+<p>(Devon 20030404) I started an organized tournament series. It's in <acronym title='King of the Hill'>KotH</acronym> format. <a href='top-nine.html' title='Top Nine'>Read about it</a>.
+
+<h3>Seven-year patch</h3>
+
+<p>(Devon 20030114) We got our first patch today, from Tilendor. It makes <code class=c>GBSideReader</code> portable, and ports GBErrors to Windows.
+
+<p>Oh, the original design of Grobots is seven years old this month, and the implementation three years.
+
+<h3><q>Crush the giants</q></h3>
+
+<p>(20030103) We did some experiments with Intoxicated, and it seems that large cells still have an advantage in combat. They're supposed to have a large disadvantage. So we doubled the extra damage for large cells.
+
+<p>We're not specifically trying to weaken Intoxicated, Teledont, and World Toad. These are all interesting sides. But their size does not fit our vision of the game. Grobots is supposed to be about strategy and programming, not about who can buy the largest cells.
+
+<p>A semi-giant, Active Large, won the first tournament after the rule change. Not as bad as before, but still not good. Fortunately (and unlike Intoxicated), most of its success isn't due to its size.
+
+<h3>Balance</h3>
+
+<p>(Devon 20021219) We removed the confusing increase in the cost of armor for large cells, and replaced it with an almost equivalent increase in damage taken. Whether it's equivalently confusing remains to be seen. This is, what, the fifth attempt to discourage large cells?
+
+<p>It's been nearly impossible to get much energy from manna. We didn't notice this until recently because theotrophs do unrealistically well in solitary doubletime tests. In an attempt to restore balance, we have increased the default manna rate, and the cost of solar cells.
+
+<p>There have been no tournaments recently because sides' performance varies so much under different rules (especially world sizes) and against different opponents. 10x10 tiles is standard, but we like the feel of the game in larger worlds. We will probably adjust constants to make the 10x10 world feel larger.
+
+<h3>Rules</h3>
+
+<p>(Devon 20021124) Today's version replaces part of the cooling charge with an increase in the cost of armor for large cells. The idea is to compensate for large cells' combat advantage. Since large cells don't have an advantage in most other activities, a combat-specific penalty is better than a general one. (Ideally, we want large cells to be slightly worse at everything. The amount of cooling charge required to make them slightly worse at combat makes them much worse at other things.)
+
+<p>I added a Rules dialog, with which you can set various parameters, including seed size. Note that the world size settings don't work yet.
+
+<h3>Source released</h3>
+
+<p>(Devon 20021121) Portability work is under way.
+
+<p>(Devon 20021119) We have released the source to Grobots. See the <a href='source.html'>source page</a>.
+
+<h3>Quadratic cooling cost</h3>
+
+<p>(Devon 20021116) In order to get rid of the giant cells that have become too common, we made cooling cost increase as the square of hardware cost. This is cheaper for cells smaller than 2000, and very expensive for large cells: the marginal cost of hardware at 3500 is 50% higher than at 1000. Authors of large cells will probably want to shrink them.
+
+<p>To prevent many giants from becoming unseedable, we have raised the seed size to 6000. This is temporary; in a week or two (after sides have been updated) it'll return to 5000.
+
+<h3>Automated tournaments</h3>
+
+<p>(Devon 20021116) There is now support for automating tournaments. Cumulative results are kept for all sides; type <code class=misc>T</code> in the Roster window to see them. Check the Tournament option in the Simulation menu to run many rounds automatically. Only ten sides at a time will be seeded (unless you uncheck the Only Seed Ten Sides option), so you can run large tournaments.
+
+<h3>Views are much nicer now</h3>
+
+<p>(Devon 20021115) The various views update on a better schedule now. Minimap and Side no longer fail to update at all, and Inspector and Roster don't flicker so much. There's also a framerate display in the Status window. You can change the Minimap display; see the <a href='docs/ui.html'>user interface reference</a>. And the Type view works now, so you can see costs in detail. I found two bugs because of this.
+
+<p>Did you notice the visible indications of radio use, and the different colors of sensors?
+
+<h3>Cooling charge and other size balance</h3>
+
+<p>(Devon, October 24, 2002) We decided to tackle the size-balance problem directly, by charging extra for large cells. If a cell's hardware costs over 1000, it is charged an additional 10% for a cooling system (because big things tend to overheat, right?). A cell that cost 1200 now costs 1220, which is not a big deal, but for larger cells, the charge is significant. <a href='sides/teledont-3.gb'>Teledont</a>'s cost increased from 4899 to 5287, making it unseedable. (It's not a good idea to have sides that are just barely seedable; rule changes tend to break them.)
+
+<p>We also messed with explosions. Their size now varies even less than before. This greatly weakens missiles.
+
+<p>I finished adding AppleEvent support. This means you can open sides by dropping them on the application. Very convenient.
+
+<h3>Misc</h3>
+
+<p>(Warren, October 12, 2002) <code>#seed</code> now works. See <a href='docs/structure.html'>the docs</a> for more detail. Also, the game automatically pauses when all but one side die.
+
+<p>(Warren, October 11, 2002) The Grobots compiler dared to insult me by rejecting the symbol <code>nifr</code>. I got angry and taught it a lesson. While I was at it, I also added <code>nifc</code>.
+
+<h3>...and again</h3>
+
+<p>(Devon, October 3, 2002) Communications now requires hardware. This hardware is the first to use nonnumerical arguments: a full-featured radio is <code class=hardware>radio write read send receive</code>. The arguments correspond to the communications operations that are supported. Sides that use communications will need updating again.
+
+<h3>Sides broken again</h3>
+
+<p>(Devon, 2 October 2002) I renamed the communication operators, so sides that use them will need updating. Also added some new operators.
+
+<p>Have you noticed the <a href='tournaments.html'>tournament results</a> and <a href='sides/analysis.html'>side analysis</a> pages yet? Read them and go write something to end the reign of the missile-using autotrophs.
+
+<h3>Enemies feel different</h3>
+
+<p>(Devon, September 21, 2002) In addition to <code>collision</code>, there are now <code>friendly-collision</code>, <code>enemy-collision</code>, <code>food-collision</code>, <code>shot-collision</code>, and <code>wall-collision</code>. See the <a href='docs/hw-interface.html#basics'>documentation</a> (yes, it's a new feature that's documented!) for details.
+
+<p>I ran some tournaments. <a href='sides/teledont-2.gb'>Teledont</a> is still champion.
+
+<h3>Faster, and I forget what else</h3>
+
+<p>(Devon, September 21, 2002) I fixed a bug that made the minimap slow to draw. Now you no longer have to close that useful window to get acceptable speed. Also:
+
+<ul>
+<li>New operator, <code>mod</code>.
+<li>New hardware variable, <code>collision</code>, containing the number of robots and walls this cell is currently in collision with.
+<li>Radii of explosions and force fields now vary less.
+<li>The Side window is broken.
+<li>New menu item, Reseed, which seeds any extinct sides.
+<li>Various other changes.
+</ul>
+
+<h3>Now they <em>look</em> pregnant</h3>
+
+<p>(September 20, 2002) A cell's radius now varies with its mass, so pregnant cells are bigger. No more confusion over tiny cells that weigh far too much. I also fixed a random-number bug (<code>2 1 random</code> now works the same as <code>1 2 random</code>), and added <code>dist</code> and <code>in-range</code>.
+
+<h3>Listen to the vectors</h3>
+
+<p>(Devon, September 19, 2002) I added user-defined vector variables. They act like ordinary variables, but they store two values instead of one. Declare them with <code>#vector <var>name</var></code> or <code>#vector <var>name</var> <var>x</var> <var>y</var></code>.
+
+<p>There's also sound now. It can be annoying, so it's off by default.
+
+<p>Miscellaneous obscure bug fixes: brains now count toward biomass. Lines should no longer disappear from the background. About... menu item checked properly.
+
+<h3><code>xor</code> added</h3>
+
+<p>(Devon, September 3, 2002) See, we respond to feature requests! Slowly. But there's now an <code>xor</code> operator.
+
+<h3>Several more changes</h3>
+
+<p>(Warren, June 9, 2002) More poorly tested changes:
+<ul>
+<li>There is now a rudimentary inspector. It will get more colorful and more complete (especially for robots) as I work on it. The inspector might cause dangling pointer problems if I made an error, so report crashes.
+<li><code>robot-sensor-next</code> renamed <code>next-robot</code>.
+<li>Hardware variables <code>current-food-result</code> and <code>num-food-results</code> (and similar for robots and shots) added.
+<li><code>robot-side</code>, <code>food-side</code>, <code>shot-side</code> added. Returns ID, or 0 if the item is neutral.
+<li><code>syphoned</code> hardware variable added, reporting the amount of energy passing through the syphon.
+<li>Friendly syphon (which badly needs a better name) added. Similar to a syphon but only works against robots on the same side. This is much cheaper than a regular syphon, and will make gathering energy in one cell and spending it in another more practical.
+<li><code>robot-mass</code> (food and shots too) available from sensors.
+</ul>
+
+<h3>Several changes</h3>
+
+<p>(Warren, May 26, 2002) Recent changes, of which none have been thoroughly tested, include: <ul>
+<li>Seeds are kept seperated, so seeds no longer appear on top of each other. The minimum distance depends on the number of sides; for 10 sides it is about 25 units and for two sides it is about 75 units.
+<li>Message passing has been implemented. Use: <dl>
+ <dt><code><var>message</var><var>length</var> <var>channel</var> send-message</code>
+ <dd>This sends a message of length <var>length</var>. It pops 2 + <var>length</var> elements from the stack.
+ <dt><code><var>channel</var> receive-message -- <var>message</var> <var>length</var></code>
+ </dl>
+ <li>Sensors have been upgraded to allow the sensing of friends, and the sensing of multiple targets. Use <code>robot-sensor-sees-friends!</code>,<code>robot-sensor-sees-enemies!</code>, and <code>robot-sensor-next</code>. See the <a href="docs/hardware.html">documentation</a> for details.
+</ul>
+
+<h3>Explosions changed</h3>
+
+<p>(Devon, May 2, 2002) Large explosions have been weakened. More massive robots also take more damage from explosions. See the <a href="docs/physics.html">physics page</a> for details.
+
+<h3>Foci back</h3>
+
+<p>(Devon, April 18, 2002) Sensor foci are back: use the variables <code><var>*</var>-sensor-focus-distance</code> and <code><var>*</var>-sensor-focus-direction</code>. Yes, I know their names are too long. Someday in the distant Utopian future, when the language is based on trees instead of sequences, there will also be more data types. Vectors, hardware, and sensor returns will all be first-class. <code>food-sensor-focus-distance</code> will become something like <code>(norm (focus food-sensor))</code>. Except that foci will be replaced by something better long before then.
+
+<h3>I broke your sides.</h3>
+
+<p>(Devon, April 10, 2002) I made several incompatible changes yesterday, so most sides no longer work. Isn't it fun using prerelease software?
+
+<ul>
+<li>Sensors no longer have a reload time. This means <code><var>*</var>-sensor-reload-time</code> and <code><var>*</var>-sensor-cooldown</code> no longer work. There is now just one parameter (range) to sensor hardware.
+<li><code>fire-<var>*</var>-sensor</code> no longer takes parameters. (So there is no way to set sensor focus at the moment. Focus and other results-processing options will be implemented once we figure out what they should be.)
+<li>Force fields are now based on power, not force. This makes force fields less efficient at high speeds. <code>force-field-[max-]force</code> is now <code>force-field-[max-]power</code>, and the first parameter to the hardware is power, not force.
+<li><code>set-force-field</code> has been replaced by <code>force-field-distance</code> and <code>force-field-direction</code>.
+<li><code>set-velocity</code> has been replaced by <code>engine-velocity</code>, which is a vector variable. (No user-defined vector variables yet, though.)
+</ul>
+
+<p>There's also a new operator: <code>seek-location</code> sets <code>engine-velocity</code> to go to a specified place at full power. It's strictly a convenience, but we got tired of writing it over and over, so now it's built in. This will happen a lot once we figure out what routines are useful.
+
+<h3>Recent changes</h3>
+
+<p>(Devon, April 8, 2002) Some of the changes in the last few weeks:
+
+<ul>
+<li>Types with bombs are no longer seeded.
+<li>Seeds are larger and some details are different.
+<li>Standard mass doubled to 20.
+<li>Drag is now quadratic in speed, not linear.
+<li>Various cost changes.
+<li>Corpses take a moment to stop moving.
+<li>Shields are slow to raise, have a small overhead, and prevent firing weapons.
+<li>New bug: sensor-shots and smoke are mysteriously reddish.
+<li>Bugfix: Removing the first side now renumbers remaining
+sides correctly.
+ </ul>
+
+<p>There will be incompatible changes to sensors soon: reload times are going away, and the arguments to <code>fire-<var>*</var>-sensor</code> will be replaced by a <code><var>*</var>-sensor-focus</code> variable.
+
+<h3>Alpha version available</h3>
+
+<p>(Devon, March 6, 2002) The latest build of Grobots is now available. It's alpha-quality but the basics are all there, and it's fun to play. Download it (and some <a href='sides/'>sides</a>) and experiment. If you write any interesting sides, send them to us (or the mailing list). We'll post them on the site, and run tournaments.
+
+<h3>Mailing list</h3>
+
+<p>(Devon, February 27, 2002) There is now a mailing list for Grobots. Send a message to <a href='grobots-subscribe@yahoogroups.com'>grobots-subscribe@yahoogroups.com</a> to join, and <a href='grobots@yahoogroups.com'>grobots@yahoogroups.com</a> to post. See <a href='http://groups.yahoo.com/group/grobots/'>http://groups.yahoo.com/group/grobots/</a> for details.
+
+<p>All of the essential features are working. We will probably release an alpha version soon.
+
+<h3><em>More</em> new features?</h3>
+
+<p>(Devon, February 7, 2002) Added today: compile-time words, inter-robot communication, vector operations. Robot sensors now report the target's velocity. I also shortened some of the most unwieldy names: for example, <code>food-sensor-angle-found</code> is now <code>food-angle</code>.
+
+<h3>Parser working!</h3>
+
+<p>(Devon, February 6, 2002) I <strong>finally</strong> finished the parser. Now arbitrary sides can be loaded from files - I've run five so far. This is a big milestone - now it's easier to play the game than to work on it.
+
+<p><b>Sensors</b> have also been simplified and are now much easier to use. They are less informative to watch, but I can fix that.
+
+<p>Currently the biggest annoyances to the user seem to be:
+
+<ul>
+<li>Conditionals are very clumsy. Compile-time words would fix this and make other things (like loops) easier too.
+<li>There are no vector operations yet. They would make movement and shooting code simpler.
+<li>Reloading a side requires removing it (which resets the world) and loading it again.
+<li>Error messages about user code are not presented very well. (But this is easy to fix.)
+<li>Seeing or changing the current tool requires using a menu. A toolbar would be convenient.
+<li>There's still not much documentation.
+</ul>
+
+<h3>Six years, no hurry</h3>
+
+<p>(Devon, February 4, 2002) Grobots is six years old. Changes lately:
+
+<ul>
+<li>There is a <a href="screenshots/side-view.gif" title="screenshot of the side view">side view</a>, which shows a side's types and some statistics.
+<li>You can select in the Side view the type for the Add Robot tool to add.
+<li>New tool: Erase Big, for erasing large areas more conveniently.
+<li>Blasters are a little prettier now.
+<li>The less important views are now drawn less frequently.
+<li>Added a bunch of missing sensor instructions.
+</ul>
+
+<h3>More screenshots</h3>
+
+<p>(Devon, October 12, 2001) It seems I haven't posted any screenshots of the main view in a long time. Here are three, all showing robots engaged in somewhat useless activities.
+
+<p>Both the white and yellow sides in <a href='screenshots/circling.gif' title='Two sides running in circles'>this screenshot</a> run in circles, aimlessly fire a weapon, and do little else of interest. The yellow robots have raised shields (blue rectangles) to defend against the strafing, which is a waste of energy since those shots do practically no damage. Three of the syphons (little greenish crosses) aren't hitting anything, so they have no effect, and the fourth is starving a friendly robot.
+
+<p><a href='screenshots/ineffectual.gif' title='Ineffectual grenades'>Here</a>, purple is throwing grenades at brown and white, but has not yet managed to kill anything. The white side's circular motion consistently throws off purple's aiming, so the grenades land in neat circles <em>around</em> the target. Purple did actually succeed in killing some brown robots shortly after this screenshot was taken. But as neither of the target sides is armed (white's strafing doesn't count), killing them is pretty pointless.
+
+<p>There's hope. <a href='screenshots/plants.gif' title='Plants defending themselves'>This</a> shows a nice healthy two-type plant and some nice healthy overkill. That cloud of grenades does 900 damage, enough to kill those heavily armored intruders three times over. Useless, but harmless. (Harmless to the plant, anyway.)
+
+<h3>Status, changes, and To Do</h3>
+
+<p>(Devon, October 5, 2001) Work still continues, slowly. Some changes in the last few months:
+
+<ul>
+<li>The Roster window now resizes itself properly
+<li>Force fields behave better
+<li>New tools: Add Seed, Add Robot, and Erase.
+<li>Brain errors are now caught, and stop the brain without interfering with the simulation.
+<li>Sides may be duplicated without resetting scoring information.
+<li>Many parser bug fixes.
+<li>About box added.
+<li>The Status window is no longer opened at startup.
+</ul>
+
+<h3>More stuff to see</h3>
+
+<p>(Devon, June 20, 2001) The <a href="screenshots/roster.gif">Roster window</a> is working now. Notice the scoring information.
+
+<p>Major behind-the-scenes changes were made to the interface. Oh, and by the way, brains are working now.
+
+<h3>Lull</h3>
+
+<p>(Devon, April 1, 2001) Apathy and frustration with C++ have prevented me from doing any significant work on Grobots since January. However, some nice features are working:
+
+<ul>
+<li>The last two weapons, force fields and syphons, should work now.
+<li>Interactive tools let the user intervene in the workings of the world, dropping food, force fields, and (most important) explosions on the hapless robots. (I am User! Fear my boredom!)
+<li>Food gradually decays, to avoid cluttering up the world.
+<li>Programmable robot brains are essentially done, but do not work because of a library problem.
+<li>You can scroll by clicking on the minimap. This is very convenient - no more repeated switching of tools.
+</ul>
+
+<p>I am distracted by a more interesting project (and did I mention apathy?), so I may not be working on Grobots much.
+
+<h3>More screenshots</h3>
+
+<p>(Devon, January 17, 2001) Here are two scenes from a battle, <a title="Scene 1" href="screenshots/battle.gif">with</a> and <a title="Scene 2" href="screenshots/battle2.gif">without</a> sensor-shots, and the <a href="screenshots/minimap.gif">minimap</a>.
+
+<h3>Grobots is five years old!</h3>
+
+<p>(Devon, January 12, 2001) The first version of Grobots was designed five years ago this month. The design has changed surprisingly little since the first year.
+
+<h3>Screenshots</h3>
+
+<p>(Devon, November 21, 2000) These screenshots are days old, but the graphics haven't changed since. <a title="Rabbits in action" href="screenshots/rabbits.gif">The first one</a> shows a bunch of brown Rabbits seeking food - the blue circles are their sensor-shots - and a white Lunatic that has fired a magenta blast at nothing in particular. <a title="Various sides" href="screenshots/five.gif">The second</a> shows five sides: the rabbit and lunatic, a dangerous purple gunner, a buggy red would-be predator, and green algae. Note the grey wall at the bottom.
+
+<h3>Telephone</h3>
+
+<p>(Devon, November 18, 2000) The Major Progress continues. There are now hard-coded sides fighting each other. This is a long-awaited milestone, as this phone conversation from yesterday illustrates:
+
+<blockquote>
+<p><i>The phone rings; Devon answers it.</i><br>
+<i>Devon:</i> Hello?<br>
+<i>Warren, on the other end:</i> Predator versus Algae?<br>
+<i>Devon:</i> Yup.
+</blockquote>
+
+<h3>Major progress</h3>
+
+<p>(Devon, November 14, 2000) In the last two days, many major features have started working. The simulation now runs and displays.
+
+<h3>Pick a language. <em>Any</em> language...</h3>
+
+<p>(Devon, date unknown) An implementation in C++ was started in January 2000. I abandoned it in favor of a Java implementation in April, but eventually got too frustrated with AWT and switched back.
+
+<h3>See!</h3>
+
+<p>(March 29, 2000) I made a <a href="screenshots/mockup.gif">fake screenshot</a>!
+
+<h2 id=changes>Old Changes</h2>
+
+<ul>
+<li>(20061230) Fixed misformatted totals in HTML output.
+<li>(20061229) [Mac OS X] Turned off pointless cursor changes.
+<li>(20061229) [Mac] Now really doesn't try to step when paused, even at Unlimited speed.
+<li>(20061229) [Mac OS X] Now opens files of any type, not just <code class=misc>TEXT</code>.
+<li>(20061225) Now builds for Mac OS X under XCode (based on a patch from Daniel von Fange).
+<li>(20061225) [Mac] Fixed crash when closing a side or quitting.
+<li>(20061225) [Mac, especially OS X] No longer tries to step the simulation very very fast when paused.
+<li>(20061215) Now recognizes any newline on any platform.
+<li>(20061127) Types view now includes initial energy in hardware cost, and shows percent cooling cost. It's no longer possible to select no type, which was useless and annoying.
+<li>(20061126) Improved minimap minimum contrast, so dark sides are still visible. Removed useless white-background option.
+<li>(20061126) Robots' captions now show energy, armor, and construction. Corpses' show what type they were.
+<li>(20061124) [Windows] Added missing stream operator so HTML output compiles under MSVC.
+<li>(20061023) Added cooling cost percentage to Types view.
+<li>(20061023) Added Save Tournament Scores menu command.
+<li>(20061023) Fixed headless survival output (again).
+<li>(20061021) Added <code>v=</code> and <code>v&lt;&gt;</code> operators.
+<li>(20061021) Debugger now shows last label in PC and return-stack boxes, making it much easier to see what a cell is doing.
+<li>(20061018) Total hardware cost (in Types view) now includes initial energy.
+<li>(20061018) [Windows] Now picks font size more reliably.
+<li>(20060606) Increased Faster speed.
+<li>(20060606) Restored engine-velocity to debugger (it got lost somehow).
+<li>(20060507) <code>periodic-*-sensor</code> will now fire immediately if the sensor has never fired before.
+<li>(20060507) The Graph All Rounds setting is now ignored for the first round.
+<li>(20060507) No longer draws gestation progress meter of zero.
+<li>(20060507) Debugger keys: step brain (b), pause (p), frame (f), run (r).
+<li>(20060507) Clicking in world now prefers robots over other objects.
+<li>(20060419) Seeding now stops at the first unseedable type rather than trying to spend as much energy as possible on robots.
+<li>(20060415) Headless mode no longer prints useless overall kill fraction.
+<li>(20060415) [Windows] Windows stay together in stacking order. (Patch from Tilendor)
+<li>(20060415) Added <code>engine-velocity</code> to debugger.
+<li>(20060410) Bugfix: biomass history for time 0 could be wrong.
+<li>(20060410) Views no longer use side ID to detect change in selected side.
+<li>(20060410) Tweaked tournament results coloring.
+<li>(20060409) Reorganized <code class=c>GBScoresView::Draw</code> to fix crash from surprising copying.
+<li>(20060409) Graph is now bigger, and can show biomass across rounds.
+<li>(20060409) Added Slowest and Faster speeds.
+<li>(20060409) Reduced force of explosions on food.
+<li>(20060409) [Mac] Command-E now shows Tournament view.
+<li>(20060409) Side IDs now only count seeded sides.
+<li>(20060409,15) Replaced kill rate (kills / biomass) with kill fraction (kills / total kills) in tournament results.
+<li>(20060409) Execution now starts at the beginning of each type's code, even when there is shared code.
+<li>(20060330) Bugfix: Pull tool crashed.
+<li>(20060330) Force fields are now somewhat more expensive and weaker.
+<li>(20060314) Added shared code. (Patch from Tilendor)
+<li>(20060309) Windows version can now load multiple sides at once. (Patch from Tilendor)
+<li>(20060304-5) Fixed two history-related crashes.
+<li>(20060304) Added <code>flag</code> and <code>robot-flag</code> variables.
+<li>(20060304) Debugger now shows more instructions, and some hardware variables are shown only when interesting.
+<li>(20060223) Fixed crash on exit.
+<li>(20060221) Text and graphs now darken light colors instead of using black.
+<li>(20060220) Added biomass graphs.
+<li>(20060215-20) Improved portability: <code class=c>GBApplication</code> is now mostly cross-platform.
+<li>(20060215) Bugfix: <code class=c>SimulateOneFrame</code> didn't end round when stepping.
+<li>(20051124) Forcefields now have fake velocity, like syphons.
+<li>(20051114) Increased font size on Windows.
+<li>(20051112) Bugfix: headless mode now reports nonsterile survival, not simple survival.
+<li>(20051112) Moved type population and biomass to Types view, and expanded Statistics view.
+<li>(20051112) Radio no longer requires hardware or energy to use.
+<li>(20051112) Ported headless mode to Linux. This had the side effect of fixing a rounding bug that made collisions inelastic.
+<li>(20051112) Fixed headless crash: division by 0 in very short tournaments.
+<li>(20051112) Added convenience operators: <code>restrict-position</code>, <code>autoconstruct</code>, <code>balance-type</code>, <code>periodic-robot-sensor</code>, <code>periodic-robot-sensor</code>, <code>periodic-robot-sensor</code>, <code>lead-blaster</code>, <code>lead-grenade</code>, and <code>set-force-field</code>.
+<li>(20051112) Tiny bugfix: Side names ending in 's' don't get another -s in genitive.
+<li>(20051111) Large blasts now look (but not feel) slightly bigger.
+<li>(20051111) Scores now include estimated two-sigma sampling error, so you know whether you've run enough rounds.
+<li>(20051110) Over medium distances (10-30), following now moves fast instead of jumping.
+<li>(20051110) Following a robot now automatically selects its side and type.
+<li>(20051110) Headless mode prints types and costs, round numbers, total biomass, elapsed time and framerate.
+<li>(20051110) Headless mode now displays final scores properly.
+<li>(20051105-11) Ported GUI to Windows.
+<li>(20050828) Ported headless mode to Windows. This required only minor changes to deal with <code class=c>for</code> loop scoping and numbers, and fixing a bug in <code class=c>GBSideReader::GetLine</code>.
+<li>(20050508) Frame number now changes after each round instead of before, so stepping doesn't confuse brains.
+<li>(20050508) Headless mode now prints more scores and has some rules options.
+<li>(20050327) Minor (probably irrelevant) optimizations to <code class=c>NamesEquivalent</code> and <code class=c>GBObject::Intersects</code>.
+<li>(20050226) Various small optimizations (conditions in <code class=c>GBHardwareState::Act</code>, faster <code class=c>FindTile</code> and <code class=c>GBObject::Intersects</code>).
+<li>(20050226) Tinkered with minimap contrast without much success.
+<li>(20050221) Bugfix: stack didn't display properly in debugger.
+<li>(20050221) Removed some unused methods from <code class=c>GBObject</code>.
+<li>(20050221) No longer creating invisible transmission decoration for unused radios.
+<li>(20050221) Added profiling for resort and statistics phases.
+<li>(20041214) Applied some Unix porting patches from Daniel von Fange, and added headless mode.
+<li>(20041211) The Carbon build now uses Navigation Services, so you can open multiple sides at once.
+<li>(20041211) About box now shows platform (Classic or Carbon).
+<li>(20041211) Ported to Carbon.
+<li>(20040911) The roster now redraws when a side is loaded or removed.
+<li>(20040911) Moved frame and framerate to the Roster window, and added indication of tournaments and pausing.
+<li>(20040911) Removed the Status window, and moved its contents to the debugger and Statistics windows.
+<li>(20040911) Removed the inspector, since it is now superfluous.
+<li>(20040911) Added some hardware variables to the debugger.
+<li>(20040911) Added caption to the selected object in the main view.
+<li>(20040911) <code>0 constructor-type!</code> now works.
+<li>(20040812) Added experimental white-backgound option to the minimap (press W), to make dark robots easier to see.
+<li>(20040516) Added <code>robot-bomb</code> and <code>robot-reloading</code>.
+<li>(20040421) Fixed a potential crash when inspecting sensors.
+<li>(20040421) Brain stepping now works again.
+<li>(20040408,21) Forcefields and explosions now show up on shot sensors.
+<li>(20040408) Tiny change to line spacing in hardware view.
+<li>(20040403) Bugfix: Move tool couldn't be used twice on the same object.
+<li>(20040403) Removed mistaken constness from <code class=c>GBWorld::Followed</code> and <code class=c>GBInspectorView</code>.
+<li>(20040401) More portability changes (float literals, namespacing, some Windows stuff).
+<li>(20040401) About box shows Sourceforge website.
+<li>(20040307) About box now shows GPL notice, and date of compilation.
+<li>(20040307) Added GPL notices to source files.
+<li>(20040307) Portability work: removed <code class=c>#pragma unused</code>; renamed folders; now distributing a makefile that works!
+<li>(20040207) Bugfix: number of mannas added was rounded (sometimes to zero). Also changed manna density unit to (energy / tile) and manna rate to (energy / tile / frame).
+<li>(20040207) Main view now recenters when completely out of the world.
+<li>(20040207) Moved <code class=c>GBSensorResult</code> into GBHardwareState.{cpp,h}.
+<li>(20040207) Repairs now make sparks.
+<li>(20040207) Added local memory (<code>load</code>, <code>store</code>, <code>vload</code>, <code>vstore</code>).
+<li>(20040207) Added <code>shot-type</code>, <code>shot-power</code>, and <code>last-hit</code>.
+<li>(20040207) Improved seed placement. Seeding errors are not reported if robot errors aren't.
+<li>(20040206) Cheaper enemy-syphons.
+<li>(20040114) Types view now shows the type if there is only one.
+<li>(20040114) Longer period (3 seconds) on autofollow.
+<li>(20040114) Bugfix: debugger and inspector didn't always update.
+<li>(20040106) Now asks for confirmation before quitting during a tournament.
+<li>(20040106) New Autofollow mode added. (The old one is now called Follow Random.)
+<li>(20040106) Menus and shortcuts revamped.
+<li>(20040106) Slow speed reduced to 10 frames per second.
+<li>(20040106) Scores are now updated when tools are used.
+<li>(20040106) <code>seek-moving-location</code> no longer turns off engine when close.
+<li>(20040106) Bugfix: mouseups sometimes went unnoticed.
+<li>(20040105) Total constructor and sterility are now tracked.
+<li>(20040105) Decorations and hidden sensors are no longer followable.
+<li>(20040105) Fixed various scoring and score display bugs.
+<li>(20040105) Replaced solar% with kill rate (kills / biomass) in Tournament view.
+<li>(20040105) Follow now jumps to the target instantly if far away.
+<li>(20040105) Increased default initial manna density to 1.5.
+<li>(20040105) Inspector and debugger now apply to the currently followed object.
+<li>(20040105) Type view now contains a selectable list of types.
+<li>(20040105) Removed selection from <code class=c>GBListView</code>.
+<li>(20040105) Merged <code class=c>GBRoster</code> and part of <code class=c>GBPortal</code> into <code class=c>GBWorld</code>.
+<li>(20040105) <code>#author</code> is now read.
+<li>(20040104) Bugfix: early death scores counted rounds a side was not in.
+<li>(20040103) Reseeded sides now have scores and shared memory reset.
+<li>(20040103) Sides no longer seed near the center.
+<li>(20040102-3) The Side view is now the Scores view, with many more statistics, and cleaner code too.
+<li>(20040102) <code class=c>GBRect</code> is now portable.
+<li>(20040101) Follow now works while paused.
+<li>(20040101) Radio transmissions are no longer solid circles on the minimap, and sparkles are dimmer.
+<li>(20040101) Minimap trails are now much better.
+<li>(20040101) Bugfix: Roster showed selection after side was removed.
+<li>(20031231) Reorganized menus, and added Refollow, Autofollow, Autofollow Near, Start/Stop Brain, and minimap options.
+<li>(20031231) Bugfix: autofollow in an empty world gave an error.
+<li>(20031231) Bugfix: line numbers in brain error messages were off by one instruction.
+<li>(20031231) Bugfix: Writing read-only variables was sometimes reported as an unimplemented instruction.
+<li>(20031231) Removed <code>shot-mass</code>, since shots are massless.
+<li>(20031231) Bugfix: user-defined variables couldn't shadow builtins in assignments.
+<li>(20031231) Bugfix: some text in Side view was unreadable on selected type.
+<li>(20031231) Clicking with Scroll tool now follows a nearby object.
+<li>(20031231) Removed unnecessary input handlers from side debugger and Type view.
+<li>(20031231) Added infrastructure to detect clicks and double clicks.
+<li>(20031221) Minimap now resizes when world size is changed.
+<li>(20031213) Cleaned up various comments and dead code.
+<li>(20031024) Bugfix: nonexistent sensors could fire.
+<li>(20031024) New command now starts simulation running.
+<li>(20031005) Bugfix: blasts could immediately hit the cell that fired them.
+<li>(20030903, 20031005) Cleaned up phases.
+<li>(20030830) Reordered simulation phases to make stepping work.
+<li>(20030830) Fixed updating bugs in Side and Type views.
+<li>(20030823) Added some infrastructure for brain stepper.
+<li>(20030823) Remove All Sides now resets scores.
+<li>(20030823) Minor changes to Tournament view.
+<li>(20030812) Reduced weapon overhead to 0.3.
+<li>(20030812) Added <code>time-limit</code>.
+<li>(20030812) Missing weapons can no longer fire.
+<li>(20030727) Added an incomplete side debugger for viewing shared memory.
+<li>(20030726) Added overhead to blaster and grenade shot size.
+<li>(20030721) Force fields are now more expensive and a little weaker.
+<li>(20030721) Added <code>grenades-radius</code> and <code>force-field-radius</code>.
+<li>(20030721) <code>syphon-distance</code> now measures from the cell's center, not its edge.
+<li>(20030721) Renamed <code>syphon</code> to <code>enemy-syphon</code> and <code>friendly-syphon</code> to <code>syphon</code>.
+<li>(20030721) Corpses now remember who killed them.
+<li>(20030717) Babies no longer appear right on top of parent.
+<li>(20030717) Updated about box.
+<li>(20030716) Syphon sparkles now appear in the right place.
+<li>(20030716) Bugfix: <code>[friendly-]syphoned</code> wasn't set to zero when syphon was off.
+<li>(20030712) Fixed two divide-by-zero bugs in <code class=c>GBSyphon::CollideWith</code>.
+<li>(20030708) Removed recoil (from force fields and grenades).
+<li>(20030706) New operators <code>shield-fraction</code> and <code>robot-shield-fraction</code> for determining your and enemies' shield fractions (don't shoot at decoys!). Also weakened shields again by an additional 50% (total recent decrease: factor of 5). Not Quite Harmless has responded by buying bigger shields, but is no longer almost invincible.
+<li>(20030705) Bugfix: syphons didn't conserve energy (and other syphon bugs).
+<li>(20030704) Reduced shield effectiveness again, by 50%. Also made shield graphics saturate less easily.
+<li>(20030701) Added option (press C) to draw decorations on minimap.
+<li>(20030630-0701) Syphons and forcefields now show a trail from their owner.
+<li>(20030630) Added <code>reorient</code>, <code>arccos</code>, <code>arcsin</code>, and <code>arctan</code>.
+<li>(20030630) Tab key in main view or minimap now autofollows a nearby object.
+<li>(20030630) Added Show Prints menu item, so you can use <code>print</code> and <code>vprint</code> at will.
+<li>(20030629) Shields are now 20% weaker. Also fixed a bug in the inspector's display of shield fraction.
+<li>(20030629) Fixed window resizing bug.
+<li>(20030629) Added labels, variables, and last print to debugger. It's wider and prettier too.
+<li>(20030602) Bugfix: grenade recoil didn't depend on shot size.
+<li>(20030602) Forcefields are even stronger, and work (weakly) through shields, and have recoil.
+<li>(20030602) Autofollow is now smarter, and works from the minimap.
+<li>(20030601-2) Bugfix: blasters and grenades could appear in the wrong place.
+<li>(20030601) Added <code>parent-id</code> and <code>child-id</code>.
+<li>(20030601) Better error message for falling off the end of a robot's code.
+<li>(20030531) Added autofollow (press return in the main view).
+<li>(20030531) Inspector now shows shield, and shield damage fraction. Also adjusted shield effectiveness.
+<li>(20030530) Shields are now slow to lower as well as raise, and interfere with births, syphons, and death explosions.
+<li>(20030530) Syphons are now much cheaper, and less effective on starved targets.
+<li>(20030530) Cheaper processor and radio, more expensive syphon range, cheaper friendly syphon range.
+<li>(20030529) Brains can now be stopped and restarted from the debugger.
+<li>(20030529) Larger line buffer, to prevent line-too-long errors.
+<li>(20030529) Bugfixes: using <code>in-range</code> or setting a large <code>*-sensor-focus-distance</code> could cause arithmetic overflow.
+<li>(20030529) Removed unused code, moved error classes to the right files, and otherwise refactored.
+<li>(20030529) Syphons now have velocity, so they can be chased back to their sources.
+<li>(20030527) Bugfix: friendly syphons were regular syphons.
+<li>(20030526) Added long-range syphons.
+<li>(20030526) More comparison operators to fix coloring bug in tournament view.
+<li>(20030525) Added armor to inspector.
+<li>(20030521) <code class=c>GBDeletionReporter</code> now supports multiple listeners.
+<li>(20030520) Bugfix: force fields pushed in the wrong direction. This breaks all force field users; sorry.
+<li>(20030520) Replaced Push tool with Move, and fixed Pull.
+<li>(20030513) Added more comparison operators to <code class=c>GBNumber</code> and removed <code class=c>GBNumber::operator double</code>. Cleaned up code that depended on this.
+<li>(20030429-30) Cursor now changes depending on the view.
+<li>(20030427) Bugfix: duplicate didn't handle robot decorations, sensors, and syphons properly.
+<li>(20030419) Brains are heavier and more expensive.
+<li>(20030419) Force fields are cheaper and 50% stronger.
+<li>(20030404) New percent-killed statistic.
+<li>(20030404) Bugfix: Debug menu item didn't work.
+<li>(20030402) Bugfix: Tournament view didn't update after last round.
+<li>(20030401) Added early percent biomass, and an unreliable territory statistic.
+<li>(20030331) Generated symbols now have distinct names, for easier debugging.
+<li>(20030331) Tournament view now shows kills and losses, and some overall statistics.
+<li>(20030331) Debugger now shows stacks and disassembled instructions.
+<li>(20030329) Minor robot decoration improvements.
+<li>(20030329) Added <code>nand</code> and <code>nor</code> operators.
+<li>(20030327) Added <code>max-*-results</code> for sensors.
+<li>(20030327) Force fields are now weaker near the edges, like explosions. Force fields now show side color.
+<li>(20030206) Added extinction sound, and replaced birth and beep sounds.
+<li>(20030206) Force fields now push in a given direction (<code>force-field-angle</code>), not radially. They are also much more effective.
+<li>(20030204) Turned off reduced weapon effectiveness.
+<li>(20030204) Bugfix: Tournament menu item was checked instead of Report Errors.
+<li>(20030115) Renamed <code class=c>GBTime</code> to <code class=c>GBFrames</code> to reduce confusion.
+<li>(20030115) Replaced all uses of <code class=c>TickCount</code> with a portable <code class=c>Milliseconds</code> function.
+<li>(20030114) Bugfix: some items in Simulation menu were in wrong order and didn't work.
+<li>(20030114) Applied a patch from Tilendor: portable GBSideReader and some other portability.
+<li>(20030113) Added adjustable simulation speed and New Round menu item. Some other changes to menus.
+<li>(20020110) New simpler and better shield function. Also fixed bug: fetus mass didn't affect shields.
+<li>(20030110) Now runs faster (and skips frames) when speed limit is off.
+<li>(20030110) Bugfix: <code class=c>GBSensorShot</code> had dangling pointer.
+<li>(20030110) Finished tile collision.
+<li>(20030110) <code>die</code> now scored as a suicide, and erasure as an accident.
+<li>(20030108) Made weapons and forcefields less effective when damaged. This is experimental.
+<li>(20030105) Added <code>seek-moving-location</code>, <code>robot-position-overall</code>, <code>food-position-overall</code>, and <code>shot-position-overall</code>.
+<li>(20030103) Added status and PC to debugger.
+<li>(20030103) Increased extra damage for large cells.
+<li>(20030103) Added some profiling. Sped up simulation slightly.
+<li>(20030103) Bugfix: inspector didn't update properly when target died.
+<li>(20030103) Inspector now shows position and velocity.
+<li>(20030103) Added <code>vprint</code> and <code>pause</code>.
+<li>(20020103) Added option to not report brain errors, <code>print</code>, etc.
+<li>(20020102) Bugfix: Duplicate didn't copy radios.
+<li>(20030102) More statistics in Tournament view, and statistics are gray when there isn't much data for them.
+<li>(20030101) Added <code>#decoration</code>.
+<li>(20030101) Added expenditure statistics in Side view, and removed efficiency. Added late death rate and average biomass to Tournament view, and removed income.
+<li>(20030101) More coloring of statistics in Tournament view.
+<li>(20030101) Bugfix: Sound menu item wasn't working.
+<li>(20021231) Bugfix: reloading a side that wasn't seeded no longer resets scores.
+<li>(20021220) Added Blasts tool, just for fun.
+<li>(20021220) Minor fix to robot names (no <q>s's</q>).
+<li>(20021220) Added debugger view (useless so far), and made inspector and debugger windows appear when used.
+<li>(20021220) Added <code>vwrite</code> and <code>vread</code>, and <code>pi/2</code> constant.
+<li>(20021219) Increased drag. Increased weapon range costs (and recoil) slightly. Added linear term to sensor cost.
+<li>(20021219) Increased cost of solar cells.
+<li>(20021219) Replaced armor surcharge with increased vulnerability for large cells.
+<li>(20021219) Restored population to Roster view.
+<li>(20021219) Reduced mass of grenade launchers.
+<li>(20021219) Bugfix: would freeze or crash if all sides were eliminated.
+<li>(20021219) Added income statistics to Tournament view.
+<li>(20021219) Added <code class=c>GBBitmap</code>, so offscreen graphics in views is portable.
+<li>(20021218) Added <code>signum</code>.
+<li>(20021218) Number display fixes in Inspector and Type views.
+<li>(20021218) Shields now change color to indicate power.
+<li>(20021218) More statistics (manna/corpse/robot value). Bugfix: brain cost wasn't counted in some statistics.
+<li>(20021218) More and bigger manna. Faster food decay.
+<li>(20021218) Bugfix: Duplicate didn't copy side seed info.
+<li>(20021218) Radios now share some cost between <code>read</code> and <code>receive</code> and between <code>write</code> and <code>send</code>.
+<li>(20021218) Constant tweak: force fields now 67% more effective.
+<li>(20021218) Minimap now starts in the bottom left corner of the screen.
+<li>(20021218) Separated tournament scores view from roster view, and made both more compact, to handle large numbers of sides better.
+<li>(20021218) Repair rate is now a power, not damage per frame. Also fixed bug where repair cost didn't reflect armor cost.
+<li>(20021216) Undefined and duplicate symbol error messages now include the symbol's name.
+<li>(20021216) Reloading a side that wasn't seeded no longer resets world.
+<li>(20021216) Numbers with fractions now print properly.
+<li>(20021216) Stack brains now use <code class=c>std::vector</code>, which saves memory and removes some (undocumented) arbitrary limits.
+<li>(20021214) Setting syphon-distance to zero no longer turns syphon off.
+<li>(20021209) Type colors on minimap are fainter now.
+<li>(20021209) Unresolved-symbol error message includes the symbol's name.
+<li>(20021205) More portability work.
+<li>(20021205) Error messages and <code>print</code> now show robot IDs.
+<li>(20021205) Bugfix: side and type names had trailing newline.
+<li>(20021205) Added line numbers to brain error messages.
+<li>(20021205) Bugfix: <code>read</code> now depends on the right hardware.
+<li>(20021203) Bugfix: force fields and explosions didn't affect food.
+<li>(20021203) <code>beep</code> now does nothing when sound is off.
+<li>(20021202-3) Various portability fixes.
+<li>(20021202) All files and types now begin with <code class=c>GB</code> to avoid collisions.
+<li>(20021202) Large cells now show both their colors on the minimap. Not as pretty as I hoped.
+<li>(20021202) Now using portable <code class=c>GBGraphics</code> for most drawing.
+<li>(20021202) Restored old nonjerky following, after a sickening experiment.
+<li>(20021201) World resizing now works. Fixed two minimap resizing bugs this revealed.
+<li>(20021201) Added robot speed to inspector.
+<li>(20021201) Shields no longer drawn when not actually up.
+<li>(20021130) Partly added portable graphics layer.
+<li>(20021129?) Status window now redraws less often.
+<li>(20021129) Bugfix: radio cost and mass didn't count.
+<li>(20021129) Bugfix: closing a side used to reset the remaining sides.
+<li>(20021129) Bugfix: After <code>stop</code>, brain used negative energy.
+<li>(20021129) Maybe bugfix: <code>*-sensor-sees-friends</code> and <code>*-sensor-sees-enemy</code> weren't working.
+<li>(20021128) Bugfix: enormous framerate was reported after reset.
+<li>(20021125-30) Converted from <code class=c>Str255</code> to <code class=c>std::string</code>.
+<li>(20021125) Improved Platform.h.
+<li>(20021125) Removed all uses of the nonstandard <code class=c>inherited::</code> feature.
+<li>(20021125) Added <code>celse</code> compile-time word.
+<li>(20021124) Fixed the not-quitting-right-away bug for the third time.
+<li>(20021124) Trivial change: reduced cell overhead mass.
+<li>(20021121,24) Added Rules dialog.
+<li>(20021121?) Now linking with <acronym title="Standard Template Library">STL</acronym>. This causes a bit of bloat; sorry.
+<li>(20021121) Fiddled with explosions.
+<li>(20021121) Armor is now more expensive for large cells. This more accurately penalizes large fighters, so we reduced the cooling charge.
+<li>(20021121) Removing a side that wasn't seeded no longer resets the world.
+<li>(20021121) Fiddled with weapon costs. Removed quadratic range terms.
+<li>(20021121) Added linear drag coefficient and reduced friction.
+<li>(20021120) Bugfix: 6-digit colors were read wrong.
+<li>(20021120) Collapsed time limit into one menu item.
+<li>(20021120) Adjustable seed limit.
+<li>(20021120) Now doesn't inadvertently quit when load fails.
+<li>(20021120) More statistics.
+<li>(20021120) Line numbers reported for some compiler errors.
+<li>(20021120) Status view bugfixes.
+<li>(20021120) Moved name tables to their own file.
+<li>(20021119) Speed limit now still works while dragging.
+<li>(20021119) Various cleanup.
+<li>(20021119) Improved Reload (and <code class=c>SideReader</code>).
+<li>(20021119) More info in Type view.
+<li>(20021119) Cooling charge now starts at 0, not 1000.
+<li>(20021119) Minimap now draws every other frame.
+<li>(20021119) Added reload command.
+<li>(20021119) Moved some variables from <code class=c>GBApplication</code> to <code class=c>GBWorld</code> for portability.
+<li>(20021118) No more black lines showing up on the main view when resized.
+<li>(20021118) When the minimap background is off (<q>trails mode</q>), the viewing-area box no longer leaves trails, and fade-out mode preserves the grid.
+<li>(20021118) Zoom boxes work, though only in one direction.
+<li>(20021118) Made mimimap resizable.
+<li>(20021118) Added limited-length tournaments.
+<li>(20021118) Main view now autoscrolls in the right direction.
+<li>(20021117-18) Major work on views.
+<li>(20021116) Removed <q>alpha version</q> warning from about box, since it's not really alpha any more.
+<li>(20021116) Now quits immediately when told to. (No, it doesn't.)
+<li>(20021116) Processor now doesn't use energy when not running.
+<li>(20021116) Cooling cost is now quadratic in hardware cost. Raised seed size to 6000 temporarily so giants will still be seedable.
+<li>(20021116) Added experimental fadeout mode to minimap.
+<li>(20021116) Minor changes to various views.
+<li>(20021116) Added cumulative scores, autorepeat, and random limited seeding, as a primitive tournament utility.
+<li>(20021116) Now updates statistics after seeding.
+<li>(20021115) Seed reporting is more accurate now.
+<li>(20021115) Roster view no longer shows statistics for unseeded sides.
+<li>(20021115) Fixed <code class=c>GBNumber::ToString</code> again.
+<li>(20021115) Fixed a bug that made all radios have all features.
+<li>(20021115) Type view works now.
+<li>(20021115) Various changes to <code class=c>GBColor</code> and view drawing.
+<li>(20021115) Added proper periodic updating to Roster, Side, Status, and Type views.
+<li>(20021115) Added framerate to Status view.
+<li>(20021115) Added some graphics profiling gunk to minimap and <code class=c>DoubleBufferedView</code>.
+<li>(20021115) Added <code>skip-messages</code>.
+<li>(20021115) Workaround for a bug that made the minimap not redraw.
+<li>(20021115) Added robot energy to inspector.
+<li>(20021114) Large sensor-shots now fade slower.
+<li>(20021113) Fixed a bug that reported extinctions for sides that hadn't been seeded.
+<li>(20021113) Fixed a bug where energy would be lost when giving with syphons.
+<li>(20021113) Radio transmission is now visible.
+<li>(20021113) Partly fixed <code class=c>GBNumber::ToString</code>.
+<li>(20021113) Color-coded sensors.
+<li>(20021113) Hopefully fixed a bug involving dragging and errors.
+<li>(20021113) <code>0 constructor-type!</code> now works, because <a href='sides/gnats-8.gb'>Gnats 8</a> keeps trying to do it and the error messages were annoying.
+<li>(20021112) Now tracking seed value, doubletime, efficiency, and extinction time.
+<li>(20021112) Fixed main view background drawing bug.
+<li>(20021112) Seeds stay farther from walls now.
+<li>(20021111) Changes to main view scrolling.
+<li>(20021111) Follow mode now looks ahead of moving targets.
+<li>(20021110) Raised minimum minimap contrast.
+<li>(20021030) Raised threshold for drawing things as circles on the minimap, to (maybe) speed it up a little.
+<li>(20021030) Side window now autoresizes again.
+<li>(20021028) Some work separating scoring from sides.
+<li>(20021026) Fixed statistics collection so <code>type-population</code> works. Added biomass tracking for types.
+<li>(20021026) More initial manna.
+<li>(20021026) Added speed-limiting and reorganized menus.
+<li>(20021026) Fixes to <code class=c>GBColor::Contrast</code> and meter colors.
+<li>(20021026) Added <code>and-if</code> (short-circuit <code class=misc>and</code> for conditionals).
+<li>(20021025) Various cost changes (lighter armor, cheaper forcefield range, more expensive processor, others?).
+<li>(20021024) Bugfix: stats were not collected when single-framing.
+<li>(20021024) Increased grenade recoil.
+<li>(20021024) Failed bugfix: still doesn't quit immediately when told to.
+<li>(20021024) Added dialog to change time limit.
+<li>(20021024) Changed how some statistics are gathered, and added a few more (not displayed yet).
+<li>(20021024) Fixed grenade range bug. Large cells will no longer overshoot.
+<li>(20021024) Finished AppleEvent support.
+<li>(20021024) Added a cooling charge of 10% for hardware cost over 1000.
+<li>(20021024) Trivial changes: reduced robot size padding.
+<li>(20021024) Changed some explosion constants to balance large explosions (and therefore missiles).
+<li>(20021024) Sensors can now see the energy of robots and food with <code>robot-energy</code> and <code>food-energy</code>.
+<li>(20021013) Meters are now drawn using alternate colors if the defaults give poor contrast. Very dark-colored robots are drawn on the minimap lightened.
+<li>(20021013) Maybe fixed a bug involving small foods, large explosions, and overflow.
+<li>(20021012) Minor rounding bugs in statistics collection fixed.
+<li>(20021012) Auto-pause upon elimination added.
+<li>(20021012) <code>#seed</code> now works.
+<li>(20021011) Added <code>nifr</code> and <code>nifc</code>.
+<li>(20021007) Added <code>robot-radius</code>, <code>food-radius</code>, and <code>shot-radius</code>.
+<li>(20021006) Big refactoring to <code class=c>GBWorld</code>, one of the core simulation classes. This allows some simplifications elsewhere.
+<li>(20021003) Added keys to select tools (undocumented).
+<li>(20021003) More smoke from large grenade launchers.
+<li>(20021003) Fixed robot radii so big cells don't look even bigger than they are.
+<li>(20021003) Force fields are now more effective at short range.
+<li>(20021003) Added <code class=hardware>radio</code> hardware and <code>clear-messages</code>.
+<li>(20021003) Speed of weapons now varies less with range.
+<li>(20021002) Fixed bug: <code class=c>autoKey</code> events were ignored.
+<li>(20021002) Side view now redraws on clicks and keystrokes. Added beginnings of Type view.
+<li>(20021002) Fixed bug: friendly syphons were free and massless.
+<li>(20021002) Tinkered with the Side and Roster views. Added Growth cost statistic.
+<li>(20021002) Added <code>world-width</code>, <code>world-height</code>, <code>mass</code>, <code>stack</code>, <code>stack-limit</code>, <code>dropn</code>, and <code>pick</code>.
+<li>(20021001) Renamed <code>transmit</code> to <code>write</code>, <code>receive</code> to <code>read</code>, <code>send-message</code> to <code>send</code>, and <code>receive-message</code> to <code>receive</code>.
+<li>(20020930) Fixed <code>mod</code> and added <code>rem</code>.
+<li>(20020929) <code>#seed</code> is now recognized. It doesn't do anything yet, but you can start using it.
+<li>(20020928) Items in the Apple menu now work.
+</ul>
+
+<p>Earlier changes weren't logged.
+
+<h2 id=screenshots>Old Screenshots</h2>
+
+<ul>
+<li>(20020410) Flyswatters using <a href='screenshots/flyswatting.gif'>force fields</a> to make a target easier to hit.
+<li>(20020328) Turrets <a href='screenshots/turrets.gif'>shooting</a> shielded Rats.
+<li>(20020327) What happens when <a href='screenshots/homesick.gif'>Homesick</a> gets out of control
+<li>(20020216) Some predators throwing <a href='screenshots/mini-grenades.gif'>lots of miniature grenades</a> at a lone enemy
+<li>(20020224) The <a href='screenshots/side-view.gif'>Side</a> view
+<li>(20010620) The old <a href='screenshots/roster.gif'>roster</a>
+<li>(20011012) Defensive <a href='screenshots/plants.gif'>overkill</a>
+<li>(20011012) Some <a href='screenshots/ineffectual.gif'>ineffective</a> grenade-launching
+<li>(20011012) Robots <a href='screenshots/circling.gif'>running in circles</a>
+<li>(20010117) A battle <a href='screenshots/battle.gif'>with</a> and <a href='screenshots/battle2.gif'>without</a> sensor-shots, and the <a href='screenshots/minimap.gif'>map</a>
+<li>(November 2000) Very old shots of <a href='screenshots/five.gif'>the first five sides</a> or just <a href='screenshots/rabbits.gif'>rabbits</a>
+<li>(20000329) The <a href='screenshots/mockup.gif'>fake screenshot</a>, from before there were real ones
+</ul>
+
+<h2 id=other>Other Old Stuff</h2>
+
+<p>There is an <a href="design.html">early description</a> of Grobots. It's out of date but pretty complete. The <a href="docs/">documentation</a> is better, though, and more up to date.
+
+<address>
+<a href='./'>Grobots</a> by <a href='mailto:dschudy@yahoo.com?subject=Grobots'>Devon Schudy</a>
+and <a href="mailto:wschudy@alum.wpi.edu?subject=Grobots">Warren Schudy</a>
+</address>
+
+<p><a href="http://sourceforge.net/"><img src="http://sourceforge.net/sflogo.php?group_id=grobots&amp;type=3" width="125" height="37" alt="Hosted by Sourceforge.net"></a>
