@@ -87,6 +87,7 @@ public:
 	void ScrollTo(const GBFinePoint p);
 	void ScrollToward(const GBFinePoint p, const GBSpeed speed);
 	void ScrollBy(const GBFinePoint delta);
+	void ResetZoom();
 	void Zoom(short direction);
 // following
 	void Follow(GBObject * ob);
