@@ -12,7 +12,7 @@
 #include "GBSound.h"
 #include "GBWorld.h"
 
-static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed);
+static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed, GBDistance r);
 
 GBStackDatum GBStackBrain::ReadHardware(const GBSymbolIndex index, GBRobot * robot, GBWorld * world) const {
 	switch ( index ) {
@@ -568,15 +568,15 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opLeadBlaster: { //pos vel --
 			GBVelocity vel = PopVector() - robot->Velocity();
 			GBPosition pos = PopVector() - robot->Position();
-			GBPosition target = LeadShot(pos, vel, robot->hardware.blaster.Speed());
-			if ( target.Norm() <= robot->hardware.blaster.MaxRange() + robot->Radius() )
+			GBPosition target = LeadShot(pos, vel, robot->hardware.blaster.Speed(), robot->Radius());
+			if ( target.Nonzero() && target.Norm() <= robot->hardware.blaster.MaxRange() + robot->Radius() )
 				robot->hardware.blaster.Fire(target.Angle());
 			} break;
 		case opLeadGrenade: { //pos vel --
 			GBVelocity vel = PopVector() - robot->Velocity();
 			GBPosition pos = PopVector() - robot->Position();
-			GBPosition target = LeadShot(pos, vel, robot->hardware.grenades.Speed());
-			if ( target.Norm() <= robot->hardware.grenades.MaxRange() + robot->Radius() )
+			GBPosition target = LeadShot(pos, vel, robot->hardware.grenades.Speed(), robot->Radius());
+			if ( target.Nonzero() && target.Norm() <= robot->hardware.grenades.MaxRange() + robot->Radius() )
 				robot->hardware.grenades.Fire(target.Norm(), target.Angle()); //worry about short range?
 			} break;
 		case opSetForceField: { //pos angle --
@@ -594,9 +594,33 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 	}
 }
 
-static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed) {
+//pos and vel are relative to ourself
+static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed, GBDistance r) {
+#if 1
 	GBNumber dt = (pos + vel * (pos.Norm() / shotSpeed)).Norm() / shotSpeed; //two plies for accuracy with radially moving targets
 	return pos + vel * dt;
+#else
+//Precise version, not used yet because it changes behavior.
+//Solve for exact time of impact ((pos + vel * dt).Norm() = shotSpeed * dt + r) with quadratic formula:
+	GBNumber a = vel.NormSquare() - shotSpeed.Square();
+	GBNumber b = (pos.DotProduct(vel) - shotSpeed * r) * 2;
+	GBNumber c = pos.NormSquare() - r.Square();
+	GBNumber det = b.Square() - a * c * 4;
+	if (det < 0 || a == 0)
+		return GBVector(0, 0); //don't shoot
+//try both roots and use least positive root
+	GBNumber dt1 = (- b - det.Sqrt()) / (a * 2);
+	GBNumber dt2 = (- b + det.Sqrt()) / (a * 2);
+	if (dt1 < 0) {
+		if (dt2 < 0)
+			return GBVector(0, 0);
+		else
+			return pos + vel * dt2;
+	} else if (dt2 < 0 || dt1 < dt2)
+		return pos + vel * dt1;
+	else
+		return pos + vel * dt2;
+#endif
 }
 
 void GBStackBrain::FirePeriodic(GBSensorState & sensor, GBWorld * world) {
