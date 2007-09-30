@@ -94,7 +94,7 @@ void GBRobotTypeView::Draw() {
 short GBRobotTypeView::HeaderHeight() const { return 17; }
 short GBRobotTypeView::ItemHeight() const { return 25; }
 short GBRobotTypeView::FooterHeight() const {
-	return SelectedType() ? 290 : 0;
+	return SelectedType() ? 300 : 0;
 }
 
 void GBRobotTypeView::DrawHeader(const GBRect & box) {
@@ -192,18 +192,25 @@ void GBRobotTypeView::DrawFooter(const GBRect & box) {
 	DrawNumericHardwareLine(box, 235, "bomb", GBColor::red,
 		hw.Bomb(), hw.BombCost(), hw.BombMass());
 // totals and brain
-	DrawHardwareSummaryLine(box, -40, "Ordinary hardware:", GBColor::black,
+	DrawHardwareSummaryLine(box, -50, "Ordinary hardware:", GBColor::black,
 		hw.Cost() - hw.CoolingCost(), hw.Mass() - hw.CoolingMass());
-	DrawHardwareLine(box, -30,
+	DrawHardwareLine(box, -40,
 		ToPercentString(hw.CoolingCost() / (hw.Cost() - hw.CoolingCost()), 0) + " cooling charge",
 		GBColor::red, "", "", "", "", hw.CoolingCost(), hw.CoolingMass());
 	const GBBrainSpec * brain = type->Brain();
 	if ( brain )
-		DrawHardwareSummaryLine(box, -18, "Code", GBColor::black, brain->Cost(), brain->Mass());
+		DrawHardwareSummaryLine(box, -28, "Code", GBColor::black, brain->Cost(), brain->Mass());
 	else
-		DrawStringLeft("No brain", box.left + kHardwareNameLeft, box.bottom - 20, 10, GBColor::lightGray);
-	DrawLine(box.left, box.bottom - 15, box.right, box.bottom - 15, GBColor::black);
-	DrawHardwareSummaryLine(box, -4, "Total:", GBColor::black, type->Cost(), type->Mass());
+		DrawStringLeft("No brain", box.left + kHardwareNameLeft, box.bottom - 30, 10, GBColor::lightGray);
+	DrawLine(box.left, box.bottom - 25, box.right, box.bottom - 25, GBColor::black);
+	DrawHardwareSummaryLine(box, -14, "Total:", GBColor::black, type->Cost(), type->Mass());
+	GBNumber damageMult = type->MassiveDamageMultiplier(type->Mass());
+	const GBColor & multColor = damageMult > 1 ? GBColor::red : GBColor::lightGray;
+	DrawStringLeft("Mass-based damage multiplier:", box.left + kHardwareNameLeft, box.bottom - 4, 9, multColor);
+	DrawStringRight(ToPercentString(damageMult, 0), box.right - kHardwareCostRight, box.bottom - 4, 9, multColor);
+	if ( hw.constructor.Rate().Nonzero() )
+		DrawStringRight("to " + ToPercentString(type->MassiveDamageMultiplier(type->Mass() * 2), 0),
+			box.right - kHardwareMassRight, box.bottom - 4, 9, multColor);
 }
 
 GBMilliseconds GBRobotTypeView::RedrawInterval() const {
