@@ -1,5 +1,5 @@
 // GBShot.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2007 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBShot.h"
@@ -150,11 +150,15 @@ const GBColor GBBlast::Color() const {
 }
 
 void GBBlast::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
-	int extra = (power > kBlastRadiusThreshold ? 1 : 0);
-	short cx = where.CenterX();
-	short cy = where.CenterY();
-	g.DrawLine(where.left - extra, cy, where.right + extra, cy, Color(), 2);
-	g.DrawLine(cx, where.top - extra, cx, where.bottom + extra, Color(), 2);
+	if ( where.Width() <= 3 ) {
+		g.DrawSolidRect(where,Color());
+	} else {
+		int extra = (power > kBlastRadiusThreshold ? 1 : 0);
+		short cx = where.CenterX();
+		short cy = where.CenterY();
+		g.DrawLine(where.left - extra, cy, where.right + extra, cy, Color(), 2);
+		g.DrawLine(cx, where.top - extra, cx, where.bottom + extra, Color(), 2);
+	}
 }
 
 // GBGrenade //
@@ -187,7 +191,10 @@ const GBColor GBGrenade::Color() const {
 }
 
 void GBGrenade::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
-	g.DrawSolidOval(where, Color());
+	if (where.Width() <= 3)
+		g.DrawSolidRect(where,Color());
+	else
+		g.DrawSolidOval(where, Color());
 }
 
 // GBExplosion //
@@ -285,7 +292,7 @@ void GBForceField::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/)
 	short cy = (where.bottom + where.top) / 2;
 	g.DrawLine(cx, cy, cx + (direction.Cos() * where.Width() / 2).Round(),
 		cy - (direction.Sin() * where.Height() / 2).Round(), owner ? owner->Color() : Color());
-	g.DrawOpenOval(where, Color(), 2);
+	g.DrawOpenOval(where, Color(), where.Width() >= 20 ? 2 : 1);
 }
 
 void GBForceField::DrawMini(GBGraphics & g, const GBRect & where) const {
