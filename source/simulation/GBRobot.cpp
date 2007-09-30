@@ -19,8 +19,6 @@
 const GBRatio kRobotRadiusFactor = 0.1;
 const GBMass kRobotRadiusPadding = 3;   // robots look this much heavier than they are
 
-const GBMass kStandardMass = 20;
-
 const GBSpeed kFriction = 0.001;
 const GBRatio kLinearDragFactor = 0.01;
 const GBRatio kQuadraticDragFactor = 0.15;
@@ -115,9 +113,7 @@ GBNumber GBRobot::ShieldFraction() const {
 }
 
 void GBRobot::TakeDamage(const GBDamage amount, GBSide * origin) {
-	GBNumber multiplier(1);
-	if ( mass > kStandardMass ) multiplier += (mass - kStandardMass) / 50;
-	hardware.TakeDamage(amount * multiplier * ShieldFraction());
+	hardware.TakeDamage(amount * type->MassiveDamageMultiplier(mass) * ShieldFraction());
 	lastHit = origin;
 }
 
@@ -258,6 +254,10 @@ const GBColor GBRobot::Color() const {
 }
 
 void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
+	if(where.Width() <= 5) {
+		DrawMini(g,where);
+		return;
+	}
 // shield
 	if ( hardware.ActualShield() > 0 )
 		g.DrawOpenRect(where, GBColor(0.3f, 0.5f, 1)
@@ -266,33 +266,38 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 	g.DrawSolidOval(where, Owner()->Color());
 // meters
 	if ( detailed ) {
+		short meterWidth = max(1, (where.Width() + 10) / 10);
 		short arcsize;
 		GBRect meterRect = where;
-		meterRect.Shrink(1);
+		meterRect.Shrink((meterWidth + 1) / 2); //TODO is this portable?
 	// energy meter
 		if ( hardware.MaxEnergy().Nonzero() ) {
 			arcsize = (hardware.Energy() / hardware.MaxEnergy() * 180).Round();
 			g.DrawArc(meterRect, 180 - arcsize, arcsize,
-				Owner()->Color().ChooseContrasting(GBColor::green, GBColor(0, 0.5f, 1), kMinMeterContrast), 2);
+				Owner()->Color().ChooseContrasting(GBColor::green, GBColor(0, 0.5f, 1), kMinMeterContrast), meterWidth);
 		}
 	// armor meter
 		arcsize = (hardware.Armor().Max(0) / hardware.MaxArmor() * 180).Round();
 		g.DrawArc(meterRect, 180, arcsize,
-			Owner()->Color().ChooseContrasting(GBColor::lightGray, GBColor::darkGray, kMinMeterContrast), 2);
+			Owner()->Color().ChooseContrasting(GBColor::lightGray, GBColor::darkGray, kMinMeterContrast), meterWidth);
 	// gestation meter
-		meterRect.Shrink(2);
+		meterRect.Shrink(meterWidth);
 		if ( hardware.constructor.Progress().Nonzero() ) {
 			arcsize = (hardware.constructor.Fraction() * 360).Round();
 			g.DrawArc(meterRect, 360 - arcsize, arcsize,
-				Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), 1);
+				Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), meterWidth);
 		}
 	}
 // decoration
-	short thickness = (where.right - where.left) > 15 ? 2 : 1;
-	GBRect dec((where.left * 2 + where.right + 1) / 3,
-		(where.top * 2 + where.bottom + 1) / 3,
-		(where.left + where.right * 2) / 3,
-		(where.top + where.bottom * 2) / 3);
+	short thickness = (15 + where.right - where.left) / 15; //was 2 for >15 else 1
+	GBRect dec((where.left * 2 + where.right + 2) / 3,
+		(where.top * 2 + where.bottom + 2) / 3,
+		(where.left + where.right * 2 + 1) / 3,
+		(where.top + where.bottom * 2 + 1) / 3);
+	short dx = where.Width() / 4;
+	short dy = where.Height() / 4;
+	//cross, hline, and vline draw in bigDec instead of dec
+	GBRect bigDec(where.CenterX() - dx, where.CenterY() - dy, where.CenterX() + dx, where.CenterY() + dy);
 	switch ( type->Decoration() ) {
 		case rdDot:
 			g.DrawSolidOval(GBRect(where.CenterX() - thickness, where.CenterY() - thickness,
@@ -309,9 +314,9 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 				type->DecorationColor(), thickness);
 			break;
 		case rdCross:
-			g.DrawLine(where.CenterX(), where.top + 4, where.CenterX(), where.bottom - 4,
+			g.DrawLine(where.CenterX(), bigDec.top, where.CenterX(), bigDec.bottom,
 				type->DecorationColor(), thickness);
-			g.DrawLine(where.left + 4, where.CenterY(), where.right - 4, where.CenterY(),
+			g.DrawLine(bigDec.left, where.CenterY(), bigDec.right, where.CenterY(),
 				type->DecorationColor(), thickness);
 			break;
 		case rdX:
@@ -321,11 +326,11 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 				type->DecorationColor(), thickness);
 			break;
 		case rdHLine:
-			g.DrawLine(where.left + 4, where.CenterY(), where.right - 4, where.CenterY(),
+			g.DrawLine(bigDec.left, where.CenterY(), bigDec.right, where.CenterY(),
 				type->DecorationColor(), thickness);
 			break;
 		case rdVLine:
-			g.DrawLine(where.CenterX(), where.top + 4, where.CenterX(), where.bottom - 4,
+			g.DrawLine(where.CenterX(), bigDec.top, where.CenterX(), bigDec.bottom,
 				type->DecorationColor(), thickness);
 			break;
 		case rdSlash:
