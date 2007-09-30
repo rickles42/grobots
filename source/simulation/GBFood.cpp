@@ -1,5 +1,5 @@
 // GBFood.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2007 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBFood.h"
@@ -82,7 +82,7 @@ void GBFood::Move() {
 
 void GBFood::Act(GBWorld *) {
 	value = (value - kFoodDecayRate).Max(0);
-	Recalculate();
+	Recalculate(); //FIXME this is slow
 }
 
 const GBColor GBFood::Color() const {
@@ -149,7 +149,7 @@ const GBColor GBCorpse::Color() const {
 
 void GBCorpse::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 	GBFood::Draw(g, where, detailed);
-	if ( detailed ) {
+	if ( detailed && where.Width() >= 4 ) {
 		g.DrawOpenRect(where, Owner()->Color());
 		if ( killer && where.Width() >= 6 ) {
 			GBRect dot(where.CenterX() - 1, where.CenterY() - 1,
