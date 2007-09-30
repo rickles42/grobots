@@ -175,11 +175,11 @@ short GBMiniMapView::MinimumHeight() const {
 }
 
 short GBMiniMapView::MaximumWidth() const {
-	return world.Size().x.Floor() * 4;
+	return world.Size().x.Floor() * 8;
 }
 
 short GBMiniMapView::MaximumHeight() const {
-	return world.Size().y.Floor() * 4;
+	return world.Size().y.Floor() * 8;
 }
 
 short GBMiniMapView::PreferredWidth() const {
@@ -228,6 +228,9 @@ void GBMiniMapView::AcceptKeystroke(const char what) {
 		case '\n': case '\r': portal.FollowRandom(); break;
 		case '\t': portal.FollowRandomNear(); break;
 		case '`': portal.Refollow(); break;
+		case '-': portal.Zoom(-1); break;
+		case '+': case '=': portal.Zoom(1); break;
+		case '0': portal.ResetZoom(); break;
 		default: break;
 	}
 	worldChanges = -1;
