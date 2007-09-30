@@ -12,7 +12,8 @@
 #include "GBRobot.h"
 #include "GBStringUtilities.h"
 
-const short kScale = 16; // number of pixels per unit. Make variable someday?
+const short kScale = 16; //default number of pixels per unit.
+const short kMinDetailsScale = 10;
 const GBSpeed kAutoScrollSpeed = 0.4;
 const GBSpeed kFollowSpeed = 0.5;
 const GBSpeed kFastFollowSpeed = 1.5;
@@ -20,6 +21,7 @@ const GBDistance kFastFollowDistance = 10;
 const GBDistance kFollowJumpDistance = 30;
 const GBDistance kAutofollowNearRange = 20;
 const GBMilliseconds kAutofollowPeriod = 3000;
+const GBDistance kFollowViewOffEdge = 3; //how much wall to show when following near edge
 
 const GBForceScalar kMoveForce = 1;
 const GBDamage kSmiteDamage = 200;
@@ -65,15 +67,19 @@ void GBPortal::DrawOneTile(const GBRect & b, GBGraphics & g) {
 // black background
 	g.DrawSolidRect(b, GBColor::black);
 // fine grid
+	GBColor fineColor(min(0.4f + 0.04f * scale / kScale,  0.15f + 0.25f * scale / kScale));
+	short coarseThickness = 1 + scale / 20;
+	GBColor coarseColor(0.4f + 0.4f * scale / kScale);
+	
 	for ( int i = 1; i < kBackgroundTileSize; i ++ ) {
 		short x = b.left + i * scale;
 		short y = b.top + i * scale;
-		g.DrawLine(x, b.top, x, b.bottom, GBColor(0.4f));
-		g.DrawLine(b.left, y, b.right, y, GBColor(0.4f));
+		g.DrawLine(x, b.top, x, b.bottom, fineColor);
+		g.DrawLine(b.left, y, b.right, y, fineColor);
 	}
 // coarse grid
-	g.DrawLine(b.left, b.top, b.left, b.bottom, GBColor::lightGray);
-	g.DrawLine(b.left, b.top, b.right, b.top, GBColor::lightGray);
+	g.DrawLine(b.left, b.top, b.left, b.bottom, coarseColor, coarseThickness);
+	g.DrawLine(b.left, b.top, b.right, b.top, coarseColor, coarseThickness);
 }
 
 void GBPortal::InitBackground() {
@@ -122,14 +128,15 @@ void GBPortal::DrawObjects() {
 
 void GBPortal::DrawObjectList(const GBObject * list) {
 	for ( const GBObject * cur = list; cur != nil; cur = cur->next ) {
-		short r = (cur->Radius() * scale).Floor();
-		GBRect where(ToScreenX(cur->Position().x) - r,
-			ToScreenY(cur->Position().y) - r,
-			ToScreenX(cur->Position().x) + r,
-			ToScreenY(cur->Position().y) + r);
+		short diameter = (cur->Radius() * 2 * scale).Max(1).Round();
+		GBRect where;
+		where.left = ToScreenX(cur->Left());
+		where.top = ToScreenY(cur->Top());
+		where.right = where.left + diameter;
+		where.bottom = where.top + diameter;
 		if ( where.right > 0 && where.left < Width()
 				&& where.bottom > 0 && where.top < Height() ) {
-			cur->Draw(Graphics(), CalcExternalRect(where), showDetails);
+			cur->Draw(Graphics(), CalcExternalRect(where), showDetails && scale >= kMinDetailsScale);
 		}
 	}
 }
@@ -187,8 +194,34 @@ void GBPortal::Draw() {
 	if ( following && ! moving ) {
 		if ( world.Followed() ) {
 			followPosition = world.Followed()->Position();
-			viewpoint += world.Followed()->Velocity();
+			//viewpoint += world.Followed()->Velocity();
 		}
+		//User doesn't want to see what's off the edge.
+		//a bit complicated because:
+		//1) If the view is already near edge, don't scroll away from followed to fix
+		//2) if zoomed out a lot, minFollowX could be greater than maxFollowX
+		GBCoordinate minFollowX = GBNumber(Width()) / (scale * 2) - kFollowViewOffEdge; //half-width of viewport
+		GBCoordinate maxFollowX = world.Right() - minFollowX;
+		GBCoordinate minFollowY = GBNumber(Height()) / (scale * 2) - kFollowViewOffEdge;
+		GBCoordinate maxFollowY = world.Top() - minFollowY;
+		if ( followPosition.x >= maxFollowX ) {
+			if(viewpoint.x <= followPosition.x)
+				followPosition.x = max(viewpoint.x, maxFollowX);
+		} else if ( followPosition.x <= minFollowX ) {
+			if ( viewpoint.x >= followPosition.x )
+				followPosition.x = min(viewpoint.x, minFollowX);
+		} else if ( world.Followed() )
+			viewpoint.x += world.Followed()->Velocity().x;
+
+		if ( followPosition.y >= maxFollowY ) {
+			if ( viewpoint.y <= followPosition.y )
+				followPosition.y = max(viewpoint.y, maxFollowY);
+		} else if ( followPosition.y <= minFollowY ) {
+			if ( viewpoint.y >= followPosition.y )
+				followPosition.y = min(viewpoint.y, minFollowY);
+		} else if ( world.Followed() )
+			viewpoint.y += world.Followed()->Velocity().y;
+	//now scroll toward followPosition
 		if ( followPosition.InRange(viewpoint, kFastFollowDistance) )
 			ScrollToward(followPosition, kFollowSpeed);
 		else if ( followPosition.InRange(viewpoint, kFollowJumpDistance) )
@@ -199,12 +232,13 @@ void GBPortal::Draw() {
 	DrawBackground();
 	DrawObjects();
 	if ( following && world.Followed() ) {
-		int y = ToScreenY(followPosition.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13;
-		DrawStringCentered(world.Followed()->Description(), ToScreenX(followPosition.x), y,
+		GBPosition targetPos = world.Followed()->Position();
+		int y = ToScreenY(targetPos.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13;
+		DrawStringCentered(world.Followed()->Description(), ToScreenX(targetPos.x), y,
 			10, GBColor::white);
 		const string & details = world.Followed()->Details();
 		if (details.length() > 0)
-			DrawStringCentered(details, ToScreenX(followPosition.x), y + 10,
+			DrawStringCentered(details, ToScreenX(targetPos.x), y + 10,
 				10, GBColor::white);
 	}
 // record drawn
@@ -282,7 +316,7 @@ void GBPortal::AcceptKeystroke(const char what) {
 		case '`': Refollow(); break;
 		case '-': Zoom(-1); break;
 		case '+': case '=': Zoom(1); break;
-		case '0': scale = kScale; InitBackground(); Changed(); break;
+		case '0': ResetZoom(); break;
 		default: break;
 	}
 }
@@ -362,10 +396,16 @@ void GBPortal::Follow(GBObject * ob) {
 	}
 }
 
+void GBPortal::ResetZoom() {
+	scale = kScale;
+	InitBackground();
+	Changed();
+}
+
 void GBPortal::Zoom(short direction) {
 	if (direction < 0 ? scale <= 4 : scale >= 64)
 		return;
-	scale += (scale > 32 ? direction * 2 : direction);
+	scale += direction * max(1, scale/9);
 	InitBackground();
 	Changed();
 }
