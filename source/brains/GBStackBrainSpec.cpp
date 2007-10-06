@@ -251,6 +251,10 @@ void GBStackBrainSpec::ExecuteCWord(long index, GBLineNumber line) {
 			temp = CPeek();
 			AddLabelRead(temp, line); AddPrimitiveCall(opNotIfGo, line);
 			break;
+		case cwNotAndIf:
+			temp = CPeek();
+			AddLabelRead(temp, line); AddPrimitiveCall(opIfGo, line);
+			break;
 		case cwCElse: // end skip -- end
 			temp = CPop();
 			temp2 = CPeek();

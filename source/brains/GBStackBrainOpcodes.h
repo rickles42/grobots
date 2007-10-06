@@ -172,7 +172,7 @@ enum { // hardware vector variables
 
 enum { // compile-time words
 	cwNop = 0,
-	cwIf, cwNotIf, cwElse, cwThen, cwAndIf, cwCElse,
+	cwIf, cwNotIf, cwElse, cwThen, cwAndIf, cwNotAndIf, cwCElse,
 	cwDo, cwLoop, cwForever, cwWhile, cwUntil, cwWhileLoop, cwUntilLoop,
 	kNumCWords
 };

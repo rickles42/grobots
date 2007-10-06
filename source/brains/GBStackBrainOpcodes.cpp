@@ -146,7 +146,7 @@ const string hardwareVectorNames[kNumHardwareVectors] = {
 
 const string cWordNames[kNumCWords] = {
 	"c-nop",
-	"if", "nif", "else", "then", "and-if", "celse",
+	"if", "nif", "else", "then", "and-if", "and-nif", "celse",
 	"do", "loop", "forever", "while", "until", "while-loop", "until-loop",
 };
 
