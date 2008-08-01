@@ -211,7 +211,7 @@ void GBBlasterSpec::Set(const GBDamage dmg, const GBDistance rng, const GBFrames
 GBEnergy GBBlasterSpec::Cost() const {
 	if ( damage > 0 )
 		return (GBNumber(1) / reloadTime + kBlasterBarrel) * (damage + kBlasterDamageOverhead) * (kBlasterCostPerDamageRate
-							+ range * kBlasterCostPerRange + range.Square() * kBlasterCostPerRangeSquared);
+							+ range * kBlasterCostPerRange + square(range) * kBlasterCostPerRangeSquared);
 	else
 		return 0;
 }
@@ -219,14 +219,14 @@ GBEnergy GBBlasterSpec::Cost() const {
 GBMass GBBlasterSpec::Mass() const {
 	if ( damage > 0 )
 		return (GBNumber(1) / reloadTime + kBlasterBarrel) * (damage + kBlasterDamageOverhead) * (kBlasterMassPerDamageRate
-							+ range * kBlasterMassPerRange + range.Square() * kBlasterMassPerRangeSquared);
+							+ range * kBlasterMassPerRange + square(range) * kBlasterMassPerRangeSquared);
 	else
 		return 0;
 }
 
 GBEnergy GBBlasterSpec::FiringCost() const {
 	return (damage + kBlasterDamageOverhead) * (kBlasterFiringCostPerDamage
-					+ range * kBlasterFiringCostPerRange + range.Square() * kBlasterFiringCostPerRangeSquared);
+					+ range * kBlasterFiringCostPerRange + square(range) * kBlasterFiringCostPerRangeSquared);
 }
 
 // GBGrenadesSpec //
@@ -276,7 +276,7 @@ GBEnergy GBGrenadesSpec::Cost() const {
 	if ( damage > 0 )
 		return (GBNumber(1) / reloadTime + kGrenadesBarrelCost) * (damage + kGrenadesDamageOverhead)
 			* (kGrenadesCostPerDamageRate + range * kGrenadesCostPerRange
-				+ range.Square() * kGrenadesCostPerRangeSquared);
+				+ square(range) * kGrenadesCostPerRangeSquared);
 	else
 		return 0;
 }
@@ -285,14 +285,14 @@ GBMass GBGrenadesSpec::Mass() const {
 	if ( damage > 0 )
 		return (GBNumber(1) / reloadTime + kGrenadesBarrelMass) * (damage + kGrenadesDamageOverhead)
 			* (kGrenadesMassPerDamageRate + range * kGrenadesMassPerRange
-				+ range.Square() * kGrenadesMassPerRangeSquared);
+				+ square(range) * kGrenadesMassPerRangeSquared);
 	else
 		return 0;
 }
 
 GBEnergy GBGrenadesSpec::FiringCost() const {
 	return (damage + kGrenadesDamageOverhead) * (kGrenadesFiringCostPerDamage
-				+ range * kGrenadesFiringCostPerRange + range.Square() * kGrenadesFiringCostPerRangeSquared);
+				+ range * kGrenadesFiringCostPerRange + square(range) * kGrenadesFiringCostPerRangeSquared);
 }
 
 // GBForceFieldSpec //
@@ -511,7 +511,7 @@ void GBHardwareSpec::Recalculate() {
 		+ sensor1.Mass() + sensor2.Mass() + sensor3.Mass()
 		+ blaster.Mass() + grenades.Mass() + forceField.Mass()
 		+ syphon.Mass() + enemySyphon.Mass();
-	coolingCost = (hardwareCost * kCoolingCostRatio).Square();
+	coolingCost = square(hardwareCost * kCoolingCostRatio);
 	hardwareCost += coolingCost;
 	mass += CoolingMass();
 	if ( hardwareCost < kBaseCost || mass < kBaseMass )

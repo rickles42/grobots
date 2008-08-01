@@ -10,13 +10,12 @@
 
 const float kSideCopyColorDistance = 0.3f;
 
-
 GBSide::GBSide()
 	: types(nil), selected(nil),
 	id(0),
 	seedIDs(),
 	color(), name(), author(),
-	scores(), cScores(),
+	scores(), cScores(), center(), groupPosition(),
 	next(nil)
 {
 	int i;
@@ -177,6 +176,8 @@ int GBSide::NumSeedTypes() const {
 void GBSide::Reset() {
 	id = 0;
 	scores.Reset();
+	center.Set(0, 0);
+	groupPosition.Set(0, 0);
 	int i;
 	for ( i = 0; i < kSharedMemorySize; i ++ )
 		sharedMemory[i] = 0;
@@ -188,6 +189,9 @@ void GBSide::Reset() {
 }
 
 void GBSide::ResetSampledStatistics() {
+	if (scores.Population())
+		center = (center + groupPosition / scores.Population()) / 2;
+	groupPosition.Set(0, 0);
 	scores.ResetSampledStatistics();
 	for ( GBRobotType * cur = types; cur != nil; cur= cur -> next ) {
 		cur->ResetSampledStatistics();
@@ -195,8 +199,9 @@ void GBSide::ResetSampledStatistics() {
 	Changed();
 }
 
-void GBSide::ReportRobot(const GBEnergy biomass, const GBEnergy construc) {
+void GBSide::ReportRobot(GBEnergy biomass, GBEnergy construc, const GBPosition & where) {
 	scores.ReportRobot(biomass, construc);
+	groupPosition += where;
 	Changed();
 }
 

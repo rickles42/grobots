@@ -43,6 +43,7 @@ class GBSide : public GBModel {
 	GBScores cScores;
 	//std::vector<GBSideScores *> scores;
 	//std::vector<GBScores *> tscores;
+    GBVector groupPosition;
 // communications
 	GBNumber sharedMemory[kSharedMemorySize];
 	GBMessageQueue * msgQueues[kNumMessageChannels];
@@ -51,6 +52,7 @@ class GBSide : public GBModel {
 public:
 	GBSide * next;
 	GBFilename filename;
+    GBPosition center;
 public:
 	GBSide();
 	~GBSide();
@@ -82,7 +84,7 @@ public:
 	void Reset(); // clear status info
 	void ResetSampledStatistics();
 // scoring
-	void ReportRobot(const GBEnergy biomass, const GBEnergy construc);
+	void ReportRobot(GBEnergy biomass, GBEnergy construc, const GBPosition & where);
 	void ReportDead(const GBEnergy en);
 	void ReportKilled(const GBEnergy en);
 	void ReportSuicide(const GBEnergy en);
