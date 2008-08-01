@@ -45,7 +45,7 @@ class GBExpenditureStatistics {
 	GBLongNumber shield;
 	GBLongNumber repairs;
 	GBLongNumber sensors;
-	GBLongNumber misc;
+	GBLongNumber brain;
 	GBLongNumber stolen;
 	GBLongNumber wasted;
 public:
@@ -60,7 +60,6 @@ public:
 	void ReportShield(const GBEnergy en);
 	void ReportRepairs(const GBEnergy en);
 	void ReportSensors(const GBEnergy en);
-	void ReportRadio(const GBEnergy en);
 	void ReportBrain(const GBEnergy en);
 	void ReportStolen(const GBEnergy en);
 	void ReportWasted(const GBEnergy en);
@@ -72,7 +71,7 @@ public:
 	long Shield() const;
 	long Repairs() const;
 	long Sensors() const;
-	long Misc() const;
+	long Brain() const;
 	long Stolen() const;
 	long Wasted() const;
 	long Total() const;

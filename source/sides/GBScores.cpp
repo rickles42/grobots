@@ -59,7 +59,7 @@ GBIncomeStatistics & GBIncomeStatistics::operator +=(const GBIncomeStatistics & 
 GBExpenditureStatistics::GBExpenditureStatistics()
 	: construction(0), engine(0),
 	weapons(0), forceField(0), shield(0), repairs(0),
-	sensors(0), misc(0), stolen(0), wasted(0)
+	sensors(0), brain(0), stolen(0), wasted(0)
 {}
 
 GBExpenditureStatistics::~GBExpenditureStatistics() {}
@@ -70,7 +70,7 @@ void GBExpenditureStatistics::Reset() {
 	weapons = 0; forceField = 0;
 	shield = 0; repairs = 0;
 	sensors = 0;
-	misc = 0;
+	brain = 0;
 	stolen = 0; wasted = 0;
 }
 
@@ -81,8 +81,7 @@ void GBExpenditureStatistics::ReportWeapons(const GBEnergy en) { weapons += en;}
 void GBExpenditureStatistics::ReportShield(const GBEnergy en) { shield += en;}
 void GBExpenditureStatistics::ReportRepairs(const GBEnergy en) { repairs += en;}
 void GBExpenditureStatistics::ReportSensors(const GBEnergy en) { sensors += en;}
-void GBExpenditureStatistics::ReportRadio(const GBEnergy en) { misc += en;}
-void GBExpenditureStatistics::ReportBrain(const GBEnergy en) { misc += en;}
+void GBExpenditureStatistics::ReportBrain(const GBEnergy en) { brain += en;}
 void GBExpenditureStatistics::ReportStolen(const GBEnergy en) { stolen += en;}
 void GBExpenditureStatistics::ReportWasted(const GBEnergy en) { wasted += en;}
 
@@ -93,14 +92,14 @@ long GBExpenditureStatistics::ForceField() const { return forceField.Round(); }
 long GBExpenditureStatistics::Shield() const { return shield.Round(); }
 long GBExpenditureStatistics::Repairs() const { return repairs.Round(); }
 long GBExpenditureStatistics::Sensors() const { return sensors.Round(); }
-long GBExpenditureStatistics::Misc() const { return misc.Round(); }
+long GBExpenditureStatistics::Brain() const { return brain.Round(); }
 long GBExpenditureStatistics::Stolen() const { return stolen.Round(); }
 long GBExpenditureStatistics::Wasted() const { return wasted.Round(); }
 
 long GBExpenditureStatistics::Total() const {
 	return Construction() + Engine()
 		+ Weapons() + ForceField() + Shield() + Repairs()
-		+ Sensors() + Misc() + Stolen() + Wasted();
+		+ Sensors() + Brain() + Stolen() + Wasted();
 }
 
 GBExpenditureStatistics & GBExpenditureStatistics::operator +=(const GBExpenditureStatistics & other) {
@@ -111,7 +110,7 @@ GBExpenditureStatistics & GBExpenditureStatistics::operator +=(const GBExpenditu
 	shield += other.shield;
 	repairs += other.repairs;
 	sensors += other.sensors;
-	misc += other.misc;
+	brain += other.brain;
 	stolen += other.stolen;
 	wasted += other.wasted;
 	return *this;
