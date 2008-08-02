@@ -1,6 +1,6 @@
 // GBPortal.h
 // a view of [part of] a GBWorld
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2008 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #ifndef GBPortal_h_
@@ -42,6 +42,7 @@ public:
 	bool showSensors;
 	bool showDecorations;
 	bool showDetails;
+	bool showSideNames;
 private:
 // drawing internals
 	void DrawBackground();
@@ -50,6 +51,7 @@ private:
 	void InitBackground();
 	void DrawObjects();
 	void DrawObjectList(const GBObject * list);
+	void DrawRangeCircle(const GBPosition & center, GBDistance radius, const GBColor &color);
 // coordinate conversions
 	short ToScreenX(const GBCoordinate x) const;
 	short ToScreenY(const GBCoordinate y) const;
@@ -58,7 +60,8 @@ private:
 	GBFinePoint FromScreen(short x, short y) const;
 // scrolling
 	void RestrictScrolling();
-// forbidden
+	void ScrollToFollowed();
+	// forbidden
 	GBPortal();
 public:
 	GBPortal(GBWorld & newTarget);

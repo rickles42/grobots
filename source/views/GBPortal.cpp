@@ -1,6 +1,6 @@
 // GBPortal.cpp
 // code for the Portal view of a GBWorld
-// Grobots (c) 2002-2003 Devon and Warren Schudy
+// Grobots (c) 2002-2008 Devon and Warren Schudy
 
 #include <ctype.h>
 #include "GBPortal.h"
@@ -175,7 +175,7 @@ GBPortal::GBPortal(GBWorld & newWorld)
 	following(false), followPosition(newWorld.Size() / 2), moving(nil),
 	autofollow(false), lastFollow(0),
 	tool(ptScroll),
-	showSensors(false), showDecorations(true), showDetails(true),
+	showSensors(false), showDecorations(true), showDetails(true), showSideNames(true),
 	worldChanges(-1), selfChanges(-1),
 	lastx(0), lasty(0), lastClick(), lastFrame(newWorld.CurrentFrame()),
 	background(nil)
@@ -186,60 +186,86 @@ GBPortal::~GBPortal() {
 	delete background;
 }
 
+void GBPortal::ScrollToFollowed() {
+	if ( world.Followed() ) {
+		followPosition = world.Followed()->Position();
+		//viewpoint += world.Followed()->Velocity();
+	}
+	//User doesn't want to see what's off the edge.
+	//a bit complicated because:
+	//1) If the view is already near edge, don't scroll away from followed to fix
+	//2) if zoomed out a lot, minFollowX could be greater than maxFollowX
+	GBCoordinate minFollowX = GBNumber(Width()) / (scale * 2) - kFollowViewOffEdge; //half-width of viewport
+	GBCoordinate maxFollowX = world.Right() - minFollowX;
+	GBCoordinate minFollowY = GBNumber(Height()) / (scale * 2) - kFollowViewOffEdge;
+	GBCoordinate maxFollowY = world.Top() - minFollowY;
+	if ( followPosition.x >= maxFollowX ) {
+		if(viewpoint.x <= followPosition.x)
+			followPosition.x = max(viewpoint.x, maxFollowX);
+	} else if ( followPosition.x <= minFollowX ) {
+		if ( viewpoint.x >= followPosition.x )
+			followPosition.x = min(viewpoint.x, minFollowX);
+	} else if ( world.Followed() )
+		viewpoint.x += world.Followed()->Velocity().x;
+	
+	if ( followPosition.y >= maxFollowY ) {
+		if ( viewpoint.y <= followPosition.y )
+			followPosition.y = max(viewpoint.y, maxFollowY);
+	} else if ( followPosition.y <= minFollowY ) {
+		if ( viewpoint.y >= followPosition.y )
+			followPosition.y = min(viewpoint.y, minFollowY);
+	} else if ( world.Followed() )
+		viewpoint.y += world.Followed()->Velocity().y;
+	//now scroll toward followPosition
+	if ( followPosition.InRange(viewpoint, kFastFollowDistance) )
+		ScrollToward(followPosition, kFollowSpeed);
+	else if ( followPosition.InRange(viewpoint, kFollowJumpDistance) )
+		ScrollToward(followPosition, kFastFollowSpeed);
+	else
+		viewpoint = followPosition;
+}
+
+void GBPortal::DrawRangeCircle(const GBPosition & center, GBDistance radius, const GBColor &color) {
+	if ( radius <= 0 ) return;
+	GBRect where(ToScreenX(center.x - radius), ToScreenY(center.y + radius),
+				 ToScreenX(center.x + radius), ToScreenY(center.y - radius));
+	DrawOpenOval(where, color);
+}
+
 void GBPortal::Draw() {
 	if ( ViewRight() < 0 || ViewLeft() > world.Right() || ViewTop() < 0 || ViewBottom() > world.Top() )
 		viewpoint = world.Size() / 2;
 	if ( autofollow && Milliseconds() > lastFollow + kAutofollowPeriod )
 		FollowRandom();
-	if ( following && ! moving ) {
-		if ( world.Followed() ) {
-			followPosition = world.Followed()->Position();
-			//viewpoint += world.Followed()->Velocity();
-		}
-		//User doesn't want to see what's off the edge.
-		//a bit complicated because:
-		//1) If the view is already near edge, don't scroll away from followed to fix
-		//2) if zoomed out a lot, minFollowX could be greater than maxFollowX
-		GBCoordinate minFollowX = GBNumber(Width()) / (scale * 2) - kFollowViewOffEdge; //half-width of viewport
-		GBCoordinate maxFollowX = world.Right() - minFollowX;
-		GBCoordinate minFollowY = GBNumber(Height()) / (scale * 2) - kFollowViewOffEdge;
-		GBCoordinate maxFollowY = world.Top() - minFollowY;
-		if ( followPosition.x >= maxFollowX ) {
-			if(viewpoint.x <= followPosition.x)
-				followPosition.x = max(viewpoint.x, maxFollowX);
-		} else if ( followPosition.x <= minFollowX ) {
-			if ( viewpoint.x >= followPosition.x )
-				followPosition.x = min(viewpoint.x, minFollowX);
-		} else if ( world.Followed() )
-			viewpoint.x += world.Followed()->Velocity().x;
-
-		if ( followPosition.y >= maxFollowY ) {
-			if ( viewpoint.y <= followPosition.y )
-				followPosition.y = max(viewpoint.y, maxFollowY);
-		} else if ( followPosition.y <= minFollowY ) {
-			if ( viewpoint.y >= followPosition.y )
-				followPosition.y = min(viewpoint.y, minFollowY);
-		} else if ( world.Followed() )
-			viewpoint.y += world.Followed()->Velocity().y;
-	//now scroll toward followPosition
-		if ( followPosition.InRange(viewpoint, kFastFollowDistance) )
-			ScrollToward(followPosition, kFollowSpeed);
-		else if ( followPosition.InRange(viewpoint, kFollowJumpDistance) )
-			ScrollToward(followPosition, kFastFollowSpeed);
-		else
-			viewpoint = followPosition;
-	}
+	if ( following && ! moving ) 
+		ScrollToFollowed();
 	DrawBackground();
+	const GBRobot *bot = dynamic_cast<const GBRobot *>(world.Followed());
+	if ( bot ) {
+		DrawRangeCircle(bot->Position(), bot->hardware.blaster.MaxRange() + bot->Radius(), GBColor::magenta * 0.5f);
+		DrawRangeCircle(bot->Position(), bot->hardware.grenades.MaxRange() + bot->Radius(), GBColor::yellow * 0.5f);
+		if ( bot->hardware.syphon.MaxRate() > 0 )
+			DrawRangeCircle(bot->Position(), bot->hardware.syphon.MaxRange() + bot->Radius(), GBColor(0.25f, 0.4f, 0.5f));
+		if ( bot->hardware.enemySyphon.MaxRate() > 0 )
+			DrawRangeCircle(bot->Position(), bot->hardware.enemySyphon.MaxRange() + bot->Radius(), GBColor(0.3f, 0.5f, 0));
+		DrawRangeCircle(bot->Position(), bot->hardware.forceField.MaxRange(), GBColor(0, 0.4f, 0.5f));
+	}
 	DrawObjects();
-	if ( following && world.Followed() ) {
+	if ( world.Followed() ) {
 		GBPosition targetPos = world.Followed()->Position();
-		int y = ToScreenY(targetPos.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13;
-		DrawStringCentered(world.Followed()->Description(), ToScreenX(targetPos.x), y,
+		int texty = ToScreenY(targetPos.y - (world.Followed()->Radius() > 2 ? GBNumber(0) : world.Followed()->Radius())) + 13;
+		DrawStringCentered(world.Followed()->Description(), ToScreenX(targetPos.x), texty,
 			10, GBColor::white);
 		const string & details = world.Followed()->Details();
 		if (details.length() > 0)
-			DrawStringCentered(details, ToScreenX(targetPos.x), y + 10,
+			DrawStringCentered(details, ToScreenX(targetPos.x), texty + 10,
 				10, GBColor::white);
+	}
+	if ( showSideNames ) {
+		for (const GBSide *side = world.Sides(); side; side = side->next)
+			if ( side->Scores().Seeded() )
+				DrawStringCentered(side->Name(), ToScreenX(side->center.x), ToScreenY(side->center.y),
+					14, side->Scores().Sterile() ? GBColor::gray : GBColor::white);
 	}
 // record drawn
 	worldChanges = world.ChangeCount();
@@ -296,7 +322,7 @@ void GBPortal::AcceptUnclick(short x, short y, int clicks) {
 		moving = nil;
 	}
 	if ( clicks && tool == ptScroll )
-		Follow(world.ObjectNear(FromScreen(x, y), showSensors));
+		Follow(world.ObjectNear(FromScreen(x, y), false /*showSensors*/));
 }
 
 void GBPortal::AcceptKeystroke(const char what) {
