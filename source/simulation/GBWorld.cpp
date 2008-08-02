@@ -323,6 +323,7 @@ void GBWorld::AddSeeds() {
 	for ( GBSide * side = sides; side != nil && seedsLeft; side = side->next, -- sidesLeft )
 		if ( seedsLeft >= sidesLeft || random.Boolean(GBNumber(seedsLeft) / sidesLeft) ) {
 			if ( ! seedsLeft ) throw GBTooManyIterationsError();
+			side->center = positions[numSeeds - seedsLeft];
 			AddSeed(side, positions[numSeeds - seedsLeft]);
 			-- seedsLeft;
 		}
