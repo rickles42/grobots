@@ -8,6 +8,9 @@
 
 #include "GBErrors.h"
 
+#define USE_GBNUMBER 1
+#if USE_GBNUMBER
+
 class GBNumber {
 	long data;
 public:
@@ -68,7 +71,6 @@ public:
 	bool operator<=(const double other) const;
 	bool operator>=(const double other) const;
 // misc
-	GBNumber Square() const;
 	GBNumber Sqrt() const;
 	GBNumber Exponent(const GBNumber ex) const;
 	bool IsInteger() const;
@@ -103,6 +105,10 @@ public:
 	static const GBNumber e;
 };
 
+#else
+typedef float GBNumber;
+#endif
+
 typedef GBNumber GBAngle;
 typedef GBNumber GBCoordinate;
 
@@ -131,6 +137,8 @@ public:
 };
 
 // implementation //
+
+#if USE_GBNUMBER
 
 const int kNumFractionBits = 12;
 const long kIntegerPartMask = -1 << kNumFractionBits;
@@ -307,6 +315,17 @@ inline long GBNumber::GetRaw() const {
 inline void GBNumber::SetRaw(const long raw) {
 	data = raw;
 }
+#endif
 
+//for compatibility with floats
+template <typename T>
+T square(T x) { return x * x; }
+
+GBNumber sqrt(GBNumber & x);
+
+template <typename T>
+T max(T a, T b) { return a > b ? a :  b; }
+template <typename T>
+T min(T a, T b) { return a < b ? a :  b; }
 
 #endif

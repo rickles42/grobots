@@ -129,18 +129,24 @@ bool GBNumber::operator<=(const double other) const {
 bool GBNumber::operator>=(const double other) const {
 	return ToDouble() >= other;}
 
-GBNumber GBNumber::Square() const {
-	return *this * *this;
-}
-
 GBNumber GBNumber::Sqrt() const {
 	if ( data < 0 ) throw GBImaginaryError();
 	double temp = data / (double)(1 << kNumFractionBits);
 	return GBNumber(sqrt(temp));
 }
 
+GBNumber sqrt(GBNumber & x) {
+	if ( x < 0 ) throw GBImaginaryError();
+	double temp = x.GetRaw() / (double)(1 << kNumFractionBits);
+	return GBNumber(sqrt(temp));
+}
+
 GBNumber GBNumber::Exponent(const GBNumber ex) const {
 	return pow(this->ToDouble(), ex.ToDouble());
+}
+
+GBNumber pow(GBNumber base, GBNumber ex) {
+	return pow(base.ToDouble(), ex.ToDouble());
 }
 
 long GBNumber::Ceiling() const {
