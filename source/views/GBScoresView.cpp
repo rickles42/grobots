@@ -46,7 +46,7 @@ void GBScoresView::DrawExpenditures(const GBExpenditureStatistics & spent,
 		left, right, top + 60, 9, GBColor::blue);
 	DrawStringPair("Repairs:", ToPercentString(spent.Repairs(), total),
 		left, right, top + 70, 9, GBColor::black);
-	DrawStringPair("Misc:", ToPercentString(spent.Misc(), total),
+	DrawStringPair("Brains:", ToPercentString(spent.Brain(), total),
 		left, right, top + 80, 9, GBColor::black);
 	DrawStringPair("Stolen:", ToPercentString(spent.Stolen(), total),
 		left, right, top + 90, 9, GBColor(0.4f, 0.6f, 0));
