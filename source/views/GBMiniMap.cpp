@@ -1,8 +1,9 @@
 // GBMiniMap.cpp
-// Grobots (c) 2002-2004 Devon and Warren Schudy
+// Grobots (c) 2002-2008 Devon and Warren Schudy
 // Distributed under the GNU General Public License.
 
 #include "GBMiniMap.h"
+#include "GBSide.h"
 
 const float kTrailIntensity = 0.4f;
 
@@ -135,6 +136,13 @@ void GBMiniMapView::Draw() {
 	DrawLayer(ocShot, 1);
 	if ( showSensors ) DrawLayer(ocSensorShot, 4);
 	if ( showDecorations ) DrawLayer(ocDecoration, 1);
+// draw side labels
+	if ( portal.showSideNames ) {
+		for (const GBSide *side = world.Sides(); side; side = side->next)
+			if ( side->Scores().Population() && ! side->Scores().Sterile() )
+				DrawStringCentered(side->Name(), ToScreenX(side->center.x), ToScreenY(side->center.y),
+								   9, GBColor::gray);
+	}
 // draw viewing area
 	GBRect box;
 	box.left = ToScreenX(portal.ViewLeft());
