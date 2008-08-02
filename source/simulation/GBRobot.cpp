@@ -14,6 +14,7 @@
 #include "GBBrain.h"
 #include "GBBrainSpec.h"
 #include "GBStringUtilities.h"
+#include <algorithm>
 
 
 const GBRatio kRobotRadiusFactor = 0.1;
@@ -108,7 +109,7 @@ GBBrain * GBRobot::Brain() { return brain; }
 
 GBNumber GBRobot::ShieldFraction() const {
 	if (hardware.ActualShield().Nonzero() )
-		return GBNumber(1) / ((hardware.ActualShield() * kShieldEffectiveness / mass).Square() + 1);
+		return GBNumber(1) / (square(hardware.ActualShield() * kShieldEffectiveness / mass) + 1);
 	return 1;
 }
 
@@ -207,7 +208,7 @@ void GBRobot::Act(GBWorld * world) {
 
 void GBRobot::CollectStatistics(GBWorld * world) const {
 	GBEnergy bm = Biomass();
-	Owner()->ReportRobot(bm, type->Hardware().constructor.Cost());
+	Owner()->ReportRobot(bm, type->Hardware().constructor.Cost(), Position());
 	type->ReportRobot(bm);
 	world->ReportRobot(bm);
 }
@@ -266,7 +267,7 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 	g.DrawSolidOval(where, Owner()->Color());
 // meters
 	if ( detailed ) {
-		short meterWidth = max(1, (where.Width() + 10) / 10);
+		short meterWidth = std::max(1, (where.Width() + 10) / 10);
 		short arcsize;
 		GBRect meterRect = where;
 		meterRect.Shrink((meterWidth + 1) / 2); //TODO is this portable?
