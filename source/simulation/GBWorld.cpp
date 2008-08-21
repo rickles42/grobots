@@ -12,6 +12,8 @@
 #include "GBSound.h"
 #include "GBStringUtilities.h"
 #include <fstream>
+#include <vector>
+#include <algorithm>
 
 #if MAC && ! MAC_OS_X
 #include <Timer.h>
@@ -536,14 +538,19 @@ void GBWorld::DumpTournamentScores() {
 	std::ofstream f("tournament-scores.html", std::ios::app);
 	if ( !f.good() ) return;
 	f << "\n<table>\n"
-		"<colgroup><col><col><colgroup><col class=key><col><col><col><col><col><col>\n"
+		"<colgroup><col><col><col><colgroup><col class=key><col><col><col><col><col><col>\n"
 		"<thead><tr><th>Side<th>Author\n"
 		"<th>Score<th>Nonsterile<br>survival<th>Early<br>death<th>Late<br>death"
 		"<th>Early<br>score<th>Fraction<th>Kills\n"
 		"<tbody>\n";
-	for (const GBSide * s = sides; s; s = s->next) {
-		f << "<tr><td>" << s->Name() << "<td>" << s->Author() << "\n";
-		const GBScores & sc = s->TournamentScores();
+	std::vector<const GBSide *> sorted;
+	for (const GBSide * s = sides; s; s = s->next)
+		sorted.push_back(s);
+	std::sort(sorted.begin(), sorted.end(), GBSide::Better);
+	for (int i = 0; i < sorted.size(); ++i) {
+		f << "<tr><td>" << i + 1 << "<td>";
+		f << sorted[i]->Name() << "<td>" << sorted[i]->Author() << "\n";
+		const GBScores & sc = sorted[i]->TournamentScores();
 		f << "<td>" << ToPercentString(sc.BiomassFraction(), 1);
 		f << "<td>" << ToPercentString(sc.SurvivalNotSterile(), 0);
 		f << "<td>" << ToPercentString(sc.EarlyDeathRate(), 0);
@@ -552,9 +559,9 @@ void GBWorld::DumpTournamentScores() {
 		f << "<td>" << ToPercentString(sc.SurvivalBiomassFraction(), 0);
 		f << "<td>" << ToPercentString(sc.KilledFraction(), 0) << "\n";
 	}
-	f << "<tfoot><tr><th colspan=3>Overall:<td>" << ToPercentString(tournamentScores.SurvivalNotSterile(), 0)
+	f << "<tfoot><tr><th colspan=4>Overall:<td>" << ToPercentString(tournamentScores.SurvivalNotSterile(), 0)
 	  << "<td>" << ToPercentString(tournamentScores.EarlyDeathRate(), 0)
-	  << "<td>" << ToPercentString(tournamentScores.LateDeathRate(), 0) << "<th colspan=3>\n</table>\n";
+	  << "<td>" << ToPercentString(tournamentScores.LateDeathRate(), 0) << "<th colspan=4>\n</table>\n";
 }
 
 const GBScores & GBWorld::RoundScores() const {
