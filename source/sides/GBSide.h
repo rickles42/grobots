@@ -106,6 +106,8 @@ public:
 	void SendMessage(const GBMessage & value, const int channel);
 	const GBMessageNumber NextMessageNumber(const int channel) const;
 	int MessagesWaiting(const int channel, const GBMessageNumber next) const;
+
+	static bool Better(const GBSide *a, const GBSide *b);
 };
 
 

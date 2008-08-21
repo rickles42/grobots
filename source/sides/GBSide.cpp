@@ -303,3 +303,8 @@ int GBSide::MessagesWaiting(const int channel, const GBMessageNumber next) const
 	return msgQueues[channel - 1]->MessagesWaiting(next);
 }
 
+//for sorting
+bool GBSide::Better(const GBSide *a, const GBSide *b) {
+	return a->TournamentScores().BiomassFraction() > b->TournamentScores().BiomassFraction();
+}
+

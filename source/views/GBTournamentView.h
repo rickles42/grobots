@@ -6,15 +6,18 @@
 #define GBTournamentView_h
 
 #include "GBListView.h"
+#include <vector>
 
 const long kMinColorRounds = 10;
 
 class GBWorld;
+class GBSide;
 
 class GBTournamentView : public GBListView {
 	GBWorld & world;
 	long lastRounds;
 	int numSides;
+	std::vector<const GBSide *> sorted;
 	
 	static GBColor RangeColor(float value, float min, float max,
 		const GBColor & low, const GBColor & high,

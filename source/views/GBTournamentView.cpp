@@ -34,7 +34,12 @@ GBTournamentView::GBTournamentView(GBWorld & target)
 {}
 
 void GBTournamentView::Draw() {
+	sorted.empty();
+	for (const GBSide * s = world.Sides(); s; s = s->next)
+		sorted.push_back(s);
+	std::sort(sorted.begin(), sorted.end(), GBSide::Better);
 	GBListView::Draw();
+	sorted.clear();
 // record
 	lastRounds = world.TournamentScores().Rounds();
 	numSides = world.CountSides();
@@ -87,7 +92,7 @@ void GBTournamentView::DrawHeader(const GBRect & box) {
 
 void GBTournamentView::DrawItem(long index, const GBRect & box) {
 	DrawBox(box);
-	const GBSide * side = world.GetSide(index);
+	const GBSide * side = sorted.at(index - 1);
 	if ( ! side ) return;
 	const GBScores & scores = side->TournamentScores();
 // draw ID and name
