@@ -29,7 +29,7 @@ public:
 
 class GBTimedShot : public GBShot {
 protected:
-	GBFrames lifetime;
+	GBFrames originallifetime, lifetime;
 public:
 	GBTimedShot(const GBPosition & where, const GBDistance r,
 		GBSide * const who, const GBDamage howMuch, const GBFrames howLong);

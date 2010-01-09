@@ -14,7 +14,6 @@
 
 
 const GBRatio kBlastPushRatio = 0.003;
-const GBDamage kBlastRadiusThreshold = 40;
 const GBDistance kBlastRadius = 0.1875;
 const GBNumber kBlastMomentumPerPower = 0.05;
 
@@ -74,7 +73,8 @@ GBEnergy GBShot::Power() const {
 }
 
 string GBShot::Description() const {
-	return (owner ? "Shot from " + owner->Name() : string("Shot")) + " (" + ToString(power) + ')';
+	return (owner ? "Shot from " + owner->Name() : string("Shot")) +
+		" (power " + ToString(power) + ", speed " + ToString(Speed()) + ')';
 }
 
 // GBTimedShot //
@@ -82,13 +82,13 @@ string GBShot::Description() const {
 GBTimedShot::GBTimedShot(const GBPosition & where, const GBDistance r,
 		GBSide * const who, const GBDamage howMuch, const GBFrames howLong)
 	: GBShot(where, r, who, howMuch),
-	lifetime(howLong)
+	originallifetime(howLong), lifetime(howLong)
 {}
 
 GBTimedShot::GBTimedShot(const GBPosition & where, const GBDistance r, const GBVelocity & vel,
 		GBSide * const who, const GBDamage howMuch, const GBFrames howLong)
 	: GBShot(where, r, vel, who, howMuch),
-	lifetime(howLong)
+	originallifetime(howLong), lifetime(howLong)
 {}
 
 void GBTimedShot::Act(GBWorld * world) {
@@ -116,17 +116,15 @@ GBBlast::GBBlast(const GBPosition & where, const GBVelocity & vel,
 {}
 
 void GBBlast::CollideWithWall() {
-	power = 0;
 	lifetime = 0;
 	hit = true;
 }
 
 void GBBlast::CollideWith(GBObject * other) {
-	if ( other->Class() == ocRobot ) {
+	if ( !hit && other->Class() == ocRobot ) {
 		other->TakeDamage(power, owner);
 		Push(other, power * kBlastPushRatio);
 		other->PushBy(Velocity() * power * kBlastMomentumPerPower);
-		power = 0;
 		lifetime = 0;
 		hit = true;
 	}
@@ -141,23 +139,35 @@ void GBBlast::Act(GBWorld * world) {
 
 long GBBlast::Type() const { return 1; }
 
+//Blasts fade out at the end of their lives.
+//Big blasts are saturated, smaller ones are pink or white.
+//Long-range blasts are orangish; short-range ones are magenta.
 const GBColor GBBlast::Color() const {
-	float life = lifetime / 30.0;
-	if ( life > 1.0 ) life = 1.0;
-	float dmg = 1.0 - power.ToDouble() / 25.0;
-	if ( dmg < 0.0 ) dmg = 0.0;
-	return GBColor(1, life * dmg, dmg);
+	float fadeout = hit ? 1.0f : min(lifetime / min((float)originallifetime, 10.0f), 1.0f);
+	float whiteness = pow(0.95, power.ToDouble());
+	float blueness = pow(0.9995, originallifetime * originallifetime);
+	return GBColor::white.Mix(whiteness, GBColor(1, 0.5f - blueness * 1.5f, blueness * 1.5f)) * fadeout;
 }
 
 void GBBlast::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
 	if ( where.Width() <= 3 ) {
 		g.DrawSolidRect(where,Color());
+	} else if ( hit ) {
+		g.DrawSolidOval(where, Color());
 	} else {
-		int extra = (power > kBlastRadiusThreshold ? 1 : 0);
+		//g.DrawOpenOval(where, GBColor::gray);
 		short cx = where.CenterX();
 		short cy = where.CenterY();
-		g.DrawLine(where.left - extra, cy, where.right + extra, cy, Color(), 2);
-		g.DrawLine(cx, where.top - extra, cx, where.bottom + extra, Color(), 2);
+		int thickness = 2 + (power / 20).Floor();
+		GBVector head = Velocity().Unit() * where.Width() / 2;
+		short hx = head.x.Round();
+		short hy = - head.y.Round();
+		GBVector tail = Velocity() * where.Width() / (radius * 2);
+		short tx = tail.x.Round();
+		short ty = - tail.y.Round();
+		//g.DrawLine(cx + hx, cy + hy, cx - tx, cy - ty, Color() * 0.7, thickness + 2);
+		//g.DrawLine(cx + hx, cy + hy, cx - hx, cy - hy, Color() + GBColor(0.2), max(thickness, 2));
+		g.DrawLine(cx + hx, cy + hy, cx - tx, cy - ty, Color(), thickness);
 	}
 }
 
