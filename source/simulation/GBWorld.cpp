@@ -539,7 +539,7 @@ void GBWorld::DumpTournamentScores() {
 	if ( !f.good() ) return;
 	f << "\n<table>\n"
 		"<colgroup><col><col><col><colgroup><col class=key><col><col><col><col><col><col>\n"
-		"<thead><tr><th>Side<th>Author\n"
+		"<thead><tr><th>Rank<th>Side<th>Author\n"
 		"<th>Score<th>Nonsterile<br>survival<th>Early<br>death<th>Late<br>death"
 		"<th>Early<br>score<th>Fraction<th>Kills\n"
 		"<tbody>\n";
@@ -561,7 +561,8 @@ void GBWorld::DumpTournamentScores() {
 	}
 	f << "<tfoot><tr><th colspan=4>Overall:<td>" << ToPercentString(tournamentScores.SurvivalNotSterile(), 0)
 	  << "<td>" << ToPercentString(tournamentScores.EarlyDeathRate(), 0)
-	  << "<td>" << ToPercentString(tournamentScores.LateDeathRate(), 0) << "<th colspan=4>\n</table>\n";
+	  << "<td>" << ToPercentString(tournamentScores.LateDeathRate(), 0)
+	  << "<th colspan=2><td>" << ToPercentString(tournamentScores.KillRate(), 0) << "\n</table>\n";
 }
 
 const GBScores & GBWorld::RoundScores() const {
