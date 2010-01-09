@@ -102,9 +102,8 @@ void GBRadioState::SkipMessages(long channel, long skip, GBSide * side) {
 void GBRadioState::Act(GBRobot * robot, GBWorld * world) {
 	if ( ! writes && ! sent ) return;
 	//GBEnergy en = kRadioWriteCost * writes + kRadioSendCost * sent;
-	//robot->Owner()->Scores().Expenditure().ReportRadio(en);
 	//robot->hardware.UseEnergy(en);
-	world->AddObjectNew(new GBTransmission(robot->Position(), writes + sent, sent > 0));
+	world->AddObjectNew(new GBTransmission(robot->Position(), robot->Radius(), sent > 0));
 	writes = 0; sent = 0;
 }
 
@@ -173,6 +172,7 @@ void GBConstructorState::Act(GBRobot * robot, GBWorld * world) {
 			type = nil;
 			lastChild = child->ID();
 		}
+		robot->Recalculate();
 	}
 	if ( abortion > 0 ) {
 		world->AddObjectNew(new GBCorpse(robot->Position(), robot->Velocity(),

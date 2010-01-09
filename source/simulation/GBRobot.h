@@ -26,7 +26,6 @@ public:
 	GBHardwareState hardware;
 	bool dead;
 	GBNumber flag;
-private:
 	void Recalculate();
 public:
 	GBRobot(GBRobotType * rtype, const GBPosition & where);
