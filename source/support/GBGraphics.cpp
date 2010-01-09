@@ -78,16 +78,10 @@ GBGraphics::~GBGraphics() {}
 void GBGraphics::DrawLine(short x1, short y1, short x2, short y2,
 		const GBColor & color, short thickness) {
 //correct for pen drawing down and to the right
-	if (x1 == x2) {
-		x1 -= thickness >> 1;
-		x2 -= thickness >> 1;
-	} else if (x1 > x2) x1 -= thickness;
-	else x2 -= thickness;
-	if (y1 == y2) {
-		y1 -= thickness >> 1;
-		y2 -= thickness >> 1;
-	} else if (y1 > y2) y1 -= thickness;
-	else y2 -= thickness;
+	x1 -= thickness >> 1;
+	x2 -= thickness >> 1;
+	y1 -= thickness >> 1;
+	y2 -= thickness >> 1;
 //draw
 	UseColor(color);
 	PenSize(thickness, thickness);
