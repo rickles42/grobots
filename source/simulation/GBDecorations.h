@@ -44,12 +44,10 @@ public:
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
 };
 
-class GBTransmission : public GBObject {
-	int count;  // how much sent
+class GBTransmission : public GBTimedDecoration {
 	bool message;
 public:
-	GBTransmission(const GBPosition where, int cnt, bool msg);
-	GBObjectClass Class() const;
+	GBTransmission(const GBPosition where, GBDistance initialradius, bool msg);
 	void Act(GBWorld * world);
 	string Description() const;
 // drawing code
@@ -68,8 +66,6 @@ public:
 	void Draw(GBGraphics & g, const GBRect & where, bool detailed) const;
 	void DrawMini(GBGraphics & g, const GBRect & where) const;
 };
-
-
 
 
 #endif
