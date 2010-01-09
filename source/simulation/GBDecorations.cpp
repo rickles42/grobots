@@ -12,10 +12,8 @@ const GBFrames kBlasterSparkLifetime = 8;
 const GBDistance kBlasterSparkMaxRadius = 0.3125;
 const GBDistance kBlasterSparkGrowthRate = 0.03125;
 
-const GBDistance kTransmissionMinRadius = 0.2;
-const GBDistance kTransmissionMaxRadius = 1.5;
 const GBSpeed kTransmissionGrowthRate = 0.1;
-const short kTransmissionRingSpacing = 3;
+const short kTransmissionLifetime = 12;
 
 const GBDistance kSparkleRadius = 0.0625;
 
@@ -82,37 +80,25 @@ void GBBlasterSpark::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*
 
 // GBTransmission //
 
-GBTransmission::GBTransmission(const GBPosition where, int cnt, bool msg)
-	: GBObject(where, kTransmissionMinRadius),
-	count(cnt), message(msg)
+GBTransmission::GBTransmission(const GBPosition where, GBDistance initialradius, bool msg)
+	: GBTimedDecoration(where, initialradius, kTransmissionLifetime),
+	message(msg)
 {}
 
 void GBTransmission::Act(GBWorld * world) {
-	GBObject::Act(world);
-	if ( radius >= kTransmissionMaxRadius ) {
-		count --;
-	} else
-		radius += kTransmissionGrowthRate;
+	GBTimedDecoration::Act(world);
+	radius += kTransmissionGrowthRate;
 }
 
 string GBTransmission::Description() const {return "Radio transmission";}
 
 const GBColor GBTransmission::Color() const {
-	if ( message ) return GBColor(0.6f, 0.5f, 1);
-	return GBColor(1, 0.8f, 0.5f);
-}
-
-GBObjectClass GBTransmission::Class() const {
-	if ( count > 0 ) return ocDecoration;
-	else return ocDead;
+	float intensity = min(2.0f * lifetime / kTransmissionLifetime, 1.0f);
+	return (message ? GBColor(0.6f, 0.5f, 1) : GBColor(1, 0.8f, 0.5f)) * intensity;
 }
 
 void GBTransmission::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
-	GBRect box = where;
-	for ( int i = count; i > 0 && box.left < box.right; i -- ) {
-		g.DrawOpenOval(box, Color());
-		box.Shrink(kTransmissionRingSpacing);
-	}
+	g.DrawOpenOval(where, Color());
 }
 
 void GBTransmission::DrawMini(GBGraphics & g, const GBRect & where) const {
