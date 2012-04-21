@@ -4,6 +4,7 @@
 
 #include "GBErrors.h"
 #include "GBStringUtilities.h"
+#include <stdlib.h>
 
 #if HEADLESS
 	#include <iostream>
