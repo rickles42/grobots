@@ -362,7 +362,7 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opReciprocal: Push(GBNumber(1) / Pop()); break;
 		case opMod: TwoNumberToNumberOp(&GBNumber::Mod); break;
 		case opRem: TwoNumberToNumberOp(&GBNumber::Rem); break;
-		case opSquare: NumberToNumberOp(&GBNumber::Square); break;
+		case opSquare: Push(square(Pop())); break;
 		case opSqrt: NumberToNumberOp(&GBNumber::Sqrt); break;
 		case opExponent: TwoNumberToNumberOp(&GBNumber::Exponent); break;
 		case opIsInteger: PushBoolean(Pop().IsInteger()); break;
@@ -601,11 +601,11 @@ static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpe
 	return pos + vel * dt;
 #else
 //Precise version, not used yet because it changes behavior.
-//Solve for exact time of impact ((pos + vel * dt).Norm() = shotSpeed * dt + r) with quadratic formula:
-	GBNumber a = vel.NormSquare() - shotSpeed.Square();
+//Solve for exact time of impact: (pos + vel * dt).Norm() = shotSpeed * dt + r
+	GBNumber a = vel.NormSquare() - square(shotSpeed);
 	GBNumber b = (pos.DotProduct(vel) - shotSpeed * r) * 2;
-	GBNumber c = pos.NormSquare() - r.Square();
-	GBNumber det = b.Square() - a * c * 4;
+	GBNumber c = pos.NormSquare() - square(r);
+	GBNumber det = square(b) - a * c * 4;
 	if (det < 0 || a == 0)
 		return GBVector(0, 0); //don't shoot
 //try both roots and use least positive root
