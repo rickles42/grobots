@@ -37,6 +37,7 @@
 
 #if _MSC_VER
 	typedef __int64 GBLongLong;
+	#define NOMINMAX
 #else
 	typedef long long GBLongLong;
 #endif

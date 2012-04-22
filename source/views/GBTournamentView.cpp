@@ -6,6 +6,7 @@
 #include "GBSide.h"
 #include "GBWorld.h"
 #include "GBStringUtilities.h"
+#include <algorithm>
 
 
 const short kNameLeft = 25;
