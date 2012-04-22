@@ -11,6 +11,7 @@
 #include "GBSide.h"
 #include "GBSound.h"
 #include "GBStringUtilities.h"
+#include <math.h>
 
 
 const GBRatio kBlastPushRatio = 0.003;
