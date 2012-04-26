@@ -499,7 +499,7 @@ void GBHardwareSpec::Recalculate() {
 		+ EngineCost()
 		+ sensor1.Cost() + sensor2.Cost() + sensor3.Cost()
 		+ forceField.Cost()
-		+ GrowthCost() + DefenseCost() + WeaponsCost();
+		+ GrowthCost() + CombatCost();
 	mass = ChassisMass()
 		+ ProcessorMass()
 		+ EngineMass()
@@ -524,6 +524,9 @@ GBEnergy GBHardwareSpec::Cost() const {
 GBEnergy GBHardwareSpec::HardwareCost() const {
 	return hardwareCost;}
 
+GBEnergy GBHardwareSpec::BaseCost() const {
+	return hardwareCost - coolingCost;}
+
 GBMass GBHardwareSpec::Mass() const {
 	return mass;}
 	
@@ -533,12 +536,9 @@ GBEnergy GBHardwareSpec::GrowthCost() const {
 		+ EaterCost() + constructor.Cost() + syphon.Cost();
 }
 
-GBEnergy GBHardwareSpec::DefenseCost() const {
-	return ArmorCost() + RepairCost() + ShieldCost();
-}
-
-GBEnergy GBHardwareSpec::WeaponsCost() const {
-	return blaster.Cost() + grenades.Cost() + enemySyphon.Cost() + BombCost();
+GBEnergy GBHardwareSpec::CombatCost() const {
+	return ArmorCost() + RepairCost() + ShieldCost() +
+		blaster.Cost() + grenades.Cost() + enemySyphon.Cost() + BombCost();
 }
 
 GBEnergy GBHardwareSpec::ChassisCost() const {

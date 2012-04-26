@@ -182,10 +182,10 @@ public:
 	void Recalculate();
 	GBEnergy Cost() const;
 	GBEnergy HardwareCost() const; // excludes initial energy
+	GBEnergy BaseCost() const; // excludes initial energy and cooling
 	GBMass Mass() const;
 	GBEnergy GrowthCost() const;
-	GBEnergy DefenseCost() const;
-	GBEnergy WeaponsCost() const;
+	GBEnergy CombatCost() const;
 // individual hardwares
 	GBEnergy ChassisCost() const;
 	GBMass ChassisMass() const;
