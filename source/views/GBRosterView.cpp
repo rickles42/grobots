@@ -85,7 +85,7 @@ void GBRosterView::DrawItem(long index, const GBRect & box) {
 	DrawStringLeft(side->Name(), box.left + 30, box.top + 13, 12, selected ? GBColor::white : GBColor::black);
 // draw ID and stats
 	if ( side->Scores().Seeded() ) {
-		DrawStringRight(ToString(side->ID()) + '.', box.left + 25, box.top + 13, 12, side->Color());
+		DrawStringRight(ToString(side->ID()) + '.', box.left + 25, box.top + 13, 12, side->Color().ContrastingTextColor());
 		if ( side->Scores().Population() ) {
 			if ( side->Scores().Sterile() )
 				DrawStringRight(string("Sterile at ") + ToString(side->Scores().SterileTime()),
@@ -98,7 +98,7 @@ void GBRosterView::DrawItem(long index, const GBRect & box) {
 			}
 		} else {
 			DrawStringRight(string("Extinct at ") + ToString(side->Scores().ExtinctTime()),
-				box.right - 4, box.top + 12, 10, GBColor::red);
+				box.right - 4, box.top + 12, 10, GBColor::darkGray);
 		}
 	}
 }

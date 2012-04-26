@@ -97,7 +97,7 @@ void GBTournamentView::DrawItem(long index, const GBRect & box) {
 	if ( ! side ) return;
 	const GBScores & scores = side->TournamentScores();
 // draw ID and name
-	DrawStringRight(ToString(index) + '.', box.left + kNameLeft - 5, box.bottom - 4, 10, side->Color());
+	DrawStringRight(ToString(index) + '.', box.left + kNameLeft - 5, box.bottom - 4, 10, side->Color().ContrastingTextColor());
 	DrawStringLeft(side->Name(), box.left + kNameLeft, box.bottom - 4, 10, GBColor::black);
 // draw various numbers
 	long rounds = scores.Rounds();
