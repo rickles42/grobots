@@ -11,6 +11,7 @@
 #include "GBRobotType.h"
 #include "GBSound.h"
 #include "GBWorld.h"
+#include <math.h>
 
 static GBPosition LeadShot(const GBPosition & pos, const GBPosition & vel, GBSpeed shotSpeed, GBDistance r);
 
@@ -214,8 +215,8 @@ void GBStackBrain::WriteHardware(const GBSymbolIndex index, const GBStackDatum v
 		case hvRobotSensorRange: case hvRobotSensorFiringCost: throw GBReadOnlyError();
 		case hvRobotSensorFocusDistance: robot->hardware.sensor1.SetDistance(value); break;
 		case hvRobotSensorFocusDirection: robot->hardware.sensor1.SetDirection(value); break;
-		case hvRobotSensorSeesFriends: robot->hardware.sensor1.SetSeesFriendly(value.Nonzero()); break;
-		case hvRobotSensorSeesEnemies: robot->hardware.sensor1.SetSeesEnemy(value.Nonzero()); break;
+		case hvRobotSensorSeesFriends: robot->hardware.sensor1.SetSeesFriendly(value); break;
+		case hvRobotSensorSeesEnemies: robot->hardware.sensor1.SetSeesEnemy(value); break;
 		case hvRobotSensorTime: case hvRobotSensorFound: case hvRobotSensorRangeFound: case hvRobotSensorAngleFound:
 		case hvRobotSensorSideFound: case hvRobotSensorRadiusFound: case hvRobotSensorMassFound: case hvRobotSensorEnergyFound:
 		case hvRobotSensorTypeFound: case hvRobotSensorIDFound: case hvRobotSensorShieldFractionFound:
@@ -238,8 +239,8 @@ void GBStackBrain::WriteHardware(const GBSymbolIndex index, const GBStackDatum v
 		case hvShotSensorRange: case hvShotSensorFiringCost: throw GBReadOnlyError();
 		case hvShotSensorFocusDistance: robot->hardware.sensor3.SetDistance(value); break;
 		case hvShotSensorFocusDirection: robot->hardware.sensor3.SetDirection(value); break;
-		case hvShotSensorSeesFriendly: robot->hardware.sensor3.SetSeesFriendly(value.Nonzero()); break;
-		case hvShotSensorSeesEnemy: robot->hardware.sensor3.SetSeesEnemy(value.Nonzero()); break;
+		case hvShotSensorSeesFriendly: robot->hardware.sensor3.SetSeesFriendly(value); break;
+		case hvShotSensorSeesEnemy: robot->hardware.sensor3.SetSeesEnemy(value); break;
 		case hvShotSensorTime: case hvShotSensorFound: case hvShotSensorRangeFound: case hvShotSensorAngleFound:
 		case hvShotSensorSideFound: case hvShotSensorRadiusFound: case hvShotSensorPowerFound:
 		case hvShotSensorRangeOverall: case hvShotSensorAngleOverall:
@@ -342,55 +343,55 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opJump: pc = ToAddress(Pop()); break;
 		case opCall: ExecuteCall(ToAddress(Pop())); break;
 		case opReturn: pc = PopReturn(); break;
-		case opIfGo: temp = Pop(); if ( Pop().Nonzero() ) pc = ToAddress(temp); break;
+		case opIfGo: temp = Pop(); if ( Pop() ) pc = ToAddress(temp); break;
 		case opIfElseGo: temp = Pop(); temp2 = Pop();
-			if ( Pop().Nonzero() ) pc = ToAddress(temp2); else pc = ToAddress(temp); break;
-		case opIfCall: temp = Pop(); if ( Pop().Nonzero() ) ExecuteCall(ToAddress(temp)); break;
+			if ( Pop() ) pc = ToAddress(temp2); else pc = ToAddress(temp); break;
+		case opIfCall: temp = Pop(); if ( Pop() ) ExecuteCall(ToAddress(temp)); break;
 		case opIfElseCall: temp = Pop(); temp2 = Pop();
-			if ( Pop().Nonzero() ) ExecuteCall(ToAddress(temp2)); else ExecuteCall(ToAddress(temp)); break;
-		case opIfReturn: if ( Pop().Nonzero() ) pc = PopReturn(); break;
-		case opNotIfGo: temp = Pop(); if ( ! Pop().Nonzero() ) pc = ToAddress(temp); break;
-		case opNotIfReturn: if ( ! Pop().Nonzero() ) pc = PopReturn(); break;
-		case opNotIfCall: temp = Pop(); if ( ! Pop().Nonzero() ) ExecuteCall(ToAddress(temp)); break;
+			if ( Pop() ) ExecuteCall(ToAddress(temp2)); else ExecuteCall(ToAddress(temp)); break;
+		case opIfReturn: if ( Pop() ) pc = PopReturn(); break;
+		case opNotIfGo: temp = Pop(); if ( ! Pop() ) pc = ToAddress(temp); break;
+		case opNotIfReturn: if ( ! Pop() ) pc = PopReturn(); break;
+		case opNotIfCall: temp = Pop(); if ( ! Pop() ) ExecuteCall(ToAddress(temp)); break;
 	// arithmetic
-		case opAdd: TwoNumberToNumberOp(&GBNumber::operator +); break;
-		case opSubtract: TwoNumberToNumberOp(&GBNumber::operator -); break;
-		case opNegate: NumberToNumberOp(&GBNumber::operator -); break;
+		case opAdd: TwoNumberToNumberOp(operator +); break;
+		case opSubtract: TwoNumberToNumberOp(operator -); break;
+		case opNegate: NumberToNumberOp(operator -); break;
 		// mult and divide are written out because of MrCpp internal error
 		case opMultiply: temp = Pop(); Push(Pop() * temp); break;
 		case opDivide: temp = Pop(); Push(Pop() / temp); break;
 		case opReciprocal: Push(GBNumber(1) / Pop()); break;
-		case opMod: TwoNumberToNumberOp(&GBNumber::Mod); break;
-		case opRem: TwoNumberToNumberOp(&GBNumber::Rem); break;
+		case opMod: TwoNumberToNumberOp(mod); break;
+		case opRem: TwoNumberToNumberOp(rem); break;
 		case opSquare: Push(square(Pop())); break;
-		case opSqrt: NumberToNumberOp(&GBNumber::Sqrt); break;
-		case opExponent: TwoNumberToNumberOp(&GBNumber::Exponent); break;
-		case opIsInteger: PushBoolean(Pop().IsInteger()); break;
-		case opFloor: Push(Pop().Floor()); break;
-		case opCeiling: Push(Pop().Ceiling()); break;
-		case opRound: Push(Pop().Round()); break;
-		case opMin: TwoNumberToNumberOp(&GBNumber::Min); break;
-		case opMax: TwoNumberToNumberOp(&GBNumber::Max); break;
-		case opAbs: NumberToNumberOp(&GBNumber::Abs); break;
-		case opSignum: NumberToNumberOp(&GBNumber::Signum); break;
-		case opReorient: NumberToNumberOp(&GBNumber::Reorient); break;
-		case opSine: NumberToNumberOp(&GBNumber::Sin); break;
-		case opCosine: NumberToNumberOp(&GBNumber::Cos); break;
-		case opTangent: NumberToNumberOp(&GBNumber::Tan); break;
-		case opArcSine: NumberToNumberOp(&GBNumber::ArcSin); break;
-		case opArcCosine: NumberToNumberOp(&GBNumber::ArcCos); break;
-		case opArcTangent: NumberToNumberOp(&GBNumber::ArcTan); break;
+		case opSqrt: NumberToNumberOp(sqrt); break;
+		case opExponent: TwoNumberToNumberOp(pow); break;
+		case opIsInteger: PushBoolean(IsInteger(Pop())); break;
+		case opFloor: Push(floor(Pop())); break;
+		case opCeiling: Push(ceil(Pop())); break;
+		case opRound: Push(round(Pop())); break;
+		case opMin: Push(min(Pop(), Pop())); break;
+		case opMax: Push(max(Pop(), Pop())); break;
+		case opAbs: NumberToNumberOp(abs); break;
+		case opSignum: NumberToNumberOp(signum); break;
+		case opReorient: NumberToNumberOp(reorient); break;
+		case opSine: NumberToNumberOp(sin); break;
+		case opCosine: NumberToNumberOp(cos); break;
+		case opTangent: NumberToNumberOp(tan); break;
+		case opArcSine: NumberToNumberOp(asin); break;
+		case opArcCosine: NumberToNumberOp(acos); break;
+		case opArcTangent: NumberToNumberOp(atan); break;
 		case opRandom: temp = Pop(); Push(world->Randoms().InRange(Pop(), temp)); break;
 		case opRandomAngle: Push(world->Randoms().Angle()); break;
-		case opRandomInt: temp = Pop(); Push(world->Randoms().LongInRange(Pop().Ceiling(), temp.Floor())); break;
+		case opRandomInt: temp = Pop(); Push(world->Randoms().LongInRange(ceil(Pop()), floor(temp))); break;
 		case opRandomBoolean: PushBoolean(world->Randoms().Boolean(Pop())); break;
 	// constants
-		case opPi: Push(GBNumber::pi); break;
-		case op2Pi: Push(GBNumber::pi * 2); break;
-		case opPiOver2: Push(GBNumber::pi / 2); break;
-		case opE: Push(GBNumber::e); break;
-		case opEpsilon: Push(GBNumber::epsilon); break;
-		case opInfinity: Push(GBNumber::infinity); break;
+		case opPi: Push(kPi); break;
+		case op2Pi: Push(kPi * 2); break;
+		case opPiOver2: Push(kPi / 2); break;
+		case opE: Push(kE); break;
+		case opEpsilon: Push(kEpsilon); break;
+		case opInfinity: Push(kInfinity); break;
 	// vector operations
 		case opRectToPolar: { GBVector v = PopVector(); Push(v.Norm()); Push(v.Angle()); } break;
 		case opPolarToRect: temp = Pop(); temp2 = Pop(); PushVector(GBFinePoint::MakePolar(temp2, temp)); break;
@@ -410,8 +411,8 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opRestrictPosition: {
 			temp = Pop(); //wall distance
 			GBVector pos = PopVector();
-			Push(pos.x.Max(temp).Min(world->Size().x - temp));
-			Push(pos.y.Max(temp).Min(world->Size().y - temp));
+			Push(clamp(pos.x, temp, world->Size().x - temp));
+			Push(clamp(pos.y, temp, world->Size().y - temp));
 			} break;
 		case opVectorEqual: PushBoolean(PopVector() == PopVector()); break;
 		case opVectorNotEqual: PushBoolean(PopVector() != PopVector()); break;
@@ -423,15 +424,15 @@ void GBStackBrain::ExecutePrimitive(GBSymbolIndex index, GBRobot * robot, GBWorl
 		case opGreaterThan: temp = Pop(); PushBoolean(Pop() > temp); break;
 		case opGreaterThanOrEqual: temp = Pop(); PushBoolean(Pop() >= temp); break;
 	// booleans
-		case opNot: PushBoolean(! Pop().Nonzero()); break;
-		case opAnd: temp = Pop(); temp2 = Pop(); PushBoolean(temp.Nonzero() && temp2.Nonzero()); break;
-		case opOr: temp = Pop(); temp2 = Pop(); PushBoolean(temp.Nonzero() || temp2.Nonzero()); break;
+		case opNot: PushBoolean(! Pop()); break;
+		case opAnd: temp = Pop(); temp2 = Pop(); PushBoolean(temp && temp2); break;
+		case opOr: temp = Pop(); temp2 = Pop(); PushBoolean(temp || temp2); break;
 		case opXor: temp = Pop(); temp2 = Pop();
-			PushBoolean(temp.Nonzero() && ! temp2.Nonzero() || ! temp.Nonzero() && temp2.Nonzero()); break;
-		case opNand: temp = Pop(); temp2 = Pop(); PushBoolean(! (temp.Nonzero() && temp2.Nonzero())); break;
-		case opNor: temp = Pop(); temp2 = Pop(); PushBoolean(! (temp.Nonzero() || temp2.Nonzero())); break;
+			PushBoolean(temp && ! temp2 || ! temp && temp2); break;
+		case opNand: temp = Pop(); temp2 = Pop(); PushBoolean(! (temp && temp2)); break;
+		case opNor: temp = Pop(); temp2 = Pop(); PushBoolean(! (temp || temp2)); break;
 		case opValueConditional: temp = Pop(); temp2 = Pop();
-			if ( Pop().Nonzero() ) Push(temp2); else Push(temp);
+			if ( Pop() ) Push(temp2); else Push(temp);
 			break;
 	// misc external
 		case opPrint:

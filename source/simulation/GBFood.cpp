@@ -21,19 +21,19 @@ const GBRatio kQuadraticDragFactor = 0.3;
 // GBFood //
 
 void GBFood::Recalculate() {
-	radius = value.Sqrt() * kFoodRadiusFactor + kFoodMinRadius;
+	radius = sqrt(value) * kFoodRadiusFactor + kFoodMinRadius;
 	mass = value * kFoodMassPerValue;
 }
 
 GBFood::GBFood(const GBPosition & where, const GBEnergy val)
-	: GBObject(where, val.Sqrt() * kFoodRadiusFactor + kFoodMinRadius, val * kFoodMassPerValue),
+	: GBObject(where, sqrt(val) * kFoodRadiusFactor + kFoodMinRadius, val * kFoodMassPerValue),
 	value(val)
 {
 	if ( val < 0 ) throw GBBadArgumentError();
 }
 
 GBFood::GBFood(const GBPosition & where, const GBVelocity & vel, const GBEnergy val)
-	: GBObject(where, val.Sqrt() * kFoodRadiusFactor + kFoodMinRadius, vel, val * kFoodMassPerValue),
+	: GBObject(where, sqrt(val) * kFoodRadiusFactor + kFoodMinRadius, vel, val * kFoodMassPerValue),
 	value(val)
 {
 	if ( val < 0 ) throw GBBadArgumentError();
@@ -81,7 +81,7 @@ void GBFood::Move() {
 }
 
 void GBFood::Act(GBWorld *) {
-	value = (value - kFoodDecayRate).Max(0);
+	value = max(value - kFoodDecayRate, 0);
 	Recalculate(); //FIXME this is slow
 }
 

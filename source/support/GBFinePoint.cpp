@@ -37,24 +37,24 @@ bool GBFinePoint::InRange(const GBFinePoint & other, const GBNumber range) const
 }
 
 bool GBFinePoint::Nonzero() const {
-	return x.Nonzero() || y.Nonzero();
+	return x || y;
 }
 
 bool GBFinePoint::Zero() const {
-	return x.Zero() && y.Zero();
+	return ! x && ! y;
 }
 
 void GBFinePoint::SetPolar(const GBNumber r, const GBNumber theta) {
-	x = r * theta.Cos();
-	y = r * theta.Sin();
+	x = r * cos(theta);
+	y = r * sin(theta);
 }
 
 GBFinePoint GBFinePoint::AddPolar(const GBNumber r, const GBNumber theta) const {
-	return GBFinePoint(x + r * theta.Cos(), y + r * theta.Sin());
+	return GBFinePoint(x + r * cos(theta), y + r * sin(theta));
 }
 
 GBFinePoint GBFinePoint::MakePolar(const GBNumber r, const GBNumber theta) {
-	return GBFinePoint(r * theta.Cos(), r * theta.Sin());
+	return GBFinePoint(r * cos(theta), r * sin(theta));
 }
 
 GBNumber GBFinePoint::NormSquare() const {
@@ -72,6 +72,7 @@ GBFinePoint GBFinePoint::Unit() const {
 
 void GBFinePoint::SetNorm(GBNumber norm) {
 	SetPolar(norm, Angle());
+	//*this *= norm / Norm(); //faster but could overflow in some cases
 }
 
 GBAngle GBFinePoint::Angle() const {

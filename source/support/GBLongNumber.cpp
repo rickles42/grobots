@@ -29,8 +29,8 @@ GBLongNumber & GBLongNumber::operator =(int n) {
 GBLongNumber & GBLongNumber::operator +=(const GBNumber addend) {
 	fpart += addend;
 	if ( fpart >= 1 || fpart < 0 ) {
-		ipart += fpart.Floor();
-		fpart = fpart.FractionalPart();
+		ipart += floor(fpart);
+		fpart = ::fpart(fpart);
 	}
 	return *this;
 }
@@ -39,8 +39,8 @@ GBLongNumber & GBLongNumber::operator +=(const GBLongNumber & addend) {
 	ipart += addend.ipart;
 	fpart += addend.fpart;
 	if ( fpart >= 1 || fpart < 0 ) {
-		ipart += fpart.Floor();
-		fpart = fpart.FractionalPart();
+		ipart += floor(fpart);
+		fpart = ::fpart(fpart);
 	}
 	return *this;
 }
@@ -55,13 +55,13 @@ long GBLongNumber::operator /(long divisor) const {
 }
 
 bool GBLongNumber::Nonzero() const {
-	return (ipart != 0) || fpart.Nonzero();
+	return ipart != 0 || fpart;
 }
 
 bool GBLongNumber::Zero() const {
-	return (ipart == 0) && fpart.Zero();
+	return ipart == 0 && ! fpart;
 }
 
 long GBLongNumber::Round() const {
-	return ipart + fpart.Round();
+	return ipart + round(fpart);
 }

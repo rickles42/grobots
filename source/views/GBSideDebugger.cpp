@@ -49,19 +49,19 @@ void GBSideDebuggerView::DrawSharedMemory(GBRect & box) {
 	const GBSide * side = world.SelectedSide();
 	
 // determine range, for color-coding
-	GBNumber smallest = GBNumber::infinity;
-	GBNumber largest = -GBNumber::infinity;
+	GBNumber smallest = kInfinity;
+	GBNumber largest = -kInfinity;
 	int i;
 	for (i = 0; i < numsHigh; i++)
 		for (int j = 1; j <= numsWide; j++) {
 			bool worked = false;
 			GBNumber read = GetSM(minNumThisPane + i*numsWide + j, &worked, side);
 			if(worked) {
-				smallest = smallest.Min(read);
-				largest = largest.Max(read);
+				smallest = min(smallest, read);
+				largest = max(largest, read);
 			}
 		}
-	GBNumber range = (largest - smallest).Max(GBNumber::epsilon);
+	GBNumber range = max(largest - smallest, kEpsilon);
 // draw main
 	short curY = box.top + 16;
 	for (i = numsHigh; i >= 0; i--) { //starts at numsHigh for header row

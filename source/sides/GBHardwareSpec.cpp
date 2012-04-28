@@ -58,7 +58,7 @@ const GBEnergy kBlasterFiringCostPerRange = kBlasterCostPerRange * 0.0015;
 const GBEnergy kBlasterFiringCostPerRangeSquared = kBlasterCostPerRangeSquared * 0.0015;
 
 const GBRatio kBlasterLifetimeSpeedTradeoff = 250;   // range at which speed is 1
-const GBRatio kBlasterSpeedExponent = 0.35;   // how much range is adjusted using speed instead of lifetime
+const GBNumber kBlasterSpeedExponent = 0.35;   // how much range is adjusted using speed instead of lifetime
 
 const GBDamage kGrenadesDamageOverhead = 0.3;
 const GBEnergy kGrenadesCostPerDamageRate = 110;
@@ -111,7 +111,7 @@ GBConstructorSpec & GBConstructorSpec::operator=(const GBConstructorSpec & arg) 
 GBPower GBConstructorSpec::Rate() const { return rate;}
 
 void GBConstructorSpec::Set(const GBPower nrate) {
-	rate = nrate.Max(0);
+	rate = max(nrate, 0);
 }
 
 GBEnergy GBConstructorSpec::Cost() const {
@@ -143,7 +143,7 @@ int GBSensorSpec::NumResults() const { return numResults;}
 GBObjectClass GBSensorSpec::Seen() const { return seen;}
 
 void GBSensorSpec::Set(const GBDistance rng, int rslts, GBObjectClass what) {
-	range = rng.Max(0);
+	range = max(rng, 0);
 	numResults = rslts < 1 ? 1 : rslts;
 	seen = what;
 }
@@ -201,10 +201,10 @@ GBFrames GBBlasterSpec::ReloadTime() const {
 	return reloadTime;}
 
 void GBBlasterSpec::Set(const GBDamage dmg, const GBDistance rng, const GBFrames reload) {
-	damage = dmg.Max(0);
-	range = rng.Max(0);
-	speed = (range / kBlasterLifetimeSpeedTradeoff).Exponent(kBlasterSpeedExponent);
-	lifetime = (range / speed).Ceiling();
+	damage = max(dmg, 0);
+	range = max(rng, 0);
+	speed = pow(range / kBlasterLifetimeSpeedTradeoff, kBlasterSpeedExponent);
+	lifetime = ceil(range / speed);
 	reloadTime = (reload < 1) ? 1 : reload; // limit to >= 1
 }
 
@@ -257,7 +257,7 @@ GBSpeed GBGrenadesSpec::Speed() const {
 	return speed;}
 
 GBFrames GBGrenadesSpec::Lifetime() const {
-	return (range / speed).Ceiling();}
+	return ceil(range / speed);}
 
 GBFrames GBGrenadesSpec::ReloadTime() const {
 	return reloadTime;}
@@ -266,9 +266,9 @@ GBForceScalar GBGrenadesSpec::Recoil() const {
 	return range * damage * kGrenadesRecoil;}
 
 void GBGrenadesSpec::Set(const GBDamage dmg, const GBDistance rng, const GBFrames reload) {
-	damage = dmg.Max(0);
-	range = rng.Max(0);
-	speed = (range / kGrenadesLifetimeSpeedTradeoff).Exponent(kGrenadesSpeedExponent);
+	damage = max(dmg, 0);
+	range = max(rng, 0);
+	speed = pow(range / kGrenadesLifetimeSpeedTradeoff, kGrenadesSpeedExponent);
 	reloadTime = (reload < 1 ? 1 : reload); // no reload time less than 1 frame
 }
 
@@ -317,8 +317,8 @@ GBDistance GBForceFieldSpec::Range() const {
 	return range;}
 
 void GBForceFieldSpec::Set(const GBPower pwr, const GBDistance rng) {
-	power = pwr.Max(0);
-	range = rng.Max(0);
+	power = max(pwr, 0);
+	range = max(rng, 0);
 }
 
 GBEnergy GBForceFieldSpec::Cost() const {
@@ -362,8 +362,8 @@ bool GBSyphonSpec::HitsEnemies() const {
 	return hitsEnemies;}
 
 void GBSyphonSpec::Set(const GBPower pwr, const GBDistance rng, bool newHitsEnemies) {
-	power = pwr.Max(0);
-	range = rng.Max(0);
+	power = max(pwr, 0);
+	range = max(rng, 0);
 	hitsEnemies = newHitsEnemies;
 }
 
@@ -445,7 +445,7 @@ GBPower GBHardwareSpec::Engine() const {
 	return engine;}
 
 void GBHardwareSpec::SetEngine(const GBPower power) {
-	engine = power.Max(0);}
+	engine = max(power, 0);}
 
 GBEnergy GBHardwareSpec::MaxEnergy() const {
 	return maxEnergy;}
@@ -453,45 +453,45 @@ GBEnergy GBHardwareSpec::MaxEnergy() const {
 GBEnergy GBHardwareSpec::InitialEnergy() const {
 	return initialEnergy;}
 
-void GBHardwareSpec::SetEnergy(const GBEnergy max, const GBEnergy initial) {
-	maxEnergy = max.Max(0);
-	initialEnergy = initial.Max(0).Min(maxEnergy);}
+void GBHardwareSpec::SetEnergy(const GBEnergy full, const GBEnergy initial) {
+	maxEnergy = max(full, 0);
+	initialEnergy = clamp(initial, GBNumber(0), maxEnergy);}
 
 GBPower GBHardwareSpec::SolarCells() const {
 	return solarCells;}
 
 void GBHardwareSpec::SetSolarCells(const GBPower amt) {
-	solarCells = amt.Max(0);}
+	solarCells = max(amt, 0);}
 
 GBPower GBHardwareSpec::Eater() const {
 	return eater;}
 
 void GBHardwareSpec::SetEater(const GBPower amt) {
-	eater = amt.Max(0);}
+	eater = max(amt, 0);}
 
 GBDamage GBHardwareSpec::Armor() const {
 	return armor;}
 
 void GBHardwareSpec::SetArmor(const GBDamage amt) {
-	armor = amt.Max(1);}
+	armor = max(amt, 1);}
 
 GBPower GBHardwareSpec::RepairRate() const {
 	return repairRate;}
 
 void GBHardwareSpec::SetRepairRate(const GBPower rate) {
-	repairRate = rate.Max(0);}
+	repairRate = max(rate, 0);}
 
 GBDamage GBHardwareSpec::Shield() const {
 	return shield;}
 
 void GBHardwareSpec::SetShield(const GBDamage amt) {
-	shield = amt.Max(0);}
+	shield = max(amt, 0);}
 
 GBDamage GBHardwareSpec::Bomb() const {
 	return bomb;}
 
 void GBHardwareSpec::SetBomb(const GBDamage amt) {
-	bomb = amt.Max(0);}
+	bomb = max(amt, 0);}
 
 void GBHardwareSpec::Recalculate() {
 	hardwareCost = ChassisCost()

@@ -10,7 +10,7 @@ const GBFrames kSensorShotMinLifetime = 15;
 
 
 GBFrames GBSensorShot::Lifetime() const {
-	return radius.Max(kSensorShotMinLifetime).Floor();
+	return floor(max(radius, kSensorShotMinLifetime));
 }
 
 GBSensorShot::GBSensorShot(const GBPosition & fcs, GBRobot * who, GBSensorState * st)

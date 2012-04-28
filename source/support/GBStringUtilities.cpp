@@ -30,12 +30,12 @@ string ToString(long n) {
 string ToString(GBNumber n, int digitsAfterDP, bool trailingZeroes) {
 	long scale = 1;
 	for ( int i = digitsAfterDP; i > 0; i -- ) scale *= 10;
-	long actual = n.Abs().Floor() * scale + (n.Abs().FractionalPart() * scale).Round();
+	long actual = floor(abs(n)) * scale + round(fpart(abs(n)) * scale);
 	string result;
 	if ( n < 0 ) result += '-';
 	result += ToString(actual / scale); // integer part
 	// FIXME: still shows trailing zeros if any fractional part.
-	if ( digitsAfterDP && (trailingZeroes || n.FractionalPart().Nonzero()) ) {
+	if ( digitsAfterDP && (trailingZeroes || fpart(n)) ) {
 		result += '.';
 		string frac = ToString(actual % scale);
 		if ( frac.length() < digitsAfterDP )

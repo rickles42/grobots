@@ -122,8 +122,8 @@ GBNumber GBObject::OverlapFraction(const GBObject * other) const {
 	if ( ! radius ) return 0;
 // returns the fraction of our radius that other overlaps
 	GBDistance dist = (position - other->position).Norm();	// center-to-center dist
-	dist = (radius + other->radius - dist).Max(0);	// overlap of edges
-	return (dist / radius).Min(1);	// don't overlap more than 1
+	dist = max(radius + other->radius - dist, 0);	// overlap of edges
+	return min(dist / radius, GBNumber(1));	// don't overlap more than 1
 }
 
 void GBObject::BasicCollide(GBObject * other) {
@@ -142,7 +142,7 @@ void GBObject::SolidCollide(GBObject * other, GBRatio coefficient) {
 }
 
 void GBObject::PushBy(const GBMomentum & impulse) {
-	if ( mass.Nonzero() )
+	if ( mass )
 		velocity += impulse / mass;
 }
 
@@ -179,10 +179,10 @@ GBEnergy GBObject::MaxGiveEnergy() {
 void GBObject::ElasticBounce(GBObject * other, GBRatio coefficient) {
 	GBMass m1 = mass;
 	GBMass m2 = other->mass;
-	if ( m1.Zero() || m2.Zero() )
+	if ( ! m1 || ! m2 )
 		return; // can't bounce massless objects
 	GBVector cc = other->position - position; // center-to-center
-	if ( cc.NormSquare().Zero() )
+	if ( ! cc.NormSquare() )
 		cc.Set(1, 0); // if in same place, pick an arbitrary cc
 	GBDistance dist = cc.Norm();
 	GBVelocity rv1 = velocity.Projection(cc); // radial component of velocity

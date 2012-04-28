@@ -105,7 +105,7 @@ GBObjectClass GBTimedShot::Class() const {
 }
 
 GBNumber GBTimedShot::Interest() const {
-	return power.Abs() * 10 / (lifetime < 5 ? 5 : lifetime) + 1;
+	return abs(power) * 10 / (lifetime < 5 ? 5 : lifetime) + 1;
 }
 
 // GBBlast //
@@ -159,13 +159,13 @@ void GBBlast::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) cons
 		//g.DrawOpenOval(where, GBColor::gray);
 		short cx = where.CenterX();
 		short cy = where.CenterY();
-		int thickness = 2 + (power / 20).Floor();
+		int thickness = 2 + floor(power / 20);
 		GBVector head = Velocity().Unit() * where.Width() / 2;
-		short hx = head.x.Round();
-		short hy = - head.y.Round();
+		short hx = round(head.x);
+		short hy = - round(head.y);
 		GBVector tail = Velocity() * where.Width() / (radius * 2);
-		short tx = tail.x.Round();
-		short ty = - tail.y.Round();
+		short tx = round(tail.x);
+		short ty = - round(tail.y);
 		//g.DrawLine(cx + hx, cy + hy, cx - tx, cy - ty, Color() * 0.7, thickness + 2);
 		//g.DrawLine(cx + hx, cy + hy, cx - hx, cy - hy, Color() + GBColor(0.2), max(thickness, 2));
 		g.DrawLine(cx + hx, cy + hy, cx - tx, cy - ty, Color(), thickness);
@@ -229,9 +229,9 @@ GBObjectClass GBExplosion::Class() const {
 
 void GBExplosion::CollideWith(GBObject * other) {
 	if ( lifetime < kExplosionLifetime ) return;
-	GBMass oMass = other->Mass().Max(kExplosionMinEffectiveMass);
+	GBMass oMass = max(other->Mass(), kExplosionMinEffectiveMass);
 	if ( oMass == 0 ) return; // massless objects get 0 damage
-	GBDamage damage = power / ((power / oMass).Exponent(kExplosionDamageMassExponent) * kLargeExplosionIneffectiveness + 1);
+	GBDamage damage = power / (pow(power / oMass, kExplosionDamageMassExponent) * kLargeExplosionIneffectiveness + 1);
 	other->TakeDamage(damage * OverlapFraction(other), owner);
 	Push(other, damage * other->OverlapFraction(this)
 		* (other->Class() == ocFood ? kExplosionFoodPushRatio : kExplosionPushRatio));
@@ -240,8 +240,8 @@ void GBExplosion::CollideWith(GBObject * other) {
 void GBExplosion::Act(GBWorld * world) {
 	GBTimedShot::Act(world);
 	if ( ! lifetime ) {
-		GBFrames maxLifetime = power.Sqrt().Floor() * kExplosionSmokeLifetimeFactor;
-		for ( int i = (power * kExplosionSmokesPerPower).Max(kExplosionMinSmokes).Round(); i > 0; i -- )
+		GBFrames maxLifetime = floor(sqrt(power)) * kExplosionSmokeLifetimeFactor;
+		for ( int i = round(max(power * kExplosionSmokesPerPower, kExplosionMinSmokes)); i > 0; i -- )
 			world->AddObjectNew(new GBSmoke(Position() + world->Randoms().Vector(Radius()),
 										world->Randoms().Vector(kSmokeMaxSpeed),
 										world->Randoms().LongInRange(kSmokeMinLifetime, maxLifetime)));
@@ -256,8 +256,8 @@ void GBExplosion::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) 
 	g.DrawSolidOval(where, Color());
 }
 
-GBDistance GBExplosion::PowerRadius(GBDamage pow) {
-	return pow.Exponent(kExplosionRadiusExponent) * kExplosionRadiusRatio;
+GBDistance GBExplosion::PowerRadius(GBDamage pwr) {
+	return pow(pwr, kExplosionRadiusExponent) * kExplosionRadiusRatio;
 }
 
 // GBForceField //
@@ -278,8 +278,8 @@ void GBForceField::Move() {
 }
 
 void GBForceField::CollideWith(GBObject * other) {
-	GBForceScalar force = power / other->Speed().Max(kMinEffectiveSpeed)
-		* OverlapFraction(other) * other->Mass().Sqrt() * kForceFieldPushRatio;
+	GBForceScalar force = power / max(other->Speed(), kMinEffectiveSpeed)
+		* OverlapFraction(other) * sqrt(other->Mass()) * kForceFieldPushRatio;
 	other->PushBy(force, direction);
 }
 
@@ -291,7 +291,7 @@ void GBForceField::Act(GBWorld * world) {
 long GBForceField::Type() const { return 5; }
 
 GBNumber GBForceField::Interest() const {
-	return power.Abs() * 15 + 1;
+	return abs(power) * 15 + 1;
 }
 
 const GBColor GBForceField::Color() const {
@@ -301,8 +301,8 @@ const GBColor GBForceField::Color() const {
 void GBForceField::Draw(GBGraphics & g, const GBRect & where, bool /*detailed*/) const {
 	short cx = (where.right + where.left) / 2;
 	short cy = (where.bottom + where.top) / 2;
-	g.DrawLine(cx, cy, cx + (direction.Cos() * where.Width() / 2).Round(),
-		cy - (direction.Sin() * where.Height() / 2).Round(), owner ? owner->Color() : Color());
+	g.DrawLine(cx, cy, cx + round(cos(direction) * where.Width() / 2),
+		cy - round((sin(direction) * where.Height() / 2)), owner ? owner->Color() : Color());
 	g.DrawOpenOval(where, Color(), where.Width() >= 20 ? 2 : 1);
 }
 
@@ -310,8 +310,8 @@ void GBForceField::DrawMini(GBGraphics & g, const GBRect & where) const {
 	g.DrawOpenOval(where, Color());
 }
 
-GBDistance GBForceField::PowerRadius(GBPower pow) {
-	return pow.Abs().Exponent(kForceFieldRadiusExponent) * kForceFieldRadiusRatio;
+GBDistance GBForceField::PowerRadius(GBPower pwr) {
+	return pow(abs(pwr), kForceFieldRadiusExponent) * kForceFieldRadiusRatio;
 }
 
 // GBSyphon //
@@ -326,24 +326,25 @@ void GBSyphon::Move() {
 }
 
 void GBSyphon::CollideWith(GBObject * other) {
-	if ( other->Class() == ocRobot && power.Nonzero()
+	if ( other->Class() == ocRobot && power
 			&& other != (GBObject *)sink
 			&& (hitsEnemies || other->Owner() == sink->Owner())) {
 		if ( power >= 0 ) {
 			try {
 				GBRobot * otherBot = (GBRobot *) other;
+				//FIXME shields affect syphons twice: here and when they're fired
 				GBNumber efficiency = sink->ShieldFraction() * otherBot->ShieldFraction();
 				if ( other->Owner() != sink->Owner() ) {
 					if ( otherBot->hardware.MaxEnergy() != 0)
-						efficiency *= GBNumber(1).Min(otherBot->hardware.Energy() / otherBot->hardware.MaxEnergy());
+						efficiency *= min(GBNumber(1), otherBot->hardware.Energy() / otherBot->hardware.MaxEnergy());
 				}
-				GBEnergy maxTransfer = sink->MaxGiveEnergy().Min(other->MaxTakeEnergy());
-				GBEnergy actual = maxTransfer.Min(power * efficiency);
+				GBEnergy maxTransfer = min(sink->MaxGiveEnergy(), other->MaxTakeEnergy());
+				GBEnergy actual = min(maxTransfer, power * efficiency);
 				
 				if ( actual > 0 ) {
 					GBPower taken = other->TakeEnergy(actual);
 					GBPower given = sink->GiveEnergy(actual);
-					power = (power - actual / efficiency).Min(0);
+					power = min(power - actual / efficiency, GBNumber(0));
 					creator->ReportUse(taken);
 					if ( taken > 0 && other->Owner() != owner ) {
 						owner->ReportKleptotrophy(taken);
@@ -360,12 +361,12 @@ void GBSyphon::CollideWith(GBObject * other) {
 			GBRobot * otherBot = (GBRobot *) other;
 			GBNumber efficiency = sink->ShieldFraction() * otherBot->ShieldFraction();
 			// efficiency does not decrease with low energy when giving
-			GBEnergy maxTransfer = other->MaxGiveEnergy().Min(sink->MaxTakeEnergy());
-			GBEnergy actual = maxTransfer.Min(-power * efficiency);
+			GBEnergy maxTransfer = min(other->MaxGiveEnergy(), sink->MaxTakeEnergy());
+			GBEnergy actual = min(maxTransfer, -power * efficiency);
 			
 			GBPower taken = sink->TakeEnergy(actual);
 			GBPower given = other->GiveEnergy(actual);
-			power = (power + actual / efficiency).Max(0);
+			power = max(power + actual / efficiency, 0);
 			
 			creator->ReportUse(- given);		
 			
@@ -383,7 +384,7 @@ void GBSyphon::CollideWith(GBObject * other) {
 long GBSyphon::Type() const { return hitsEnemies ? 4 : 3; }
 
 GBNumber GBSyphon::Interest() const {
-	return power.Abs() * (hitsEnemies ? 5 : 1) + (hitsEnemies ? 2 : 1);
+	return abs(power) * (hitsEnemies ? 5 : 1) + (hitsEnemies ? 2 : 1);
 }
 
 const GBColor GBSyphon::Color() const {

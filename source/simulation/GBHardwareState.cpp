@@ -154,14 +154,14 @@ void GBConstructorState::Start(GBRobotType * ntype, const GBEnergy free) {
 }
 
 void GBConstructorState::SetRate(const GBEnergy nrate) {
-	rate = nrate.Max(0).Min(MaxRate());}
+	rate = clamp(nrate, GBNumber(0), MaxRate());}
 
 void GBConstructorState::Act(GBRobot * robot, GBWorld * world) {
-	if ( type && rate.Nonzero() ) {
-		GBPower actual = robot->hardware.UseEnergyUpTo(rate.Min(Remaining()));
+	if ( type && rate ) {
+		GBPower actual = robot->hardware.UseEnergyUpTo(min(rate, Remaining()));
 		robot->Owner()->Scores().Expenditure().ReportConstruction(actual);
 		progress += actual;
-		if ( Remaining() <= 0 && robot->hardware.ActualShield().Zero() ) {
+		if ( Remaining() <= 0 && ! robot->hardware.ActualShield() ) {
 			StartSound(siBirth);
 			GBAngle dir = world->Randoms().Angle();
 			GBRobot * child = new GBRobot(type,
@@ -476,7 +476,7 @@ GBAngle GBBlasterState::Direction() const {
 	return direction;}
 
 void GBBlasterState::Fire(const GBAngle dir) {
-	if ( cooldown == 0 && Damage().Nonzero() ) {
+	if ( cooldown == 0 && Damage() ) {
 		cooldown = ReloadTime();
 		firing = true;
 		direction = dir;
@@ -486,7 +486,7 @@ void GBBlasterState::Fire(const GBAngle dir) {
 void GBBlasterState::Act(GBRobot * robot, GBWorld * world) {
 	if ( firing ) {
 		GBNumber effectiveness = robot->hardware.EffectivenessFraction();
-		if ( robot->hardware.ActualShield().Zero()
+		if ( ! robot->hardware.ActualShield()
 				&& robot->hardware.UseEnergy(FiringCost() * effectiveness) ) {
 			robot->Owner()->Scores().Expenditure().ReportWeapons(FiringCost() * effectiveness);
 			if ( Damage() >= 12 ) StartSound(siBlast);
@@ -548,22 +548,22 @@ GBDistance GBGrenadesState::ExplosionRadius() const {
 	return GBExplosion::PowerRadius(Damage());}
 
 void GBGrenadesState::Fire(const GBDistance dist, const GBAngle dir) {
-	if ( cooldown == 0 && Damage().Nonzero() ) {
+	if ( cooldown == 0 && Damage() ) {
 		cooldown = ReloadTime();
 		firing = true;
 		direction = dir;
-		distance = dist.Max(Speed()).Min(MaxRange());
+		distance = clamp(dist, Speed(), MaxRange());
 	}
 }
 
 void GBGrenadesState::Act(GBRobot * robot, GBWorld * world) {
 	if ( firing ) {
 		GBNumber effectiveness = robot->hardware.EffectivenessFraction();
-		if ( robot->hardware.ActualShield().Zero()
+		if ( ! robot->hardware.ActualShield()
 				&& robot->hardware.UseEnergy(FiringCost() * effectiveness) ) {
 			robot->Owner()->Scores().Expenditure().ReportWeapons(FiringCost() * effectiveness);
 			StartSound(siGrenade);
-			GBFrames lifetime = ((distance - robot->Radius()) / Speed()).Max(1).Floor();
+			GBFrames lifetime = max(floor((distance - robot->Radius()) / Speed()), 1L);
 			GBObject * shot = new GBGrenade(robot->Position().AddPolar(robot->Radius(), direction),
 				robot->Velocity().AddPolar(Speed(), direction),
 				robot->Owner(), Damage() * effectiveness, lifetime);
@@ -615,13 +615,13 @@ GBDistance GBForceFieldState::Radius() const {
 	return GBForceField::PowerRadius(power);}
 
 void GBForceFieldState::SetDistance(const GBDistance dist) {
-	distance = dist.Max(0).Min(MaxRange());}
+	distance = clamp(dist, GBNumber(0), MaxRange());}
 
 void GBForceFieldState::SetDirection(const GBAngle dir) {
 	direction = dir;}
 
 void GBForceFieldState::SetPower(const GBPower pwr) {
-	power = pwr.Min(MaxPower()).Max(0);}
+	power = clamp(pwr, GBNumber(0), MaxPower());}
 
 void GBForceFieldState::SetAngle(const GBAngle ang) {
 	angle = ang;}
@@ -629,7 +629,7 @@ void GBForceFieldState::SetAngle(const GBAngle ang) {
 void GBForceFieldState::Act(GBRobot * robot, GBWorld * world) {
 	if ( ! power ) return;
 	GBNumber effective = power * robot->hardware.EffectivenessFraction() * robot->ShieldFraction();
-	if ( power.Nonzero() && robot->hardware.UseEnergy(effective) ) {
+	if ( power && robot->hardware.UseEnergy(effective) ) {
 		robot->Owner()->Scores().Expenditure().ReportForceField(effective);
 		GBPosition vel = GBFinePoint::MakePolar(distance, direction);
 		GBObject * shot = new GBForceField(robot->Position() + vel, vel,
@@ -667,13 +667,13 @@ GBPower GBSyphonState::Rate() const {return rate;}
 const GBPower GBSyphonState::Syphoned() const {return syphoned;}
 
 void GBSyphonState::SetDistance(const GBDistance dist) {
-	distance = dist.Max(0);}
+	distance = max(dist, 0);}
 
 void GBSyphonState::SetDirection(const GBAngle dir) {
 	direction = dir;}
 
 void GBSyphonState::SetRate(const GBPower pwr) {
-	rate = pwr.Max(- MaxRate()).Min(MaxRate());
+	rate = clamp(pwr, - MaxRate(), MaxRate());
 }
 
 void GBSyphonState::ReportUse(const GBPower pwr) {
@@ -681,14 +681,15 @@ void GBSyphonState::ReportUse(const GBPower pwr) {
 }
 
 void GBSyphonState::Act(GBRobot * robot, GBWorld * world) {
-	if ( rate.Nonzero() ) {
+	if ( rate ) {
 		GBPower limit = MaxRate() * robot->ShieldFraction(); // should maybe diminish with distance
-		GBPower actual = rate.Max(- limit).Min(limit);
+		GBPower actual = clamp(rate, - limit, limit);
 		GBObject * shot = new GBSyphon(
-			robot->Position().AddPolar(distance.Min(robot->Radius() + MaxRange()), direction),
+			robot->Position().AddPolar(min(distance, robot->Radius() + MaxRange()), direction),
 			actual, robot, this, spec->HitsEnemies());
 		world->AddObjectNew(shot);
 		if ( gRandoms.Boolean((distance - robot->Radius() - 1) * 0.1) ) {
+			//TODO making sparkles is expensive - 4% of runtime
 			GBSparkle * sparkle = new GBSparkle(
 				robot->Position().AddPolar(gRandoms.InRange(robot->Radius(), distance - 1) + (actual > 0 ? 1 : 0), direction),
 				GBFinePoint::MakePolar(actual > 0 ? -0.1 : 0.1, direction),
@@ -742,7 +743,7 @@ GBPower GBHardwareState::SolarCells() const { return spec->SolarCells();}
 GBEnergy GBHardwareState::Eater() const { return spec->Eater();}
 
 GBEnergy GBHardwareState::EaterLimit() const {
-	return eater.Min(MaxEnergy() - energy).Max(0);}
+	return clamp(eater, GBNumber(0), MaxEnergy() - energy);}
 
 GBEnergy GBHardwareState::Eaten() const {
 	return spec->Eater() - eater;}
@@ -753,7 +754,7 @@ GBDamage GBHardwareState::MaxArmor() const { return spec->Armor();}
 
 GBNumber GBHardwareState::ArmorFraction() const {
 	GBDamage max = spec->Armor();
-	return max.Nonzero() ? armor / max : GBNumber(0);
+	return max ? armor / max : GBNumber(0);
 }
 
 GBNumber GBHardwareState::EffectivenessFraction() const {
@@ -773,20 +774,20 @@ GBPower GBHardwareState::MaxShield() const { return spec->Shield();}
 GBNumber GBHardwareState::Bomb() const { return spec->Bomb(); }
 
 void GBHardwareState::SetEnginePower(const GBPower power) {
-	enginePower = power.Max(0).Min(EngineMaxPower());}
+	enginePower = clamp(power, GBNumber(0), EngineMaxPower());}
 
 void GBHardwareState::SetEngineVelocity(const GBVector & vel) {
 	engineVelocity = vel;}
 
 void GBHardwareState::Eat(const GBEnergy amount) {
-	GBEnergy actual = amount.Min(EaterLimit());
+	GBEnergy actual = min(amount, EaterLimit());
 	energy += actual;
 	eater -= actual;
 }
 
 GBEnergy GBHardwareState::GiveEnergy(const GBEnergy amount) {
 	if ( amount < 0 ) throw GBBadArgumentError();
-	GBEnergy actual = amount.Min(MaxEnergy() - energy);
+	GBEnergy actual = min(amount, MaxEnergy() - energy);
 	energy += actual;
 	return actual;
 }
@@ -800,7 +801,7 @@ bool GBHardwareState::UseEnergy(const GBEnergy amount) {
 }
 
 GBEnergy GBHardwareState::UseEnergyUpTo(const GBEnergy amount) {
-	GBEnergy actual = amount.Min(energy);
+	GBEnergy actual = min(amount, energy);
 	energy -= actual;
 	return actual;
 }
@@ -810,11 +811,11 @@ void GBHardwareState::TakeDamage(const GBDamage amount) {
 }
 
 void GBHardwareState::SetRepairRate(const GBPower rate) {
-	repairRate = rate.Max(0).Min(MaxRepairRate());
+	repairRate = clamp(rate, GBNumber(0), MaxRepairRate());
 }
 
 void GBHardwareState::SetShield(const GBPower power) {
-	shield = power.Max(0).Min(MaxShield());}
+	shield = clamp(power, GBNumber(0), MaxShield());}
 
 void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 // death check
@@ -832,11 +833,11 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 	eater = spec->Eater();
 // engine
 	if ( enginePower > 0 ) {
-		GBSpeed effective = robot->Speed().Max(kEngineMinEffectiveSpeed);
+		GBSpeed effective = max(robot->Speed(), kEngineMinEffectiveSpeed);
 		GBVector delta = engineVelocity - robot->Velocity();
 		GBPower power = delta.Norm() * robot->Mass() * effective / kEngineEfficiency;
-		if ( power.Nonzero() ) {
-			power = UseEnergyUpTo(power.Min(enginePower));
+		if ( power ) {
+			power = UseEnergyUpTo(min(power, enginePower));
 			robot->Owner()->Scores().Expenditure().ReportEngine(power);
 			robot->PushBy(delta * (power * kEngineEfficiency / effective / delta.Norm()));
 		}
@@ -853,23 +854,23 @@ void GBHardwareState::Act(GBRobot * robot, GBWorld * world) {
 	syphon.Act(robot, world);
 	enemySyphon.Act(robot, world);
 // do repairs
-	if ( repairRate.Nonzero() ) {
-		GBEnergy repairCost = UseEnergyUpTo(repairRate.Min((MaxArmor() - armor) * kRunningCostPerRepair));
+	if ( repairRate ) {
+		GBEnergy repairCost = UseEnergyUpTo(min(repairRate, (MaxArmor() - armor) * kRunningCostPerRepair));
 		robot->Owner()->Scores().Expenditure().ReportRepairs(repairCost);
 		armor += repairCost / kRunningCostPerRepair;
 		if ( gRandoms.Boolean(repairCost * 0.5) )
 			world->AddObjectNew(new GBBlasterSpark(robot->Position() + gRandoms.Vector(robot->Radius())));
 	}
 // do shield
-	if ( shield.Nonzero() ) {
+	if ( shield ) {
 		GBEnergy shieldUsed = UseEnergyUpTo(shield);
 		robot->Owner()->Scores().Expenditure().ReportShield(shieldUsed);
 		actualShield += shieldUsed;
 	}
-	actualShield = (actualShield - kShieldDecayPerMass * robot->Mass() - kShieldDecayPerShield * actualShield).Max(0);
+	actualShield = max(actualShield - kShieldDecayPerMass * robot->Mass() - kShieldDecayPerShield * actualShield, 0);
 // lose excess energy
 	if ( energy > MaxEnergy() ) {
 		robot->Owner()->Scores().Expenditure().ReportWasted(energy - MaxEnergy());
-		energy = energy.Min(MaxEnergy());
+		energy = min(energy, MaxEnergy());
 	}
 }

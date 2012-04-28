@@ -32,7 +32,7 @@ const float kMinMeterContrast = 0.25f;
 
 void GBRobot::Recalculate() {
 	mass = type->Mass() + hardware.constructor.FetusMass();
-	radius = (mass + kRobotRadiusPadding).Sqrt() * kRobotRadiusFactor;
+	radius = sqrt(mass + kRobotRadiusPadding) * kRobotRadiusFactor;
 }
 
 GBRobot::GBRobot(GBRobotType * rtype, const GBPosition & where)
@@ -87,7 +87,7 @@ string GBRobot::Description() const {
 
 string GBRobot::Details() const {
 	string dets = ToString(Energy(), 0) + " energy, " + ToString(hardware.Armor(), 0) + " armor";
-	if (hardware.constructor.Progress().Nonzero())
+	if (hardware.constructor.Progress())
 		dets += ", " + ToPercentString(hardware.constructor.Progress() / hardware.constructor.Type()->Cost(), 0)
 			+ " " + hardware.constructor.Type()->Name();
 	return dets;
@@ -108,7 +108,7 @@ GBSide * GBRobot::LastHit() const { return lastHit; }
 GBBrain * GBRobot::Brain() { return brain; }
 
 GBNumber GBRobot::ShieldFraction() const {
-	if (hardware.ActualShield().Nonzero() )
+	if (hardware.ActualShield())
 		return GBNumber(1) / (square(hardware.ActualShield() * kShieldEffectiveness / mass) + 1);
 	return 1;
 }
@@ -171,6 +171,7 @@ void GBRobot::CollideWith(GBObject * other) {
 			break;
 		case ocFood: {
 			foodCollisions ++;
+			//FIXME shields don't affect eaters
 			GBEnergy eaten = other->TakeEnergy(hardware.EaterLimit());
 			hardware.Eat(eaten);
 			GBSide * source = other->Owner();
@@ -240,11 +241,11 @@ GBNumber GBRobot::Interest() const {
 	if ( hardware.grenades.Cooldown() )
 		interest += hardware.grenades.Damage() * 10 / hardware.grenades.ReloadTime();
 	if ( hardware.blaster.Cooldown() )
-		interest += hardware.forceField.Power().Abs() * 15 + 1;
-	if ( hardware.syphon.Rate().Nonzero() )
-		interest += hardware.syphon.Rate().Abs() + 1;
-	if ( hardware.enemySyphon.Rate().Nonzero() )
-		interest += hardware.enemySyphon.Rate().Abs()* 5 + 2;
+		interest += abs(hardware.forceField.Power()) * 15 + 1;
+	if ( hardware.syphon.Rate() )
+		interest += abs(hardware.syphon.Rate()) + 1;
+	if ( hardware.enemySyphon.Rate() )
+		interest += abs(hardware.enemySyphon.Rate())* 5 + 2;
 	return interest;
 }
 
@@ -272,19 +273,19 @@ void GBRobot::Draw(GBGraphics & g, const GBRect & where, bool detailed) const {
 		GBRect meterRect = where;
 		meterRect.Shrink((meterWidth + 1) / 2); //TODO is this portable?
 	// energy meter
-		if ( hardware.MaxEnergy().Nonzero() ) {
-			arcsize = (hardware.Energy() / hardware.MaxEnergy() * 180).Round();
+		if ( hardware.MaxEnergy() ) {
+			arcsize = round(hardware.Energy() / hardware.MaxEnergy() * 180);
 			g.DrawArc(meterRect, 180 - arcsize, arcsize,
 				Owner()->Color().ChooseContrasting(GBColor::green, GBColor(0, 0.5f, 1), kMinMeterContrast), meterWidth);
 		}
 	// armor meter
-		arcsize = (hardware.Armor().Max(0) / hardware.MaxArmor() * 180).Round();
+		arcsize = round(max(hardware.Armor(), 0) / hardware.MaxArmor() * 180);
 		g.DrawArc(meterRect, 180, arcsize,
 			Owner()->Color().ChooseContrasting(GBColor::lightGray, GBColor::darkGray, kMinMeterContrast), meterWidth);
 	// gestation meter
 		meterRect.Shrink(meterWidth);
-		if ( hardware.constructor.Progress().Nonzero() ) {
-			arcsize = (hardware.constructor.Fraction() * 360).Round();
+		if ( hardware.constructor.Progress() ) {
+			arcsize = round(hardware.constructor.Fraction() * 360);
 			g.DrawArc(meterRect, 360 - arcsize, arcsize,
 				Owner()->Color().ChooseContrasting(GBColor(1, 1, 0), GBColor(0, 0.5f, 0), kMinMeterContrast), meterWidth);
 		}

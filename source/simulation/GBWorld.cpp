@@ -85,8 +85,8 @@ void GBWorld::PickSeedPositions(GBPosition * positions, long numSeeds) {
 	if ( ! positions) throw GBNilPointerError();
 	if ( numSeeds < 1 ) return;
 	try {
-		GBDistance wallDist = kSeedRadius + size.x.Min(size.y) / 20;
-		GBDistance separation = ((size.x - wallDist * 2) * (size.y - wallDist * 2) / numSeeds).Sqrt();
+		GBDistance wallDist = kSeedRadius + min(size.x, size.y) / 20;
+		GBDistance separation = sqrt((size.x - wallDist * 2) * (size.y - wallDist * 2) / numSeeds);
 		int iterations = 0;
 		int iterLimit = 100 + 30 * numSeeds + numSeeds * numSeeds;
 		bool inRange;
@@ -287,8 +287,8 @@ void GBWorld::AddSeed(GBSide * side, const GBPosition & where) {
 		for (placedIndex = 0; placedIndex < placed.size(); placedIndex++) {
 			GBRobot * placee = placed[placedIndex];
 			if (cost == 0) break;
-			if ( placee->hardware.constructor.MaxRate().Nonzero() ) {
-				GBEnergy amt = cost.Min(side->GetSeedType(lastPlaced + 1)->Cost());
+			if ( placee->hardware.constructor.MaxRate() ) {
+				GBEnergy amt = min(cost, side->GetSeedType(lastPlaced + 1)->Cost());
 				placee->hardware.constructor.Start(side->GetSeedType(lastPlaced + 1), amt);
 				side->Scores().ReportSeeded(amt);
 				cost -= amt;
@@ -504,16 +504,16 @@ long GBWorld::RobotValue() const {
 
 void GBWorld::ReportManna(GBEnergy amount) {
 	mannas ++;
-	mannaValue += amount.Round();
+	mannaValue += round(amount);
 }
 
 void GBWorld::ReportCorpse(GBEnergy amount) {
 	corpses ++;
-	corpseValue += amount.Round();
+	corpseValue += round(amount);
 }
 
 void GBWorld::ReportRobot(GBEnergy amount) {
-	robotValue += amount.Round();
+	robotValue += round(amount);
 }
 
 void GBWorld::ReportRound() {

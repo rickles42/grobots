@@ -40,10 +40,10 @@ const GBFrames kToolIntervals[kNumPortalTools] = {
 
 void GBPortal::DrawBackground() {
 	if (!background) InitBackground();
-	long minTileX = (ViewLeft() / kBackgroundTileSize).Floor();
-	long minTileY = (ViewBottom() / kBackgroundTileSize).Floor();
-	long maxTileX = (ViewRight() / kBackgroundTileSize).Ceiling();
-	long maxTileY = (ViewTop() / kBackgroundTileSize).Ceiling();
+	long minTileX = floor(ViewLeft() / kBackgroundTileSize);
+	long minTileY = floor(ViewBottom() / kBackgroundTileSize);
+	long maxTileX = ceil(ViewRight() / kBackgroundTileSize);
+	long maxTileY = ceil(ViewTop() / kBackgroundTileSize);
 	for ( long yi = minTileY; yi <= maxTileY; yi ++ )
 		for ( long xi = minTileX; xi <= maxTileX; xi ++ )
 			DrawBackgroundTile(xi, yi);
@@ -91,10 +91,10 @@ void GBPortal::InitBackground() {
 }
 
 void GBPortal::DrawObjects() {
-	long minTileX = (ViewLeft() / kForegroundTileSize - 0.5).Max(0).Floor();
-	long minTileY = (ViewBottom() / kForegroundTileSize - 0.5).Max(0).Floor();
-	long maxTileX = (ViewRight() / kForegroundTileSize + 0.5).Min(world.ForegroundTilesX() - 1).Ceiling();
-	long maxTileY = (ViewTop() / kForegroundTileSize + 0.5).Min(world.ForegroundTilesY() - 1).Ceiling();
+	long minTileX = max(floor(ViewLeft() / kForegroundTileSize - 0.5), 0L);
+	long minTileY = max(floor(ViewBottom() / kForegroundTileSize - 0.5), 0L);
+	long maxTileX = min(ceil(ViewRight() / kForegroundTileSize + 0.5), world.ForegroundTilesX() - 1);
+	long maxTileY = min(ceil(ViewTop() / kForegroundTileSize + 0.5), world.ForegroundTilesY() - 1);
 	long yi, xi;
 	for ( yi = minTileY; yi <= maxTileY; yi ++ )
 		for ( xi = minTileX; xi <= maxTileX; xi ++ )
@@ -128,7 +128,7 @@ void GBPortal::DrawObjects() {
 
 void GBPortal::DrawObjectList(const GBObject * list) {
 	for ( const GBObject * cur = list; cur != nil; cur = cur->next ) {
-		short diameter = (cur->Radius() * 2 * scale).Max(1).Round();
+		short diameter = round(max(cur->Radius() * 2 * scale, 1));
 		GBRect where;
 		where.left = ToScreenX(cur->Left());
 		where.top = ToScreenY(cur->Top());
@@ -142,11 +142,11 @@ void GBPortal::DrawObjectList(const GBObject * list) {
 }
 
 short GBPortal::ToScreenX(const GBCoordinate x) const {
-	return ((x - viewpoint.x) * scale).Floor() + CenterX();
+	return floor((x - viewpoint.x) * scale) + CenterX();
 }
 
 short GBPortal::ToScreenY(const GBCoordinate y) const {
-	return ((viewpoint.y - y) * scale).Floor() + CenterY();
+	return floor((viewpoint.y - y) * scale) + CenterY();
 }
 
 GBCoordinate GBPortal::FromScreenX(const short h) const {
@@ -305,7 +305,7 @@ void GBPortal::AcceptDrag(short x, short y) {
 		}
 		GBDistance dist = (spot - lastClick).Norm();
 		GBFrames frames = world.CurrentFrame() - lastFrame;
-		if ( dist >= kToolSpacings[tool] && kToolSpacings[tool].Nonzero()
+		if ( dist >= kToolSpacings[tool] && kToolSpacings[tool]
 				|| frames >= kToolIntervals[tool] && kToolIntervals[tool] ) {
 			DoTool(spot);
 			lastx = x; lasty = y;
@@ -527,8 +527,8 @@ void GBPortal::DoBlasts(const GBFinePoint where) {
 	GBAngle base = gRandoms.Angle();
 	for ( int i = kNumBlasts; i > 0; i -- )
 		world.AddObjectNew(new GBBlast(where,
-			GBFinePoint::MakePolar(kBlastSpeed, base + GBNumber::pi * 2 * i / kNumBlasts),
-			nil, kBlastDamage, (kBlastRange / kBlastSpeed).Ceiling()));
+			GBFinePoint::MakePolar(kBlastSpeed, base + kPi * 2 * i / kNumBlasts),
+			nil, kBlastDamage, ceil(kBlastRange / kBlastSpeed)));
 	world.Changed();
 }
 

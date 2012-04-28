@@ -45,7 +45,7 @@ long GBRandomState::LongInRange(const long min, const long max) {
 }
 
 GBNumber GBRandomState::InRange(const GBNumber min, const GBNumber max) {
-	return GBNumber::MakeRaw(LongInRange(min.GetRaw(), max.GetRaw()));
+	return GBNumber::MakeRaw(LongInRange(min.data, max.data));
 }
 
 float GBRandomState::FloatInRange(const float min, const float max) {
@@ -53,7 +53,7 @@ float GBRandomState::FloatInRange(const float min, const float max) {
 }
 
 GBAngle GBRandomState::Angle() {
-	return InRange(GBNumber::epsilon - GBNumber::pi, GBNumber::pi);
+	return InRange(kEpsilon - kPi, kPi);
 }
 
 GBVector GBRandomState::Vector(const GBNumber maxLength) {
@@ -72,7 +72,7 @@ GBColor GBRandomState::ColorNear(const GBColor & old, float dist) {
 }
 
 bool GBRandomState::Boolean(const GBNumber probability) {
-	return InRange(0, GBNumber(1) - GBNumber::epsilon) < probability;
+	return InRange(0, GBNumber(1) - kEpsilon) < probability;
 }
 
 bool GBRandomState::Boolean(const long num, const long denom) {

@@ -95,18 +95,17 @@ void GBStackBrain::DoPrint(const string & str) {
 	lastPrint = new string(str);
 }
 
-// whee! pointers to member functions!
-void GBStackBrain::NumberToNumberOp(GBNumber (GBNumber::* op)() const) {
+void GBStackBrain::NumberToNumberOp(GBNumber (*op)(const GBNumber &)) {
 	if ( stackHeight < 1 )
 		throw GBStackUnderflowError();
-	stack[stackHeight - 1] = (stack[stackHeight - 1].*op)();
+	stack[stackHeight - 1] = op(stack[stackHeight - 1]);
 }
 
-void GBStackBrain::TwoNumberToNumberOp(GBNumber (GBNumber::* op)(const GBNumber) const) {
+void GBStackBrain::TwoNumberToNumberOp(GBNumber (*op)(const GBNumber &, const GBNumber &)) {
 	if ( stackHeight < 2 )
 		throw GBStackUnderflowError();
 	-- stackHeight;
-	GBNumber temp = (stack[stackHeight - 1].*op)(stack[stackHeight]);
+	GBNumber temp = op(stack[stackHeight - 1], stack[stackHeight]);
 	stack[stackHeight - 1] = temp;
 }
 
@@ -207,8 +206,8 @@ void GBStackBrain::WriteLocalMemory(GBStackAddress addr, GBStackDatum val, GBRob
 }
 
 GBStackAddress GBStackBrain::ToAddress(const GBStackDatum value) {
-	if ( value.IsInteger() ) {
-		GBStackAddress addr = value.Floor();
+	if ( IsInteger(value) ) {
+		GBStackAddress addr = floor(value);
 		if ( addr >= 0 && addr <= spec->NumInstructions() )
 			// note: addr immediately after the last instruction is allowed
 			return addr;
@@ -218,8 +217,8 @@ GBStackAddress GBStackBrain::ToAddress(const GBStackDatum value) {
 }
 
 long GBStackBrain::ToInteger(const GBStackDatum value) {
-	if ( value.IsInteger() )
-		return value.Floor();
+	if ( IsInteger(value) )
+		return floor(value);
 	throw GBNotIntegerError();
 	return 0;
 }

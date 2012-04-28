@@ -109,7 +109,7 @@ void GBTournamentView::DrawItem(long index, const GBRect & box) {
 	if ( rounds > 0 ) {
 		GBNumber score = scores.BiomassFraction();
 		DrawStringRight(ToPercentString(score, 1), box.left + kPercentRight, box.bottom - 4,
-			10, (rounds + survived < kMinColorRounds * 2 || score < scores.BiomassFractionError() * 2)
+			10, (rounds + survived < kMinColorRounds * 2 || score.ToDouble() < scores.BiomassFractionError() * 2)
 			? GBColor::gray : GBColor::black, true);
 		float survival = scores.SurvivalNotSterile();
 		DrawStringRight(ToPercentString(survival),

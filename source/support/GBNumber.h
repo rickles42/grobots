@@ -12,8 +12,8 @@
 #if USE_GBNUMBER
 
 class GBNumber {
-	long data;
 public:
+	long data;
 // constructors
 	GBNumber();
 	GBNumber(const GBNumber & src);
@@ -24,13 +24,14 @@ public:
 // conversions
 	// no implicit conversions
 	double ToDouble() const;
+	operator bool() const;
 	int operator !() const;
 // assignment operators
-	GBNumber operator=(const GBNumber newvalue);
-	GBNumber operator+=(const GBNumber addend);
-	GBNumber operator-=(const GBNumber subtrahend);
-	GBNumber operator*=(const GBNumber factor);
-	GBNumber operator/=(const GBNumber divisor);
+	GBNumber operator=(const GBNumber &);
+	GBNumber operator+=(const GBNumber &);
+	GBNumber operator-=(const GBNumber &);
+	GBNumber operator*=(const GBNumber &);
+	GBNumber operator/=(const GBNumber &);
 	GBNumber operator*=(const int factor);
 	GBNumber operator/=(const int divisor);
 	GBNumber operator*=(const long factor);
@@ -38,26 +39,25 @@ public:
 	GBNumber operator*=(const double factor);
 	GBNumber operator/=(const double divisor);
 // arithmetic
-	GBNumber operator+(const GBNumber addend) const;
-	GBNumber operator-(const GBNumber subtrahend) const;
-	GBNumber operator-() const;
-	GBNumber operator*(const GBNumber factor) const;
-	GBNumber operator/(const GBNumber divisor) const;
+	GBNumber operator+(int) const;
+	GBNumber operator-(int) const;
+	GBNumber operator+(double) const;
+	GBNumber operator-(double) const;
+	GBNumber operator*(const GBNumber &) const;
+	GBNumber operator/(const GBNumber &) const;
 	GBNumber operator*(const int factor) const;
 	GBNumber operator/(const int divisor) const;
 	GBNumber operator*(const long factor) const;
 	GBNumber operator/(const long divisor) const;
 	GBNumber operator*(const double factor) const;
 	GBNumber operator/(const double divisor) const;
-	GBNumber Mod(const GBNumber divisor) const;
-	GBNumber Rem(const GBNumber divisor) const;
 // comparisons
-	bool operator==(const GBNumber other) const;
-	bool operator!=(const GBNumber other) const;
-	bool operator<(const GBNumber other) const;
-	bool operator>(const GBNumber other) const;
-	bool operator<=(const GBNumber other) const;
-	bool operator>=(const GBNumber other) const;
+	bool operator==(const GBNumber &) const;
+	bool operator!=(const GBNumber &) const;
+	bool operator<(const GBNumber &) const;
+	bool operator>(const GBNumber &) const;
+	bool operator<=(const GBNumber &) const;
+	bool operator>=(const GBNumber &) const;
 	bool operator==(const int other) const;
 	bool operator!=(const int other) const;
 	bool operator<(const int other) const;
@@ -70,40 +70,33 @@ public:
 	bool operator>(const double other) const;
 	bool operator<=(const double other) const;
 	bool operator>=(const double other) const;
-// misc
-	GBNumber Sqrt() const;
-	GBNumber Exponent(const GBNumber ex) const;
-	bool IsInteger() const;
-	bool Nonzero() const;
-	bool Zero() const;
-	long Floor() const;
-	long Ceiling() const;
-	long Round() const;
-	long Truncate() const;
-	GBNumber FractionalPart() const;
-	GBNumber Max(const GBNumber other) const;
-	GBNumber Min(const GBNumber other) const;
-	GBNumber Abs() const;
-	GBNumber Signum() const;
-// trig
-	GBNumber Reorient() const;
-	GBNumber Cos() const;
-	GBNumber Sin() const;
-	GBNumber Tan() const;
-	GBNumber ArcCos() const;
-	GBNumber ArcSin() const;
-	GBNumber ArcTan() const;
-	GBNumber ArcTan2(const GBNumber other) const;
 // raw access
 	static GBNumber MakeRaw(const long raw);
-	long GetRaw() const;
-	void SetRaw(const long raw);
-// constants
-	static const GBNumber epsilon;
-	static const GBNumber infinity;
-	static const GBNumber pi;
-	static const GBNumber e;
 };
+
+GBNumber operator-(const GBNumber &);
+GBNumber operator+(const GBNumber &, const GBNumber &);
+GBNumber operator-(const GBNumber &, const GBNumber &);
+
+GBNumber sqrt(const GBNumber &);
+GBNumber pow(const GBNumber & base, const GBNumber & ex);
+long floor(const GBNumber &);
+long ceil(const GBNumber &);
+long round(const GBNumber &);
+GBNumber abs(const GBNumber &);
+GBNumber signum(const GBNumber &);
+
+GBNumber reorient(const GBNumber &);
+GBNumber cos(const GBNumber &);
+GBNumber sin(const GBNumber &);
+GBNumber tan(const GBNumber &);
+GBNumber acos(const GBNumber &);
+GBNumber asin(const GBNumber &);
+GBNumber atan(const GBNumber &);
+GBNumber atan2(const GBNumber & y, const GBNumber & x);
+
+bool IsInteger(const GBNumber &);
+GBNumber fpart(const GBNumber &);
 
 #else
 typedef float GBNumber;
@@ -175,17 +168,17 @@ inline int GBNumber::operator!() const {
 	return ! data;
 }
 
-inline GBNumber GBNumber::operator=(const GBNumber newvalue) {
+inline GBNumber GBNumber::operator=(const GBNumber &newvalue) {
 	data = newvalue.data;
 	return *this;
 }
 
-inline GBNumber GBNumber::operator+=(const GBNumber addend) {
+inline GBNumber GBNumber::operator+=(const GBNumber &addend) {
 	data += addend.data;
 	return *this;
 }
 
-inline GBNumber GBNumber::operator-=(const GBNumber subtrahend) {
+inline GBNumber GBNumber::operator-=(const GBNumber &subtrahend) {
 	data -= subtrahend.data;
 	return *this;
 }
@@ -200,16 +193,32 @@ inline GBNumber GBNumber::operator*=(const long factor){
 	return *this;
 }
 
-inline GBNumber GBNumber::operator+(const GBNumber addend) const {
-	return MakeRaw(data + addend.data);
+inline GBNumber operator+(const GBNumber &a, const GBNumber &b) {
+	return GBNumber::MakeRaw(a.data + b.data);
 }
 
-inline GBNumber GBNumber::operator-(const GBNumber subtrahend) const {
-	return MakeRaw(data - subtrahend.data);
+inline GBNumber operator-(const GBNumber &a, const GBNumber &b) {
+	return GBNumber::MakeRaw(a.data - b.data);
 }
 
-inline GBNumber GBNumber::operator-() const {
-	return MakeRaw(- data);
+inline GBNumber operator-(const GBNumber &x) {
+	return GBNumber::MakeRaw(- x.data);
+}
+
+inline GBNumber GBNumber::operator+(int addend) const {
+	return *this + GBNumber(addend);
+}
+
+inline GBNumber GBNumber::operator-(int subtrahend) const {
+	return *this - GBNumber(subtrahend);
+}
+
+inline GBNumber GBNumber::operator+(double addend) const {
+	return *this + GBNumber(addend);
+}
+
+inline GBNumber GBNumber::operator-(double subtrahend) const {
+	return *this - GBNumber(subtrahend);
 }
 
 inline GBNumber GBNumber::operator*(const int factor) const {
@@ -220,22 +229,22 @@ inline GBNumber GBNumber::operator*(const long factor) const {
 	return MakeRaw(data * factor);
 }
 
-inline bool GBNumber::operator==(const GBNumber other) const {
+inline bool GBNumber::operator==(const GBNumber &other) const {
 	return (data == other.data);}
 
-inline bool GBNumber::operator!=(const GBNumber other) const {
+inline bool GBNumber::operator!=(const GBNumber &other) const {
 	return (data != other.data);}
 
-inline bool GBNumber::operator<(const GBNumber other) const {
+inline bool GBNumber::operator<(const GBNumber &other) const {
 	return (data < other.data);}
 
-inline bool GBNumber::operator>(const GBNumber other) const {
+inline bool GBNumber::operator>(const GBNumber &other) const {
 	return (data > other.data);}
 
-inline bool GBNumber::operator<=(const GBNumber other) const {
+inline bool GBNumber::operator<=(const GBNumber &other) const {
 	return (data <= other.data);}
 
-inline bool GBNumber::operator>=(const GBNumber other) const {
+inline bool GBNumber::operator>=(const GBNumber &other) const {
 	return (data >= other.data);}
 
 inline bool GBNumber::operator==(const int other) const {
@@ -256,50 +265,8 @@ inline bool GBNumber::operator<=(const int other) const {
 inline bool GBNumber::operator>=(const int other) const {
 	return (data >= other << kNumFractionBits);}
 
-inline bool GBNumber::IsInteger() const {
-	return ! (data & kFractionalPartMask);
-}
-
-inline bool GBNumber::Nonzero() const {
+inline GBNumber::operator bool() const {
 	return data != 0;
-}
-
-inline bool GBNumber::Zero() const {
-	return data == 0;
-}
-
-inline long GBNumber::Floor() const {
-	return data >> kNumFractionBits;
-}
-
-inline GBNumber GBNumber::Max(const GBNumber other) const {
-	if ( *this >= other )
-		return *this;
-	else
-		return other;
-}
-
-inline GBNumber GBNumber::Min(const GBNumber other) const {
-	if ( *this <= other )
-		return *this;
-	else
-		return other;
-}
-
-inline GBNumber GBNumber::Abs() const {
-	if ( data < 0 )
-		return - *this;
-	else
-		return *this;
-}
-
-inline GBNumber GBNumber::Signum() const {
-	if ( data < 0 )
-		return -1;
-	else if ( data > 0 )
-		return 1;
-	else
-		return 0;
 }
 
 inline GBNumber GBNumber::MakeRaw(const long raw) {
@@ -307,25 +274,26 @@ inline GBNumber GBNumber::MakeRaw(const long raw) {
 	rval.data = raw;
 	return rval;
 }
-
-inline long GBNumber::GetRaw() const {
-	return data;
-}
-
-inline void GBNumber::SetRaw(const long raw) {
-	data = raw;
-}
 #endif
 
-//for compatibility with floats
 template <typename T>
 T square(T x) { return x * x; }
 
-GBNumber sqrt(GBNumber & x);
+GBNumber mod(const GBNumber &x, const GBNumber &divisor);
+GBNumber rem(const GBNumber &x, const GBNumber &divisor);
+
+using std::min;
+using std::max;
+
+GBNumber max(const GBNumber &, int);
 
 template <typename T>
-T max(T a, T b) { return a > b ? a :  b; }
-template <typename T>
-T min(T a, T b) { return a < b ? a :  b; }
+T clamp(T x, T low, T high) { return x < low ? low : x > high ? high : x; }
+
+// constants
+const GBNumber kEpsilon = GBNumber::MakeRaw(1);
+const GBNumber kInfinity = GBNumber::MakeRaw(0x7FFFFFFF);
+const GBNumber kPi = 3.14159265358979;
+const GBNumber kE = 2.71828182846;
 
 #endif

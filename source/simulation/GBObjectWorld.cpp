@@ -94,26 +94,26 @@ void GBObjectWorld::CollideObjectWithWalls(GBObject * ob) {
 	GBObjectClass cl = ob->Class();
 	if ( ob->Left() < Left() ) {
 		GBVelocity vel = ob->Velocity();
-		ob->SetVelocity(vel.x.Abs() * kWallRestitution, vel.y);
+		ob->SetVelocity(abs(vel.x) * kWallRestitution, vel.y);
 		if ( cl == ocRobot || cl == ocFood )
 			ob->MoveBy(Left() - ob->Left(), 0);
 		ob->CollideWithWall();
 	} else if ( ob->Right() > Right() ) {
 		GBVelocity vel = ob->Velocity();
-		ob->SetVelocity(vel.x.Abs() * - kWallRestitution, vel.y);
+		ob->SetVelocity(abs(vel.x) * - kWallRestitution, vel.y);
 		if ( cl == ocRobot || cl == ocFood )
 			ob->MoveBy(Right() - ob->Right(), 0);
 		ob->CollideWithWall();
 	}
 	if ( ob->Bottom() < Bottom() ) {
 		GBVelocity vel = ob->Velocity();
-		ob->SetVelocity(vel.x, vel.y.Abs() * kWallRestitution);
+		ob->SetVelocity(vel.x, abs(vel.y) * kWallRestitution);
 		if ( cl == ocRobot || cl == ocFood )
 			ob->MoveBy(0, Bottom() - ob->Bottom());
 		ob->CollideWithWall();
 	} else if ( ob->Top() > Top() ) {
 		GBVelocity vel = ob->Velocity();
-		ob->SetVelocity(vel.x, vel.y.Abs() * - kWallRestitution);
+		ob->SetVelocity(vel.x, abs(vel.y) * - kWallRestitution);
 		if ( cl == ocRobot || cl == ocFood )
 			ob->MoveBy(0, Top() - ob->Top());
 		ob->CollideWithWall();
@@ -167,7 +167,7 @@ void GBObjectWorld::CollideSameTile(long t) {
 		} catch ( GBError & err ) {
 			NonfatalError(string("Error colliding robots: ") + err.ToString());
 		}
-		if ( ((GBRobot *)bot)->hardware.EaterLimit().Nonzero() )
+		if ( ((GBRobot *)bot)->hardware.EaterLimit() )
 			try {
 				FOR_EACH_OBJECT_IN_LIST(objects[t][ocFood], food, { bot->BasicCollide(food); })
 			} catch ( GBError & err ) {
@@ -206,7 +206,7 @@ void GBObjectWorld::CollideTwoTiles(long t1, long t2) {
 			} catch ( GBError & err ) {
 				NonfatalError(string("Error colliding robots: ") + err.ToString());
 			}
-			if ( ((GBRobot *)bot)->hardware.EaterLimit().Nonzero() )
+			if ( ((GBRobot *)bot)->hardware.EaterLimit() )
 				try {
 					FOR_EACH_OBJECT_IN_LIST(objects[t2][ocFood], food, { bot->BasicCollide(food); })
 				} catch ( GBError & err ) {
@@ -299,10 +299,10 @@ void GBObjectWorld::CheckObjectClass(const GBObjectClass cl) const {
 }
 
 long GBObjectWorld::FindTile(const GBPosition where) const {
-	long tx = where.x.Floor() / kForegroundTileSize;
+	long tx = floor(where.x) / kForegroundTileSize;
 	if ( tx < 0 ) tx = 0;
 	if ( tx >= tilesX ) tx = tilesX - 1;
-	long ty = where.y.Floor() / kForegroundTileSize;
+	long ty = floor(where.y) / kForegroundTileSize;
 	if ( ty < 0 ) ty = 0;
 	if ( ty >= tilesY ) ty = tilesY - 1;
 	return ty * tilesX + tx;
@@ -317,8 +317,8 @@ GBObjectTile * GBObjectWorld::MakeTiles() const {
 
 GBObjectWorld::GBObjectWorld()
 	: size(kWorldWidth, kWorldHeight),
-	tilesX((kWorldWidth / kForegroundTileSize).Ceiling()),
-	tilesY((kWorldHeight / kForegroundTileSize).Ceiling()),
+	tilesX(ceil(kWorldWidth / kForegroundTileSize)),
+	tilesY(ceil(kWorldHeight / kForegroundTileSize)),
 	objects(nil),
 	news(nil)
 {
@@ -375,8 +375,8 @@ void GBObjectWorld::AddObjectDirectly(GBObject * ob) {
 void GBObjectWorld::Resize(const GBFinePoint & newsize) {
 	long oldLastTile = tilesX * tilesY;
 	size = newsize;
-	tilesX = (size.x / kForegroundTileSize).Ceiling();
-	tilesY = (size.y / kForegroundTileSize).Ceiling();
+	tilesX = ceil(size.x / kForegroundTileSize);
+	tilesY = ceil(size.y / kForegroundTileSize);
 // fix tiles
 	GBObjectTile * old = objects;
 	objects = MakeTiles();
@@ -409,11 +409,11 @@ GBCoordinate GBObjectWorld::Bottom() const {
 
 // eventually replace calculation with getting from Rules.
 long GBObjectWorld::BackgroundTilesX() const {
-	return (size.x / kBackgroundTileSize).Ceiling();
+	return ceil(size.x / kBackgroundTileSize);
 }
 
 long GBObjectWorld::BackgroundTilesY() const {
-	return (size.y / kBackgroundTileSize).Ceiling();
+	return ceil(size.y / kBackgroundTileSize);
 }
 
 long GBObjectWorld::ForegroundTilesX() const {
@@ -472,7 +472,7 @@ GBObject * GBObjectWorld::RandomInterestingObject() const {
 		FOR_EACH_OBJECT_IN_WORLD(i, cl, ob, {
 			totalInterest += ob->Interest();
 		})
-		if ( totalInterest.Zero() ) return nil;
+		if ( ! totalInterest ) return nil;
 		FOR_EACH_OBJECT_IN_WORLD(ii, cl, ob, {
 			GBNumber interest = ob->Interest();
 			if ( gRandoms.Boolean(interest / totalInterest) )
@@ -492,7 +492,7 @@ GBObject * GBObjectWorld::RandomInterestingObjectNear(const GBPosition where, GB
 			if ( ob->Position().InRange(where, radius) )
 				totalInterest += ob->Interest();
 		})
-		if ( totalInterest.Zero() ) return nil;
+		if ( !totalInterest ) return nil;
 		FOR_EACH_OBJECT_IN_WORLD(ii, cl, ob, {
 			if ( ob->Position().InRange(where, radius) ) {
 				GBNumber interest = ob->Interest();

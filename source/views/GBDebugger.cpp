@@ -110,13 +110,13 @@ void GBDebuggerView::DrawHardwareBox(const GBRect & box) {
 	DrawStringPair("Position:", ToString(target->Position(), 1), left, right, box.top + 21, 10);
 	DrawStringPair("Velocity:", ToString(target->Velocity(), 2), left, right, box.top + 31, 10);
 	DrawStringPair("Speed:", ToString(target->Speed(), 2), left, right, box.top + 41, 10);
-	if (hw.EnginePower().Nonzero())
+	if (hw.EnginePower())
 		DrawStringPair("Engine vel:", ToString(hw.EngineVelocity(), 2), left, right, box.top + 51, 10);
 	DrawStringPair("Energy:", ToString(hw.Energy(), 1), left, right, box.top + 65, 10, GBColor::darkGreen);
 	DrawStringPair("Eaten:", ToString(hw.Eaten(), 1), left, right, box.top + 75, 10, GBColor::darkGreen);
 	DrawStringPair("Armor:", ToString(hw.Armor()) + '/' + ToString(hw.MaxArmor()),
 		left, right, box.top + 85, 10);
-	if (hw.ActualShield().Nonzero())
+	if (hw.ActualShield())
 		DrawStringPair("Shield:", ToString(hw.ActualShield()) + " ("
 			+ ToPercentString(target->ShieldFraction()) + ')', left, right, box.top + 95,
 			10, GBColor::blue);
@@ -129,26 +129,26 @@ void GBDebuggerView::DrawHardwareBox(const GBRect & box) {
 			left, right, box.top + 141, 10);
 	}
 	//sensor times? result details?
-	if (hw.sensor1.Radius().Nonzero())
+	if (hw.sensor1.Radius())
 		DrawStringLongPair("robot-found:", hw.sensor1.NumResults(), left, right, box.top + 161, 10);
-	if (hw.sensor2.Radius().Nonzero())
+	if (hw.sensor2.Radius())
 		DrawStringLongPair("food-found:", hw.sensor2.NumResults(), left, right, box.top + 171, 10);
-	if (hw.sensor3.Radius().Nonzero())
+	if (hw.sensor3.Radius())
 		DrawStringLongPair("shot-found:", hw.sensor3.NumResults(), left, right, box.top + 181, 10);
 	DrawStringLeft("Weapons:", left, box.top + 191, 10, GBColor::black, true);
-	if (hw.blaster.Damage().Nonzero())
+	if (hw.blaster.Damage())
 		DrawStringLongPair("blaster-cooldown:", hw.blaster.Cooldown(), left, right, box.top + 201, 10);
-	if (hw.grenades.Damage().Nonzero())
+	if (hw.grenades.Damage())
 		DrawStringLongPair("grenades-cooldown:", hw.grenades.Cooldown(), left, right, box.top + 211, 10);
-	if (hw.forceField.MaxPower().Nonzero())
+	if (hw.forceField.MaxPower())
 		DrawStringPair("force-field-angle:", ToString(hw.forceField.Angle(), 2), left, right, box.top + 221, 10);
-	if (hw.syphon.MaxRate().Nonzero())
+	if (hw.syphon.MaxRate())
 		DrawStringPair("syphoned:", ToString(hw.syphon.Syphoned(), 2) + '/'
 			+ ToString(hw.syphon.Rate(), 2), left, right, box.top + 241, 10);
-	if (hw.enemySyphon.MaxRate().Nonzero())
+	if (hw.enemySyphon.MaxRate())
 		DrawStringPair("enemy-syphoned:", ToString(hw.enemySyphon.Syphoned(), 2) + '/'
 			+ ToString(hw.enemySyphon.Rate(), 2), left, right, box.top + 251, 10);
-	if (target->flag.Nonzero())
+	if (target->flag)
 		DrawStringPair("flag:", ToString(target->flag, 2), left, right, box.top + 271, 10);
 }
 

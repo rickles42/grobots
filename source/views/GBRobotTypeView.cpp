@@ -35,15 +35,15 @@ void GBRobotTypeView::DrawHardwareLine(const GBRect & box, short base,
 	const GBHardwareSpec & hw = SelectedType()->Hardware();
 	base += (base > 0 ? box.top : box.bottom);
 // name and args
-	const GBColor & textcolor = cost.Nonzero() ? color : GBColor::lightGray;
+	const GBColor & textcolor = cost ? color : GBColor::lightGray;
 	DrawStringLeft(name, box.left + kHardwareNameLeft, base, 9, textcolor);
-	if ( cost.Nonzero() )
+	if ( cost )
 		DrawStringLeft(arg1 + ' ' + arg2 + ' ' + arg3 + ' ' + arg4,
 			box.left + kHardwareArgumentsLeft, base, 9, textcolor);
 // cost and mass
-	const GBColor & numcolor = (cost.Nonzero() ? GBColor::black : GBColor::lightGray);
+	const GBColor & numcolor = (cost ? GBColor::black : GBColor::lightGray);
 	DrawStringRight(ToString(cost, cost < 10 ? 1 : 0), box.right - kHardwareCostRight, base, 9, numcolor);
-	if ( cost.Nonzero() )
+	if ( cost )
 		DrawStringRight(ToString(cost / hw.BaseCost() * 100, 0),
 						box.right - kHardwarePercentRight, base, 9, GBColor::gray);
 	DrawStringRight(ToString(mass, 2), box.right - kHardwareMassRight, base, 9, numcolor);
@@ -217,7 +217,7 @@ void GBRobotTypeView::DrawFooter(const GBRect & box) {
 	GBNumber damageMult = type->MassiveDamageMultiplier(type->Mass());
 	GBNumber pregnantMult = type->MassiveDamageMultiplier(type->Mass() * 2);
 	DrawStringLeft("Mass-based damage multiplier: " + ToPercentString(damageMult, 0)
-		+ ((hw.constructor.Rate().Nonzero() && pregnantMult > 1) ? " to " + ToPercentString(pregnantMult) : ""),
+		+ ((hw.constructor.Rate() && pregnantMult > 1) ? " to " + ToPercentString(pregnantMult) : ""),
 		box.left + kHardwareNameLeft, box.bottom - 4, 9, damageMult > 1 ? GBColor::red : GBColor::lightGray);
 }
 

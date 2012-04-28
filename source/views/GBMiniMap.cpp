@@ -39,8 +39,8 @@ void GBMiniMapView::DrawObjectList(const GBObject * list, const short minSize) c
 		GBRect where;
 		where.left = ToScreenX(cur->Left());
 		where.top = ToScreenY(cur->Top());
-		where.right = where.left + (cur->Radius() * 2 * scalex).Max(minSize).Round();
-		where.bottom = where.top + (cur->Radius() * 2 * scaley).Max(minSize).Round();
+		where.right = where.left + round(max(cur->Radius() * 2 * scalex, minSize));
+		where.bottom = where.top + round(max(cur->Radius() * 2 * scaley, minSize));
 		cur->DrawMini(Graphics(), CalcExternalRect(where));
 	}
 }
@@ -62,8 +62,8 @@ void GBMiniMapView::DrawObjectListTrails(const GBObject * list, const short minS
 		GBRect where;
 		where.left = ToScreenX(cur->Left());
 		where.top = ToScreenY(cur->Top());
-		where.right = where.left + (cur->Radius() * 2 * scalex).Max(minSize).Round();
-		where.bottom = where.top + (cur->Radius() * 2 * scaley).Max(minSize).Round();
+		where.right = where.left + round(max(cur->Radius() * 2 * scalex, minSize));
+		where.bottom = where.top + round(max(cur->Radius() * 2 * scaley, minSize));
 		trails->Graphics().DrawSolidRect(CalcExternalRect(where),
 			cur->Color() * kTrailIntensity);
 	}
@@ -76,11 +76,11 @@ void GBMiniMapView::RecalculateScales() {
 }
 
 short GBMiniMapView::ToScreenX(const GBCoordinate x) const {
-	return (x * scalex).Floor();
+	return floor(x * scalex);
 }
 
 short GBMiniMapView::ToScreenY(const GBCoordinate y) const {
-	return Height() - (y * scaley).Floor();
+	return Height() - floor(y * scaley);
 }
 
 GBCoordinate GBMiniMapView::FromScreenX(const short h) const {
@@ -175,32 +175,32 @@ bool GBMiniMapView::Resizable() const {
 }
 
 short GBMiniMapView::MinimumWidth() const {
-	return world.Size().x.Floor();
+	return floor(world.Size().x);
 }
 
 short GBMiniMapView::MinimumHeight() const {
-	return world.Size().y.Floor();
+	return floor(world.Size().y);
 }
 
 short GBMiniMapView::MaximumWidth() const {
-	return world.Size().x.Floor() * 8;
+	return floor(world.Size().x) * 8;
 }
 
 short GBMiniMapView::MaximumHeight() const {
-	return world.Size().y.Floor() * 8;
+	return floor(world.Size().y) * 8;
 }
 
 short GBMiniMapView::PreferredWidth() const {
-	return world.Size().x.Floor() * 2;
+	return floor(world.Size().x) * 2;
 }
 
 short GBMiniMapView::PreferredHeight() const {
-	return world.Size().y.Floor() * 2;
+	return floor(world.Size().y) * 2;
 }
 
 void GBMiniMapView::SetSize(short width, short height) {
 	scalex = scaley = (GBNumber(width) / world.Size().x + GBNumber(height) / world.Size().y) / 2;
-	GBView::SetSize((scalex * world.Size().x).Floor(), (scaley * world.Size().y).Floor());
+	GBView::SetSize(floor(scalex * world.Size().x), floor(scaley * world.Size().y));
 	worldChanges = -1;
 	if ( trails ) {
 		delete trails;
